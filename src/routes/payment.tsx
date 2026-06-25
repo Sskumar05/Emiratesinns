@@ -34,8 +34,8 @@ function Payment() {
       }).eq("id", bookingId!);
       if (error) throw error;
       await supabase.from("invoices").insert({
-        booking_id: bookingId!, customer_id: (booking as any).customer_id,
-        amount: booking.total_amount, status: "paid",
+        booking_id: bookingId!, customer_id: (booking as any)?.customer_id,
+        amount: (booking as any)?.total_amount ?? 0, status: "paid",
       });
       toast.success("Payment successful");
       nav({ to: "/confirmation", search: { bookingId } as any });

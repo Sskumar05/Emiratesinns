@@ -64,7 +64,7 @@ function Booking() {
         .select().single();
       if (cErr) throw cErr;
       const { data: booking, error: bErr } = await supabase.from("bookings").insert({
-        customer_id: customer.id, hotel_id: (room as any).hotel_id, category: room.category,
+        customer_id: customer.id, hotel_id: (room as any).hotel_id, category: (room as any).category,
         num_rooms: form.num_rooms, num_guests: form.num_guests,
         check_in_date: form.check_in_date, check_in_time: form.check_in_time,
         num_days: form.num_days, check_out_date: checkout,
