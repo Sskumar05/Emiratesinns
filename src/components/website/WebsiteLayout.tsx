@@ -28,7 +28,7 @@ export function WebsiteLayout() {
           </Link>
           <nav className="hidden md:flex items-center gap-8">
             {NAV.map((n) => (
-              <Link key={n.to} to={n.to}
+              <Link key={n.to} to={n.to as "."}
                 className={`text-sm uppercase tracking-[0.2em] transition-colors ${path === n.to ? "text-gold" : "text-muted-foreground hover:text-gold"}`}>
                 {n.label}
               </Link>
@@ -47,7 +47,7 @@ export function WebsiteLayout() {
               className="md:hidden overflow-hidden border-t border-border">
               <div className="container-luxe py-6 flex flex-col gap-4">
                 {NAV.map((n) => (
-                  <Link key={n.to} to={n.to} onClick={() => setOpen(false)}
+                  <Link key={n.to} to={n.to as "."} onClick={() => setOpen(false)}
                     className={`text-sm uppercase tracking-[0.2em] ${path === n.to ? "text-gold" : "text-muted-foreground"}`}>
                     {n.label}
                   </Link>

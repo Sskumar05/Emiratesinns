@@ -48,7 +48,7 @@ export function AdminLayout() {
             const active = n.exact ? path === n.to : path.startsWith(n.to);
             const Icon = n.icon;
             return (
-              <Link key={n.to} to={n.to} onClick={() => setOpen(false)}
+              <Link key={n.to} to={n.to as "."} onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 px-6 py-3 text-sm transition-colors border-l-2 ${active ? "border-gold text-gold bg-gold/5" : "border-transparent text-muted-foreground hover:text-gold hover:bg-gold/5"}`}>
                 <Icon className="h-4 w-4" />
                 <span>{n.label}</span>
