@@ -16,9 +16,9 @@ function Contact() {
       <div className="container-luxe pt-32 pb-20 max-w-5xl">
         <div className="text-center mb-16">
           <span className="text-sm font-semibold uppercase tracking-wider text-gold">Get in Touch</span>
-          <h1 className="font-bold text-5xl md:text-7xl mt-4 text-foreground tracking-tight">Contact Us</h1>
+          <h1 className="font-bold text-4xl sm:text-5xl md:text-7xl mt-4 text-foreground tracking-tight">Contact Us</h1>
         </div>
-        <div className="grid md:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="space-y-8">
             {[
               { I: Phone, t: "Reservations", v: "+91 98765 43210" },

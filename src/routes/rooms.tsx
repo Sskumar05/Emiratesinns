@@ -40,11 +40,11 @@ function RoomsPage() {
       <div className="container-luxe pt-32 pb-20">
         <div className="text-center mb-16">
           <span className="text-sm font-semibold uppercase tracking-wider text-gold">Accommodations</span>
-          <h1 className="font-bold text-5xl md:text-7xl mt-4 text-foreground tracking-tight">Rooms & Suites</h1>
+          <h1 className="font-bold text-4xl sm:text-5xl md:text-7xl mt-4 text-foreground tracking-tight">Rooms & Suites</h1>
         </div>
 
         {/* Filters */}
-        <div className="bg-card shadow-sm rounded-lg border border-border p-6 mb-12 grid md:grid-cols-4 gap-6">
+        <div className="bg-card shadow-sm rounded-lg border border-border p-6 mb-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Hotel</label>
             <select value={hotel} onChange={(e) => setHotel(e.target.value)} className="w-full bg-background border border-border rounded-md px-3 py-2.5 text-sm focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none transition-colors">
@@ -59,7 +59,7 @@ function RoomsPage() {
               {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
           </div>
-          <div className="md:col-span-2">
+          <div className="sm:col-span-2 lg:col-span-2">
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Max Price: <span className="text-primary">{formatINR(maxPrice)}</span></label>
             <input type="range" min={2000} max={10000} step={500} value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="w-full accent-[var(--color-gold)] mt-2" />
           </div>
@@ -71,7 +71,7 @@ function RoomsPage() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground font-medium">No rooms match your filters.</div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((r: any, i: number) => (
               <motion.div key={r.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                 className="group bg-card rounded-lg shadow-card border border-border overflow-hidden flex flex-col hover:shadow-md hover:border-gold/50 transition-all">

@@ -67,7 +67,7 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
       <main className="flex-1">{children ?? <Outlet />}</main>
 
       <footer className="bg-primary text-primary-foreground mt-24">
-        <div className="container-luxe py-16 grid md:grid-cols-4 gap-10">
+        <div className="container-luxe py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
             <div className="flex items-center gap-3 mb-6">
               <div>

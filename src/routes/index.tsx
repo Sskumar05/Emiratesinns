@@ -44,7 +44,7 @@ function Home() {
               <Building className="h-5 w-5" />
               <span className="text-xs uppercase tracking-widest">A Curated Collection</span>
             </div>
-            <h1 className="font-bold text-5xl md:text-7xl lg:text-8xl leading-tight mb-6 text-white tracking-tight">
+            <h1 className="font-bold text-4xl sm:text-5xl md:text-7xl lg:text-8xl leading-tight mb-6 text-white tracking-tight">
               Where elegance<br /><span className="text-gold">finds its home.</span>
             </h1>
             <p className="text-lg md:text-xl text-white/80 max-w-xl mb-10 leading-relaxed font-medium">
@@ -69,7 +69,7 @@ function Home() {
             <span className="text-sm font-semibold uppercase tracking-wider text-gold">The Collection</span>
             <h2 className="font-bold text-4xl md:text-5xl mt-4 text-foreground tracking-tight">Two Properties. One Standard.</h2>
           </div>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
               { slug: "emirates-inn", name: "Emirates Inn", tag: "Boutique Refinement", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80" },
               { slug: "emirates-grand-inn", name: "Emirates Grand Inn", tag: "Flagship Luxury", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1200&q=80" },
@@ -101,7 +101,7 @@ function Home() {
             <span className="text-sm font-semibold uppercase tracking-wider text-gold">Curated Comforts</span>
             <h2 className="font-bold text-4xl md:text-5xl mt-4 text-foreground tracking-tight">Amenities, perfected.</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
             {AMENITIES.map((a, i) => (
               <motion.div key={a.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
                 className="group p-6 rounded-lg bg-card shadow-sm border border-border text-center hover:shadow-md hover:border-gold/50 transition-all">
@@ -150,7 +150,7 @@ function Home() {
             <span className="text-sm font-semibold uppercase tracking-wider text-gold">Voices</span>
             <h2 className="font-bold text-4xl md:text-5xl mt-4 tracking-tight">What our guests say.</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {TESTIMONIALS.map((t, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                 className="p-8 bg-card rounded-lg shadow-card text-foreground">
@@ -179,7 +179,7 @@ function Home() {
           <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-border">
             <MapPin className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="font-bold text-4xl md:text-6xl mb-6 text-foreground tracking-tight">Your story begins here.</h2>
+          <h2 className="font-bold text-3xl sm:text-4xl md:text-6xl mb-6 text-foreground tracking-tight">Your story begins here.</h2>
           <p className="text-muted-foreground max-w-xl mx-auto mb-10 text-lg">Reserve your suite and let our team craft an unforgettable stay.</p>
           <Link to="/rooms" className="bg-gold text-white px-10 py-4 text-sm font-semibold rounded-md shadow-md inline-flex items-center gap-2 hover:bg-gold-hover transition">
             Begin Reservation <ArrowRight className="h-4 w-4" />
