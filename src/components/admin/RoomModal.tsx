@@ -91,19 +91,24 @@ export function RoomModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    
-    const payload = {
-      ...form,
-      amenities: form.amenities.split(",").map(s => s.trim()).filter(Boolean),
-    };
 
     try {
       if (room?.id) {
-        const { error } = await supabase.from("rooms").update(payload).eq("id", room.id);
+        // Edit mode: only price and status can be updated
+        const editPayload = {
+          price_per_night: form.price_per_night,
+          status: form.status,
+          updated_at: new Date().toISOString(),
+        };
+        const { error } = await supabase.from("rooms").update(editPayload).eq("id", room.id);
         if (error) throw error;
         toast.success("Room updated successfully!");
       } else {
-        const { error } = await supabase.from("rooms").insert([payload]);
+        const createPayload = {
+          ...form,
+          amenities: form.amenities.split(",").map(s => s.trim()).filter(Boolean),
+        };
+        const { error } = await supabase.from("rooms").insert([createPayload]);
         if (error) throw error;
         toast.success("Room created successfully!");
       }
@@ -116,27 +121,40 @@ export function RoomModal({
     }
   }
 
+  const isEdit = Boolean(room?.id);
+  const readOnlyClass = "w-full bg-muted/50 border border-border rounded-md px-3 py-2 text-sm text-muted-foreground cursor-not-allowed opacity-70";
+  const editableClass = "w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none";
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card text-foreground">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">{room ? "Edit Room" : "Add New Room"}</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">{isEdit ? "Edit Room" : "Add New Room"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+
+        {isEdit && (
+          <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/25 rounded-md px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
+            <span className="mt-0.5 shrink-0">ℹ️</span>
+            <span>Only <strong>Room Price</strong> and <strong>Status</strong> can be changed. All other fields are locked to preserve room configuration.</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6 mt-2">
           <div className="grid grid-cols-2 gap-4">
+            {/* Hotel */}
             <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Hotel *</label>
-              {hotels.length === 0 ? (
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Hotel</label>
+              {isEdit ? (
+                <input
+                  type="text"
+                  value={hotels.find(h => h.id === form.hotel_id)?.name ?? form.hotel_id}
+                  disabled
+                  className={readOnlyClass}
+                />
+              ) : hotels.length === 0 ? (
                 <div className="w-full bg-amber-500/10 border border-amber-500/30 rounded-md px-3 py-2 text-sm text-amber-600">
                   ⚠️ No hotels found in the database. Please add hotels first via the{" "}
-                  <a
-                    href="https://supabase.com/dashboard"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline font-semibold"
-                  >
-                    Supabase Dashboard
-                  </a>
+                  <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Supabase Dashboard</a>
                   {" "}or run the seed SQL below.
                 </div>
               ) : (
@@ -144,78 +162,169 @@ export function RoomModal({
                   required
                   value={form.hotel_id}
                   onChange={e => setForm({...form, hotel_id: e.target.value})}
-                  className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+                  className={editableClass}
                 >
                   <option value="" disabled>Select Hotel</option>
                   {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                 </select>
               )}
             </div>
+
+            {/* Room Number */}
             <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Room Number *</label>
-              <input required type="text" value={form.room_number} onChange={e => setForm({...form, room_number: e.target.value})} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" />
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Room Number {!isEdit && "*"}</label>
+              <input
+                required={!isEdit}
+                type="text"
+                value={form.room_number}
+                disabled={isEdit}
+                onChange={e => setForm({...form, room_number: e.target.value})}
+                className={isEdit ? readOnlyClass : editableClass}
+              />
             </div>
+
+            {/* Category */}
             <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Category *</label>
-              <select required value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none">
-                {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Category {!isEdit && "*"}</label>
+              {isEdit ? (
+                <input
+                  type="text"
+                  value={CATEGORY_LABELS[form.category as keyof typeof CATEGORY_LABELS] ?? form.category}
+                  disabled
+                  className={readOnlyClass}
+                />
+              ) : (
+                <select required value={form.category} onChange={e => setForm({...form, category: e.target.value})} className={editableClass}>
+                  {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+              )}
             </div>
+
+            {/* Room Type */}
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Room Type</label>
-              <input type="text" value={form.room_type} onChange={e => setForm({...form, room_type: e.target.value})} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" />
+              <input
+                type="text"
+                value={form.room_type}
+                disabled={isEdit}
+                onChange={e => setForm({...form, room_type: e.target.value})}
+                className={isEdit ? readOnlyClass : editableClass}
+              />
             </div>
+
+            {/* Floor */}
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Floor</label>
-              <input type="text" value={form.floor} onChange={e => setForm({...form, floor: e.target.value})} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" />
+              <input
+                type="text"
+                value={form.floor}
+                disabled={isEdit}
+                onChange={e => setForm({...form, floor: e.target.value})}
+                className={isEdit ? readOnlyClass : editableClass}
+              />
             </div>
+
+            {/* Bed Type */}
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Bed Type</label>
-              <input type="text" value={form.bed_type} onChange={e => setForm({...form, bed_type: e.target.value})} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" />
+              <input
+                type="text"
+                value={form.bed_type}
+                disabled={isEdit}
+                onChange={e => setForm({...form, bed_type: e.target.value})}
+                className={isEdit ? readOnlyClass : editableClass}
+              />
             </div>
+
+            {/* Capacity */}
             <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Capacity (Guests) *</label>
-              <input required type="number" min={1} value={form.max_guests} onChange={e => setForm({...form, max_guests: parseInt(e.target.value)})} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" />
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Capacity (Guests) {!isEdit && "*"}</label>
+              <input
+                required={!isEdit}
+                type="number"
+                min={1}
+                value={form.max_guests}
+                disabled={isEdit}
+                onChange={e => setForm({...form, max_guests: parseInt(e.target.value)})}
+                className={isEdit ? readOnlyClass : editableClass}
+              />
             </div>
+
+            {/* Price — always editable */}
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Price per Night (₹) *</label>
-              <input required type="number" min={0} value={form.price_per_night} onChange={e => setForm({...form, price_per_night: parseInt(e.target.value)})} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" />
+              <input
+                required
+                type="number"
+                min={0}
+                value={form.price_per_night}
+                onChange={e => setForm({...form, price_per_night: parseInt(e.target.value)})}
+                className={editableClass}
+              />
             </div>
           </div>
-          
+
+          {/* Description */}
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Description</label>
-            <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={3} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none resize-none" />
+            <textarea
+              value={form.description}
+              disabled={isEdit}
+              onChange={e => setForm({...form, description: e.target.value})}
+              rows={3}
+              className={`${isEdit ? readOnlyClass : editableClass} resize-none`}
+            />
           </div>
 
+          {/* Amenities */}
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Amenities (Comma separated)</label>
-            <input type="text" value={form.amenities} onChange={e => setForm({...form, amenities: e.target.value})} placeholder="WiFi, TV, AC" className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" />
+            <input
+              type="text"
+              value={form.amenities}
+              disabled={isEdit}
+              onChange={e => setForm({...form, amenities: e.target.value})}
+              placeholder="WiFi, TV, AC"
+              className={isEdit ? readOnlyClass : editableClass}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
+            {/* Status — always editable */}
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Status *</label>
-              <select required value={form.status} onChange={e => setForm({...form, status: e.target.value})} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none">
+              <select required value={form.status} onChange={e => setForm({...form, status: e.target.value})} className={editableClass}>
                 <option value="available">Available</option>
                 <option value="occupied">Occupied</option>
                 <option value="maintenance">Maintenance</option>
               </select>
             </div>
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Upload Images</label>
-              <input type="file" multiple accept="image/*" onChange={handleFileUpload} disabled={loading} className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer" />
-            </div>
+
+            {/* Upload Images — hidden in edit mode */}
+            {!isEdit && (
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Upload Images</label>
+                <input type="file" multiple accept="image/*" onChange={handleFileUpload} disabled={loading} className="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer" />
+              </div>
+            )}
           </div>
-          
+
+          {/* Existing images — read-only preview in edit mode */}
           {form.images.length > 0 && (
-            <div className="flex gap-2 flex-wrap mt-2">
-              {form.images.map((img, idx) => (
-                <div key={idx} className="relative w-16 h-16 rounded overflow-hidden border border-border">
-                  <img src={img} alt={`Uploaded ${idx}`} className="object-cover w-full h-full" />
-                  <button type="button" onClick={() => setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))} className="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 text-xs flex items-center justify-center rounded-bl-sm">×</button>
-                </div>
-              ))}
+            <div>
+              {isEdit && (
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Room Images (read-only)</p>
+              )}
+              <div className="flex gap-2 flex-wrap">
+                {form.images.map((img, idx) => (
+                  <div key={idx} className="relative w-16 h-16 rounded overflow-hidden border border-border">
+                    <img src={img} alt={`Room image ${idx + 1}`} className="object-cover w-full h-full" />
+                    {!isEdit && (
+                      <button type="button" onClick={() => setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))} className="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 text-xs flex items-center justify-center rounded-bl-sm">×</button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -223,7 +332,7 @@ export function RoomModal({
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold rounded-md border border-border hover:bg-muted transition-colors">Cancel</button>
             <button type="submit" disabled={loading} className="px-6 py-2 text-sm font-semibold rounded-md bg-primary text-white shadow-sm hover:bg-primary/90 transition-colors flex items-center gap-2">
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {room ? "Update Room" : "Save Room"}
+              {isEdit ? "Update Room" : "Save Room"}
             </button>
           </div>
         </form>

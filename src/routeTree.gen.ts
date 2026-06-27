@@ -20,7 +20,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
-import { Route as RoomsIdRouteImport } from './routes/rooms.$id'
+import { Route as RoomsIdRouteImport } from './routes/rooms_.$id'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminRoomsRouteImport } from './routes/admin/rooms'
 import { Route as AdminProfileRouteImport } from './routes/admin/profile'
@@ -88,9 +88,9 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const RoomsIdRoute = RoomsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => RoomsRoute,
+  id: '/rooms_/$id',
+  path: '/rooms/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
@@ -153,7 +153,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
   '/payment': typeof PaymentRoute
-  '/rooms': typeof RoomsRouteWithChildren
+  '/rooms': typeof RoomsRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -176,7 +176,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
   '/payment': typeof PaymentRoute
-  '/rooms': typeof RoomsRouteWithChildren
+  '/rooms': typeof RoomsRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -201,7 +201,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
   '/payment': typeof PaymentRoute
-  '/rooms': typeof RoomsRouteWithChildren
+  '/rooms': typeof RoomsRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -212,7 +212,7 @@ export interface FileRoutesById {
   '/admin/profile': typeof AdminProfileRoute
   '/admin/rooms': typeof AdminRoomsRoute
   '/admin/settings': typeof AdminSettingsRoute
-  '/rooms/$id': typeof RoomsIdRoute
+  '/rooms_/$id': typeof RoomsIdRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -285,7 +285,7 @@ export interface FileRouteTypes {
     | '/admin/profile'
     | '/admin/rooms'
     | '/admin/settings'
-    | '/rooms/$id'
+    | '/rooms_/$id'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -299,7 +299,8 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   GalleryRoute: typeof GalleryRoute
   PaymentRoute: typeof PaymentRoute
-  RoomsRoute: typeof RoomsRouteWithChildren
+  RoomsRoute: typeof RoomsRoute
+  RoomsIdRoute: typeof RoomsIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -381,12 +382,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/rooms/$id': {
-      id: '/rooms/$id'
-      path: '/$id'
+    '/rooms_/$id': {
+      id: '/rooms_/$id'
+      path: '/rooms/$id'
       fullPath: '/rooms/$id'
       preLoaderRoute: typeof RoomsIdRouteImport
-      parentRoute: typeof RoomsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/settings': {
       id: '/admin/settings'
@@ -493,16 +494,6 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
   AdminRouteRouteChildren,
 )
 
-interface RoomsRouteChildren {
-  RoomsIdRoute: typeof RoomsIdRoute
-}
-
-const RoomsRouteChildren: RoomsRouteChildren = {
-  RoomsIdRoute: RoomsIdRoute,
-}
-
-const RoomsRouteWithChildren = RoomsRoute._addFileChildren(RoomsRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
@@ -513,7 +504,8 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   GalleryRoute: GalleryRoute,
   PaymentRoute: PaymentRoute,
-  RoomsRoute: RoomsRouteWithChildren,
+  RoomsRoute: RoomsRoute,
+  RoomsIdRoute: RoomsIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -10,10 +10,22 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { sendAdminNotification } from "@/lib/email";
 
-type Search = { roomId?: string };
+type Search = { 
+  roomId?: string;
+  hotelId?: string;
+  checkInDate?: string;
+  numDays?: number;
+  numGuests?: number;
+};
 
 export const Route = createFileRoute("/booking")({
-  validateSearch: (s: Record<string, unknown>): Search => ({ roomId: typeof s.roomId === "string" ? s.roomId : undefined }),
+  validateSearch: (s: Record<string, unknown>): Search => ({ 
+    roomId: typeof s.roomId === "string" ? s.roomId : undefined,
+    hotelId: typeof s.hotelId === "string" ? s.hotelId : undefined,
+    checkInDate: typeof s.checkInDate === "string" ? s.checkInDate : undefined,
+    numDays: typeof s.numDays === "number" ? s.numDays : undefined,
+    numGuests: typeof s.numGuests === "number" ? s.numGuests : undefined,
+  }),
   component: Booking,
 });
 
@@ -29,14 +41,19 @@ const guestSchema = z.object({
 });
 
 function Booking() {
-  const { roomId } = Route.useSearch();
+  const search = Route.useSearch();
+  const roomId = search.roomId;
   const nav = useNavigate();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  
   const [form, setForm] = useState({
     full_name: "", mobile: "", email: "",
-    num_guests: 1, num_rooms: 1,
-    check_in_date: isoDate(new Date()), check_in_time: "14:00", num_days: 1,
+    num_guests: search.numGuests || 1, 
+    num_rooms: 1,
+    check_in_date: search.checkInDate || isoDate(new Date()), 
+    check_in_time: "14:00", 
+    num_days: search.numDays || 1,
   });
 
   const { data: room } = useQuery({
@@ -129,8 +146,15 @@ function Booking() {
                 <div className="flex flex-col justify-center">
                   <div className="text-xs font-semibold uppercase tracking-wider text-gold mb-1">{(room as any).hotels?.name}</div>
                   <h3 className="font-bold text-2xl mb-4 text-foreground">{CATEGORY_LABELS[room.category]}</h3>
-                  <p className="text-sm text-muted-foreground font-medium mb-6 leading-relaxed">{room.description}</p>
-                  <div className="text-primary font-bold text-3xl">{formatINR(price)}<span className="text-sm text-muted-foreground font-semibold ml-2">/night</span></div>
+                  <div className="text-primary font-bold text-3xl mb-6">{formatINR(price)}<span className="text-sm text-muted-foreground font-semibold ml-2">/night</span></div>
+                  
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-2 border border-border">
+                    <div className="flex justify-between"><span className="text-sm text-muted-foreground">Check-in</span><span className="text-sm font-semibold">{form.check_in_date}</span></div>
+                    <div className="flex justify-between"><span className="text-sm text-muted-foreground">Check-out</span><span className="text-sm font-semibold">{checkout}</span></div>
+                    <div className="flex justify-between"><span className="text-sm text-muted-foreground">Duration</span><span className="text-sm font-semibold">{form.num_days} Nights</span></div>
+                    <div className="flex justify-between"><span className="text-sm text-muted-foreground">Guests</span><span className="text-sm font-semibold">{form.num_guests}</span></div>
+                    <div className="flex justify-between pt-2 border-t border-border mt-2"><span className="font-bold">Total Amount</span><span className="font-bold text-primary">{formatINR(total)}</span></div>
+                  </div>
                 </div>
               </div>
               <button onClick={() => setStep(2)} className="ml-auto flex items-center justify-center gap-2 bg-gold text-white px-8 py-3.5 text-sm font-semibold rounded-md shadow-md hover:bg-gold-hover transition">Continue <ArrowRight className="h-4 w-4" /></button>
@@ -141,15 +165,18 @@ function Booking() {
             <div>
               <h2 className="font-bold text-3xl mb-8 text-foreground tracking-tight">Guest details</h2>
               <div className="grid sm:grid-cols-2 gap-6">
-                <Field label="Full Name" value={form.full_name} onChange={(v) => setForm({ ...form, full_name: v })} />
-                <Field label="Mobile" value={form.mobile} onChange={(v) => setForm({ ...form, mobile: v })} />
-                <Field label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-                <Field label="No. of Guests" type="number" value={String(form.num_guests)} onChange={(v) => setForm({ ...form, num_guests: Number(v) })} />
-                <Field label="No. of Rooms" type="number" value={String(form.num_rooms)} onChange={(v) => setForm({ ...form, num_rooms: Number(v) })} />
-                <Field label="No. of Days" type="number" value={String(form.num_days)} onChange={(v) => setForm({ ...form, num_days: Number(v) })} />
-                <Field label="Check-in Date" type="date" value={form.check_in_date} onChange={(v) => setForm({ ...form, check_in_date: v })} />
-                <Field label="Check-in Time" type="time" value={form.check_in_time} onChange={(v) => setForm({ ...form, check_in_time: v })} />
+                <Field label="Full Name *" value={form.full_name} onChange={(v) => setForm({ ...form, full_name: v })} />
+                <Field label="Mobile Number *" value={form.mobile} onChange={(v) => setForm({ ...form, mobile: v })} />
+                <div className="sm:col-span-2">
+                  <Field label="Email Address *" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
+                </div>
               </div>
+              
+              <div className="mt-8 bg-gold/10 text-gold-hover p-4 rounded-md border border-gold/20 flex items-start gap-3">
+                <Check className="w-5 h-5 mt-0.5 shrink-0 text-gold" />
+                <p className="text-sm font-medium">Your room details (Check-in, Duration, Guests) have been saved from your selection. Please provide your contact information to proceed.</p>
+              </div>
+
               <div className="flex justify-between items-center mt-10 pt-6 border-t border-border">
                 <button onClick={() => setStep(1)} className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center"><ArrowLeft className="h-4 w-4 mr-2" />Back</button>
                 <button onClick={() => setStep(3)} className="flex items-center justify-center gap-2 bg-gold text-white px-8 py-3.5 text-sm font-semibold rounded-md shadow-md hover:bg-gold-hover transition">Continue <ArrowRight className="h-4 w-4" /></button>
@@ -163,10 +190,10 @@ function Booking() {
               <dl className="divide-y divide-border border border-border rounded-md overflow-hidden bg-background">
                 {[
                   ["Hotel", (room as any).hotels?.name],
+                  ["Room", room.room_number],
                   ["Room Category", CATEGORY_LABELS[room.category]],
                   ["Check-In", `${form.check_in_date} ${form.check_in_time}`],
                   ["Checkout", checkout],
-                  ["Rooms", String(form.num_rooms)],
                   ["Guests", String(form.num_guests)],
                   ["Nights", String(form.num_days)],
                   ["Price / night", formatINR(price)],
@@ -174,7 +201,7 @@ function Booking() {
                   <div key={k} className="flex justify-between py-4 px-6"><dt className="text-sm font-semibold text-muted-foreground">{k}</dt><dd className="text-sm font-bold text-foreground">{v}</dd></div>
                 ))}
                 <div className="flex justify-between py-5 bg-primary/5 px-6 items-center">
-                  <dt className="font-bold text-lg text-primary">Total</dt>
+                  <dt className="font-bold text-lg text-primary">Total Amount</dt>
                   <dd className="font-bold text-2xl text-primary">{formatINR(total)}</dd>
                 </div>
               </dl>
