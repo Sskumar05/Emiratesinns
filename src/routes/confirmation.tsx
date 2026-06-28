@@ -3,68 +3,287 @@ import { WebsiteLayout } from "@/components/website/WebsiteLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
-import { Check, Download, Mail, Building } from "lucide-react";
-import { motion } from "framer-motion";
+import { generateInvoiceHTML as _generateInvoiceHTML, downloadInvoice, fmtInvoiceDate as fmtDate } from "@/lib/invoicePdf";
+import { Check, Download, Mail, Building, Loader2, CheckCircle2, AlertTriangle, Info } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useCallback } from "react";
+import { useSendEmail } from "@/hooks/useSendEmail";
+import { toast } from "sonner";
 
 type Search = { bookingId?: string };
 
 export const Route = createFileRoute("/confirmation")({
-  validateSearch: (s: Record<string, unknown>): Search => ({ bookingId: typeof s.bookingId === "string" ? s.bookingId : undefined }),
+  validateSearch: (s: Record<string, unknown>): Search => ({
+    bookingId: typeof s.bookingId === "string" ? s.bookingId : undefined,
+  }),
   component: Confirmation,
 });
 
+// ─── Confirmation Page ───────────────────────────────────────────────────────
 function Confirmation() {
   const { bookingId } = Route.useSearch();
+  const { sendConfirmation, loading: emailLoading } = useSendEmail();
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   const { data: booking } = useQuery({
     queryKey: ["booking", bookingId],
     enabled: !!bookingId,
-    queryFn: async () => (await supabase.from("bookings").select("*, hotels(name), customers(*)").eq("id", bookingId!).maybeSingle()).data,
+    queryFn: async () =>
+      (await supabase.from("bookings").select("*, hotels(name), customers(*)").eq("id", bookingId!).maybeSingle()).data,
   });
 
-  if (!booking) return <WebsiteLayout><div className="container-luxe py-32 text-center text-muted-foreground font-medium">Loading…</div></WebsiteLayout>;
+  const handleDownloadInvoice = useCallback(async () => {
+    if (!booking) return;
+    setPdfLoading(true);
+    try {
+      downloadInvoice(booking);
+      toast.success(`Invoice-${booking.booking_code}.pdf is being downloaded`);
+    } catch (e) {
+      toast.error("Failed to generate invoice. Please try again.");
+    } finally {
+      setTimeout(() => setPdfLoading(false), 1200);
+    }
+  }, [booking]);
+
+  const handleResendEmail = useCallback(async () => {
+    if (!booking || emailSent) return;
+    const customer = (booking as any).customers;
+    const hotel = (booking as any).hotels;
+    if (!customer?.email) {
+      toast.error("No email address found for this booking.");
+      return;
+    }
+
+    setEmailError(null);
+    const result = await sendConfirmation(customer.email, {
+      customerName: customer.full_name,
+      bookingCode: booking.booking_code,
+      hotelName: hotel?.name ?? "Emirates Grand Inn",
+      roomType: CATEGORY_LABELS[booking.category] ?? booking.category,
+      checkIn: fmtDate(booking.check_in_date),
+      checkOut: fmtDate(booking.check_out_date),
+      numGuests: booking.num_guests,
+      numRooms: booking.num_rooms,
+      numDays: booking.num_days,
+      totalAmount: formatINR(booking.total_amount),
+      paymentStatus: booking.payment_status ?? "pending",
+    });
+
+    if (result.success) {
+      setEmailSent(true);
+      // useSendEmail hook already toasts success
+    } else {
+      setEmailError(result.error ?? "Unknown error");
+      // useSendEmail hook already toasts the error
+    }
+  }, [booking, emailSent, sendConfirmation]);
+
+  if (!booking)
+    return (
+      <WebsiteLayout>
+        <div className="container-luxe py-32 text-center text-muted-foreground font-medium">Loading…</div>
+      </WebsiteLayout>
+    );
+
+  const customer = (booking as any).customers ?? {};
+  const hotel = (booking as any).hotels ?? {};
+  const cat = CATEGORY_LABELS[booking.category] ?? booking.category;
 
   return (
     <WebsiteLayout>
       <div className="container-luxe pt-28 pb-20 max-w-2xl">
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }}
-          className="h-20 w-20 rounded-full bg-primary mx-auto flex items-center justify-center mb-8 shadow-md">
+
+        {/* ── Success checkmark ── */}
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 14 }}
+          className="h-20 w-20 rounded-full bg-primary mx-auto flex items-center justify-center mb-8 shadow-lg"
+        >
           <Check className="h-10 w-10 text-white" strokeWidth={3} />
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
+
+        {/* ── Header ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="text-center mb-10"
+        >
           <div className="h-12 w-12 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-4">
             <Building className="h-6 w-6 text-primary" />
           </div>
-          <h1 className="font-bold text-4xl mb-4 text-foreground tracking-tight">Reservation Confirmed</h1>
-          <p className="text-muted-foreground font-medium">Thank you, {(booking as any).customers?.full_name}. Your stay awaits.</p>
+          <h1 className="font-bold text-4xl mb-3 text-foreground tracking-tight">Reservation Confirmed</h1>
+          <p className="text-muted-foreground font-medium">
+            Thank you, <span className="text-foreground font-semibold">{customer.full_name}</span>. Your stay awaits.
+          </p>
         </motion.div>
-        <div className="bg-card shadow-sm border border-border p-8 rounded-lg mb-8">
-          <div className="text-center pb-6 border-b border-border mb-6">
-            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Booking Reference</div>
-            <div className="font-bold text-3xl text-primary mt-2">{booking.booking_code}</div>
+
+        {/* ── Booking Detail Card ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="bg-card shadow-sm border border-border rounded-xl overflow-hidden mb-6"
+        >
+          {/* Booking reference header */}
+          <div className="text-center py-6 px-8 border-b border-border bg-primary/5">
+            <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Booking Reference</div>
+            <div className="font-extrabold text-3xl text-primary tracking-tight">{booking.booking_code}</div>
           </div>
-          <dl className="space-y-4">
+
+          {/* Detail rows */}
+          <dl className="divide-y divide-border">
             {[
-              ["Hotel", (booking as any).hotels?.name],
-              ["Category", CATEGORY_LABELS[booking.category]],
-              ["Check-In", `${booking.check_in_date} ${booking.check_in_time ?? ""}`],
-              ["Check-Out", booking.check_out_date],
-              ["Guests", String(booking.num_guests)],
-              ["Rooms", String(booking.num_rooms)],
+              ["Hotel", hotel.name ?? "—"],
+              ["Guest", customer.full_name ?? "—"],
+              ["Mobile", customer.mobile ?? "—"],
+              ["Email", customer.email ?? "—"],
+              ["Room Category", cat],
+              ["Check-In", `${fmtDate(booking.check_in_date)}${booking.check_in_time ? "  ·  " + booking.check_in_time : ""}`],
+              ["Check-Out", fmtDate(booking.check_out_date)],
+              ["Duration", `${booking.num_days} Night${booking.num_days !== 1 ? "s" : ""}`],
+              ["Guests", `${booking.num_guests} Guest${booking.num_guests !== 1 ? "s" : ""}`],
+              ["Price / Night", formatINR(booking.price_per_night)],
               ["Total Paid", formatINR(booking.total_amount)],
+              ["Payment Status", (booking.payment_status ?? "pending").charAt(0).toUpperCase() + (booking.payment_status ?? "pending").slice(1)],
             ].map(([k, v]) => (
-              <div key={k} className="flex justify-between text-sm"><dt className="font-semibold text-muted-foreground">{k}</dt><dd className="font-bold text-foreground">{v}</dd></div>
+              <div key={k} className="flex justify-between items-center py-3.5 px-8">
+                <dt className="text-sm font-semibold text-muted-foreground">{k}</dt>
+                <dd className="text-sm font-bold text-foreground text-right max-w-[60%]">{v}</dd>
+              </div>
             ))}
           </dl>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <button className="bg-primary/5 text-primary py-3.5 text-sm font-semibold rounded-md border border-primary/20 flex items-center justify-center gap-2 hover:bg-primary/10 transition">
-            <Download className="h-4 w-4" /> Download Invoice
+        </motion.div>
+
+        {/* ── Action Buttons ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="grid sm:grid-cols-2 gap-4 mb-10"
+        >
+          {/* Download Invoice */}
+          <button
+            id="download-invoice-btn"
+            onClick={handleDownloadInvoice}
+            disabled={pdfLoading}
+            className="group relative overflow-hidden bg-primary/5 hover:bg-primary/10 text-primary py-3.5 px-5 text-sm font-semibold rounded-xl border border-primary/20 flex items-center justify-center gap-2.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98]"
+          >
+            {pdfLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating PDF…
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4 group-hover:translate-y-0.5 transition-transform" />
+                Download Invoice
+              </>
+            )}
           </button>
-          <button className="bg-background text-muted-foreground py-3.5 text-sm font-semibold rounded-md border border-border flex items-center justify-center gap-2 hover:text-foreground hover:border-foreground/30 transition">
-            <Mail className="h-4 w-4" /> Email Confirmation Sent
+
+          {/* Resend Email Confirmation */}
+          <button
+            id="resend-email-btn"
+            onClick={handleResendEmail}
+            disabled={emailLoading || emailSent}
+            className={`group relative overflow-hidden py-3.5 px-5 text-sm font-semibold rounded-xl border flex items-center justify-center gap-2.5 transition-all duration-200 disabled:cursor-not-allowed active:scale-[0.98] ${
+              emailSent
+                ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border-emerald-200 dark:border-emerald-800"
+                : emailError
+                ? "bg-red-50 dark:bg-red-950/30 text-red-600 border-red-200 dark:border-red-800 hover:bg-red-100"
+                : "bg-background hover:bg-muted text-muted-foreground hover:text-foreground border-border hover:border-foreground/30"
+            }`}
+          >
+            {emailLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Sending…
+              </>
+            ) : emailSent ? (
+              <>
+                <CheckCircle2 className="h-4 w-4" />
+                Email Sent ✓
+              </>
+            ) : emailError ? (
+              <>
+                <AlertTriangle className="h-4 w-4" />
+                Retry Email
+              </>
+            ) : (
+              <>
+                <Mail className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                Resend Confirmation
+              </>
+            )}
           </button>
-        </div>
-        <Link to="/" className="block text-center mt-10 text-sm font-semibold text-muted-foreground hover:text-primary transition-colors">Return Home →</Link>
+        </motion.div>
+
+        {/* Missing API Key Warning */}
+        <AnimatePresence>
+          {emailError && emailError.includes("RESEND_API_KEY") && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, marginTop: 0 }}
+              animate={{ opacity: 1, height: "auto", marginTop: -16 }}
+              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+              className="mb-8"
+            >
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex items-start gap-3 text-amber-800 dark:text-amber-400">
+                <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-bold mb-1">Email Service Not Configured</p>
+                  <p>The email service cannot work until the <code>RESEND_API_KEY</code> secret is added to your Supabase project. The Invoice Download feature remains fully functional.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {emailError && emailError.toLowerCase().includes("testing emails") && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, marginTop: 0 }}
+              animate={{ opacity: 1, height: "auto", marginTop: -16 }}
+              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+              className="mb-8"
+            >
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-5 flex items-start gap-4 text-blue-800 dark:text-blue-300">
+                <Info className="h-6 w-6 shrink-0 mt-0.5" />
+                <div className="text-sm space-y-3">
+                  <p className="font-bold text-base mb-1">Email Service Running in Test Mode</p>
+                  <p>This project is currently using Resend's testing environment.</p>
+                  <p>Only the verified developer email address can receive emails during development.</p>
+                  <div className="bg-white/50 dark:bg-black/20 p-3 rounded-lg border border-blue-200/50 dark:border-blue-800/50">
+                    <p className="font-semibold mb-1">To enable email delivery to all customers:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>Verify a custom domain in Resend.</li>
+                      <li>Configure the sender email using the verified domain.</li>
+                      <li>Redeploy the Supabase Edge Function.</li>
+                    </ul>
+                  </div>
+                  <p className="font-medium pt-1">This limitation only affects email delivery.<br/>Your booking has been completed successfully.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Home link ── */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.45 }}
+          className="text-center"
+        >
+          <Link
+            to="/"
+            className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+          >
+            Return Home →
+          </Link>
+        </motion.div>
+
       </div>
     </WebsiteLayout>
   );

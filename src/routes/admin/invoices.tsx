@@ -6,11 +6,14 @@ import { Download, Mail, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useSendEmail } from "@/hooks/useSendEmail";
 import { CATEGORY_LABELS } from "@/lib/hotel";
+import { downloadInvoice } from "@/lib/invoicePdf";
+import { useState } from "react";
 
 export const Route = createFileRoute("/admin/invoices")({ component: Invoices });
 
 function Invoices() {
   const { sendInvoice, loading } = useSendEmail();
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const { data: invoices = [] } = useQuery({
     queryKey: ["invoices"],
@@ -19,7 +22,13 @@ function Invoices() {
         await supabase
           .from("invoices")
           .select(
-            "*, bookings(booking_code, check_in_date, check_out_date, num_days, category, hotels(name)), customers(*)",
+            `*, 
+            bookings(
+              booking_code, check_in_date, check_out_date, num_days, num_guests,
+              category, price_per_night, total_amount, payment_status, created_at,
+              hotels(name)
+            ), 
+            customers(full_name, email, mobile)`,
           )
           .order("issued_at", { ascending: false })
       ).data ?? [],
@@ -50,6 +59,19 @@ function Invoices() {
       }),
       paymentStatus: inv.status,
     });
+  }
+
+  async function handleDownloadPDF(inv: any) {
+    if (downloadingId === inv.id) return;
+    setDownloadingId(inv.id);
+    try {
+      downloadInvoice(inv);
+      toast.success(`Invoice-${inv.invoice_number}.pdf is being generated`);
+    } catch (e) {
+      toast.error("Failed to generate invoice PDF. Please try again.");
+    } finally {
+      setTimeout(() => setDownloadingId(null), 1500);
+    }
   }
 
   return (
@@ -104,10 +126,11 @@ function Invoices() {
                   </button>
                   <button
                     title="Download PDF"
-                    onClick={() => toast.info("PDF download coming soon")}
-                    className="text-muted-foreground hover:text-gold transition-colors"
+                    disabled={downloadingId === inv.id}
+                    onClick={() => handleDownloadPDF(inv)}
+                    className="text-muted-foreground hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-wait"
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className={`h-4 w-4 ${downloadingId === inv.id ? "animate-bounce" : ""}`} />
                   </button>
                   <button
                     title="Send Invoice by Email"

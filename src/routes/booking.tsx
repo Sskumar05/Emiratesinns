@@ -3,12 +3,19 @@ import { WebsiteLayout } from "@/components/website/WebsiteLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR, isoDate, addDays } from "@/lib/hotel";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { sendAdminNotification } from "@/lib/email";
+import { useState } from "react";
+
+/** Format ISO date string as "28 Jun 2026" */
+function fmtDate(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
 
 type Search = { 
   roomId?: string;
@@ -79,10 +86,13 @@ function Booking() {
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     setSubmitting(true);
     try {
-      const { data: customer, error: cErr } = await supabase.from("customers")
-        .upsert({ full_name: form.full_name, mobile: form.mobile, email: form.email }, { onConflict: "mobile" })
-        .select().single();
+      const { data: customerId, error: cErr } = await supabase.rpc("upsert_customer_for_booking", {
+        p_full_name: form.full_name,
+        p_mobile: form.mobile,
+        p_email: form.email,
+      });
       if (cErr) throw cErr;
+      const customer = { id: customerId };
       const { data: booking, error: bErr } = await supabase.from("bookings").insert({
         customer_id: customer.id, hotel_id: (room as any).hotel_id, category: (room as any).category,
         num_rooms: form.num_rooms, num_guests: form.num_guests,
@@ -148,12 +158,27 @@ function Booking() {
                   <h3 className="font-bold text-2xl mb-4 text-foreground">{CATEGORY_LABELS[room.category]}</h3>
                   <div className="text-primary font-bold text-3xl mb-6">{formatINR(price)}<span className="text-sm text-muted-foreground font-semibold ml-2">/night</span></div>
                   
-                  <div className="bg-muted/50 rounded-lg p-4 space-y-2 border border-border">
-                    <div className="flex justify-between"><span className="text-sm text-muted-foreground">Check-in</span><span className="text-sm font-semibold">{form.check_in_date}</span></div>
-                    <div className="flex justify-between"><span className="text-sm text-muted-foreground">Check-out</span><span className="text-sm font-semibold">{checkout}</span></div>
-                    <div className="flex justify-between"><span className="text-sm text-muted-foreground">Duration</span><span className="text-sm font-semibold">{form.num_days} Nights</span></div>
-                    <div className="flex justify-between"><span className="text-sm text-muted-foreground">Guests</span><span className="text-sm font-semibold">{form.num_guests}</span></div>
-                    <div className="flex justify-between pt-2 border-t border-border mt-2"><span className="font-bold">Total Amount</span><span className="font-bold text-primary">{formatINR(total)}</span></div>
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-2.5 border border-border">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Check-In</span>
+                      <span className="text-sm font-semibold">{fmtDate(form.check_in_date)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Check-Out</span>
+                      <span className="text-sm font-semibold text-primary">{fmtDate(checkout)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Duration</span>
+                      <span className="text-sm font-semibold">{form.num_days} {form.num_days === 1 ? "Night" : "Nights"}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Guests</span>
+                      <span className="text-sm font-semibold">{form.num_guests} {form.num_guests === 1 ? "Guest" : "Guests"}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t border-border mt-1">
+                      <span className="font-bold">Total Amount</span>
+                      <span className="font-bold text-primary">{formatINR(total)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -192,13 +217,16 @@ function Booking() {
                   ["Hotel", (room as any).hotels?.name],
                   ["Room", room.room_number],
                   ["Room Category", CATEGORY_LABELS[room.category]],
-                  ["Check-In", `${form.check_in_date} ${form.check_in_time}`],
-                  ["Checkout", checkout],
-                  ["Guests", String(form.num_guests)],
-                  ["Nights", String(form.num_days)],
+                  ["Check-In", `${fmtDate(form.check_in_date)} · ${form.check_in_time}`],
+                  ["Check-Out", fmtDate(checkout)],
+                  ["Duration", `${form.num_days} ${form.num_days === 1 ? "Night" : "Nights"}`],
+                  ["Guests", `${form.num_guests} ${form.num_guests === 1 ? "Guest" : "Guests"}`],
                   ["Price / night", formatINR(price)],
                 ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between py-4 px-6"><dt className="text-sm font-semibold text-muted-foreground">{k}</dt><dd className="text-sm font-bold text-foreground">{v}</dd></div>
+                  <div key={k} className="flex justify-between py-4 px-6">
+                    <dt className="text-sm font-semibold text-muted-foreground">{k}</dt>
+                    <dd className="text-sm font-bold text-foreground">{v}</dd>
+                  </div>
                 ))}
                 <div className="flex justify-between py-5 bg-primary/5 px-6 items-center">
                   <dt className="font-bold text-lg text-primary">Total Amount</dt>

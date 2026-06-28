@@ -1,8 +1,8 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-const FROM_ADDRESS = "Emirates Grand Inn <noreply@emiratesgrandinn.com>";
-const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "admin@emiratesgrandinn.com";
+const FROM_ADDRESS = "Hotel Booking <onboarding@resend.dev>";
+const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "admin@example.com";
 
 // ── Retry helper ─────────────────────────────────────────────────────────────
 async function fetchWithRetry(
@@ -26,8 +26,15 @@ async function sendViaResend(payload: {
   html: string;
   attachments?: Array<{ filename: string; content: string }>;
 }) {
+  console.log(`[sendViaResend] Preparing to send email to: ${JSON.stringify(payload.to)}`);
+  console.log(`[sendViaResend] Subject: ${payload.subject}`);
+  
   const apiKey = Deno.env.get("RESEND_API_KEY");
-  if (!apiKey) throw new Error("RESEND_API_KEY secret not set");
+  if (!apiKey) {
+    console.error("[sendViaResend] RESEND_API_KEY secret is missing!");
+    throw new Error("RESEND_API_KEY secret not set");
+  }
+  console.log("[sendViaResend] RESEND_API_KEY successfully read from environment.");
 
   const body = JSON.stringify({
     from: FROM_ADDRESS,
@@ -37,6 +44,7 @@ async function sendViaResend(payload: {
     ...(payload.attachments ? { attachments: payload.attachments } : {}),
   });
 
+  console.log(`[sendViaResend] Calling Resend API at ${RESEND_API_URL}...`);
   const res = await fetchWithRetry(RESEND_API_URL, {
     method: "POST",
     headers: {
@@ -47,7 +55,15 @@ async function sendViaResend(payload: {
   });
 
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message ?? JSON.stringify(data));
+  console.log(`[sendViaResend] Resend API HTTP Status: ${res.status}`);
+  console.log(`[sendViaResend] Resend API Response: ${JSON.stringify(data)}`);
+  
+  if (!res.ok) {
+    console.error(`[sendViaResend] Resend returned an error: ${data.message ?? JSON.stringify(data)}`);
+    throw new Error(data.message ?? JSON.stringify(data));
+  }
+  
+  console.log(`[sendViaResend] Email successfully accepted by Resend (ID: ${data.id})`);
   return data;
 }
 
@@ -349,7 +365,7 @@ function validate(body: unknown): { type: string; payload: Record<string, unknow
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 Deno.serve(async (req) => {
@@ -362,7 +378,10 @@ Deno.serve(async (req) => {
 
   try {
     const rawBody = await req.json().catch(() => { throw new Error("Invalid JSON body"); });
+    console.log(`[Edge Function] Received request payload: ${JSON.stringify(rawBody)}`);
+    
     const { type, payload: p, to } = validate(rawBody);
+    console.log(`[Edge Function] Validated request. Type: ${type}, To: ${to}`);
 
     let subject = "";
     let html = "";
@@ -447,9 +466,12 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error("[send-email]", message);
+    console.error(`[Edge Function Error] ${message}`);
+    
+    // Always return 200 OK with success=false so the supabase-js client parses the JSON body
+    // instead of throwing a generic "FunctionsHttpError" (non-2xx status code).
     return new Response(JSON.stringify({ success: false, error: message }), {
-      status: 400,
+      status: 200,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   }

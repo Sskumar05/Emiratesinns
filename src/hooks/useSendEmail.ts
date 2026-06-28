@@ -40,7 +40,12 @@ export function useSendEmail(): UseSendEmailReturn {
         if (result.success) {
           toast.success(`${label} sent successfully`, { id: toastId });
         } else {
-          toast.error(`Failed to send ${label}: ${result.error ?? "Unknown error"}`, { id: toastId });
+          const isTestingMode = result.error?.toLowerCase().includes("testing emails");
+          if (isTestingMode) {
+            toast.dismiss(toastId);
+          } else {
+            toast.error(`Failed to send ${label}: ${result.error ?? "Unknown error"}`, { id: toastId });
+          }
         }
         return result;
       } catch (err) {
