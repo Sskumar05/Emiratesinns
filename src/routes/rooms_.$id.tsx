@@ -193,7 +193,6 @@ function RoomDetail() {
                 </ul>
               </div>
             </div>
-          </div>
 
           {/* ── Right: Premium Sticky Booking Card ── */}
           <div className="order-3 lg:col-span-4 lg:sticky lg:top-24 w-full">
