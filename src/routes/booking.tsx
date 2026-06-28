@@ -223,9 +223,9 @@ function Booking() {
                   ["Guests", `${form.num_guests} ${form.num_guests === 1 ? "Guest" : "Guests"}`],
                   ["Price / night", formatINR(price)],
                 ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between py-4 px-6">
+                  <div key={k} className="flex justify-between py-4 px-4 sm:px-6">
                     <dt className="text-sm font-semibold text-muted-foreground">{k}</dt>
-                    <dd className="text-sm font-bold text-foreground">{v}</dd>
+                    <dd className="text-sm font-bold text-foreground text-right break-words max-w-[60%]">{v}</dd>
                   </div>
                 ))}
                 <div className="flex justify-between py-5 bg-primary/5 px-6 items-center">

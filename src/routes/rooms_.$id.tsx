@@ -112,13 +112,10 @@ function RoomDetail() {
           <ArrowLeft className="h-4 w-4" /> Back to Rooms
         </Link>
 
-        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
 
-          {/* ── Left: Gallery + Details ── */}
-          <div className="lg:col-span-8 space-y-12">
-
-            {/* Image Gallery */}
-            <div className="space-y-4">
+          {/* ── Image Gallery ── */}
+          <div className="order-1 lg:col-span-8 w-full space-y-4">
               <div className="relative aspect-[16/10] overflow-hidden rounded-xl shadow-md border border-border bg-muted">
                 <AnimatePresence mode="wait">
                   <motion.img
@@ -146,8 +143,8 @@ function RoomDetail() {
               </div>
             </div>
 
-            {/* Room Info Card */}
-            <div className="bg-card p-8 rounded-xl shadow-sm border border-border">
+          {/* ── Room Info Details ── */}
+          <div className="order-2 lg:col-span-8 w-full bg-card p-6 sm:p-8 rounded-xl shadow-sm border border-border">
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 <span className="bg-gold/10 text-gold px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                   {(room as any).hotels?.name}
@@ -199,7 +196,7 @@ function RoomDetail() {
           </div>
 
           {/* ── Right: Premium Sticky Booking Card ── */}
-          <div className="lg:col-span-4 lg:sticky lg:top-24">
+          <div className="order-3 lg:col-span-4 lg:sticky lg:top-24 w-full">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
