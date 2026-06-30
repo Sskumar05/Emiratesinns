@@ -43,18 +43,20 @@ function AdminRooms() {
       (
         await supabase
           .from("bookings")
-          .select("assigned_room_ids")
+          .select("assigned_room_ids, status")
           .in("status", ["confirmed", "checked_in"])
       ).data ?? [],
   });
 
-  // Build a Set of room IDs currently occupied by active bookings
-  const occupiedRoomIds = useMemo(() => {
-    const ids = new Set<string>();
+  // Build a Map of room IDs to booking status
+  const occupiedRoomStatusMap = useMemo(() => {
+    const map = new Map<string, string>();
     activeBookings.forEach((b: any) => {
-      (b.assigned_room_ids ?? []).forEach((id: string) => ids.add(id));
+      (b.assigned_room_ids ?? []).forEach((id: string) => {
+        map.set(id, b.status);
+      });
     });
-    return ids;
+    return map;
   }, [activeBookings]);
 
   // Group rooms by hotel+category — each group appears exactly once
@@ -108,13 +110,19 @@ function AdminRooms() {
   // statusBadge derives occupancy from active bookings, NOT rooms.status
   const statusBadge = (rooms: any[]) => {
     const maint = rooms.filter((r) => r.status === "maintenance").length;
-    const occ = rooms.filter((r) => r.status !== "maintenance" && occupiedRoomIds.has(r.id)).length;
-    const avail = rooms.filter((r) => r.status !== "maintenance" && !occupiedRoomIds.has(r.id)).length;
+    const res = rooms.filter((r) => r.status !== "maintenance" && occupiedRoomStatusMap.get(r.id) === "confirmed").length;
+    const occ = rooms.filter((r) => r.status !== "maintenance" && occupiedRoomStatusMap.get(r.id) === "checked_in").length;
+    const avail = rooms.filter((r) => r.status !== "maintenance" && !occupiedRoomStatusMap.has(r.id)).length;
     return (
       <div className="flex flex-wrap gap-1.5 text-xs font-semibold">
         {avail > 0 && (
           <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 border border-emerald-500/20">
             {avail} Available
+          </span>
+        )}
+        {res > 0 && (
+          <span className="px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-700 border border-yellow-500/20">
+            {res} Reserved
           </span>
         )}
         {occ > 0 && (

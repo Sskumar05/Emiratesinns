@@ -24,10 +24,11 @@ interface Props {
   categoryGroup: any; // the group object from AdminRooms
 }
 
-type RoomStatus = "available" | "occupied" | "maintenance";
+type RoomStatus = "available" | "reserved" | "occupied" | "maintenance";
 
 const STATUS_STYLES: Record<RoomStatus, string> = {
   available:   "bg-emerald-500/15 text-emerald-700 border-emerald-500/25",
+  reserved:    "bg-yellow-500/15 text-yellow-700 border-yellow-500/25",
   occupied:    "bg-red-500/15 text-red-700 border-red-500/25",
   maintenance: "bg-amber-500/15 text-amber-700 border-amber-500/25",
 };
@@ -44,28 +45,25 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
   // Which occupied room's booking details are expanded
   const [expandedRoomId, setExpandedRoomId] = useState<string | null>(null);
 
-  if (!categoryGroup) return null;
-
-  const categoryLabel =
-    CATEGORY_LABELS[categoryGroup.category as keyof typeof CATEGORY_LABELS] ??
-    categoryGroup.category;
-
   // ── Fetch active bookings for this hotel+category ────────────────────────
+  // NOTE: All hooks must be called unconditionally (Rules of Hooks).
+  // The `enabled` flag prevents the query from firing when categoryGroup is null.
   const { data: activeBookings = [] } = useQuery({
-    queryKey: ["room-modal-occupancy", categoryGroup.hotel_id, categoryGroup.category],
+    queryKey: ["room-modal-occupancy", categoryGroup?.hotel_id, categoryGroup?.category],
     enabled: isOpen && !!categoryGroup,
     queryFn: async () =>
       (
         await supabase
           .from("bookings")
           .select("id, booking_code, assigned_room_ids, check_in_date, check_out_date, status, customers(full_name)")
-          .eq("hotel_id", categoryGroup.hotel_id)
-          .eq("category", categoryGroup.category)
+          .eq("hotel_id", categoryGroup!.hotel_id)
+          .eq("category", categoryGroup!.category)
           .in("status", ["confirmed", "checked_in"])
       ).data ?? [],
   });
 
   // Map: room_id → booking details
+  // Always runs; produces an empty map when activeBookings is empty.
   const occupiedMap = useMemo(() => {
     const map: Record<string, any> = {};
     activeBookings.forEach((b: any) => {
@@ -76,10 +74,31 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
     return map;
   }, [activeBookings]);
 
+  // Summary counts — always runs; uses safe fallback when categoryGroup is null.
+  const summary = useMemo(() => {
+    const rooms = categoryGroup?.rooms ?? [];
+    const maint = rooms.filter((r: any) => r.status === "maintenance").length;
+    const res = rooms.filter((r: any) => r.status !== "maintenance" && occupiedMap[r.id]?.status === "confirmed").length;
+    const occ = rooms.filter((r: any) => r.status !== "maintenance" && occupiedMap[r.id]?.status === "checked_in").length;
+    const avail = rooms.filter((r: any) => r.status !== "maintenance" && !occupiedMap[r.id]).length;
+    return { avail, res, occ, maint, total: rooms.length };
+  }, [categoryGroup?.rooms, occupiedMap]);
+
+  // ── Early return AFTER all hooks ─────────────────────────────────────────
+  // Placing this guard here (not before hooks) ensures the hook call count
+  // never changes between renders, regardless of whether categoryGroup is set.
+  if (!categoryGroup) return null;
+
+  const categoryLabel =
+    CATEGORY_LABELS[categoryGroup.category as keyof typeof CATEGORY_LABELS] ??
+    categoryGroup.category;
+
   // Derive live status per room
   function liveStatus(r: any): RoomStatus {
     if (r.status === "maintenance") return "maintenance";
-    if (occupiedMap[r.id]) return "occupied";
+    if (occupiedMap[r.id]) {
+      return occupiedMap[r.id].status === "confirmed" ? "reserved" : "occupied";
+    }
     return "available";
   }
 
@@ -132,8 +151,8 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
   // ── Toggle Maintenance status (only permanent state changeable manually) ──
   async function toggleMaintenance(r: any) {
     const live = liveStatus(r);
-    if (live === "occupied") {
-      toast.error("Cannot change status of an occupied room. The room has an active booking.");
+    if (live === "occupied" || live === "reserved") {
+      toast.error("Cannot change status of a reserved or occupied room. The room has an active booking.");
       return;
     }
     const newStatus = r.status === "maintenance" ? "available" : "maintenance";
@@ -183,8 +202,8 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
   // ── Delete ────────────────────────────────────────────────────────────────
   async function handleDelete(r: any) {
     const live = liveStatus(r);
-    if (live === "occupied") {
-      toast.error(`Room ${r.room_number} is currently occupied. Cancel or check out the booking first.`);
+    if (live === "occupied" || live === "reserved") {
+      toast.error(`Room ${r.room_number} is currently ${live}. Cancel or check out the booking first.`);
       return;
     }
     if (!confirm(`Delete Room ${r.room_number}? This cannot be undone.`)) return;
@@ -195,15 +214,6 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
   }
 
   const rw = "bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-colors";
-
-  // Summary counts
-  const summary = useMemo(() => {
-    const rooms = categoryGroup.rooms ?? [];
-    const maint = rooms.filter((r: any) => r.status === "maintenance").length;
-    const occ = rooms.filter((r: any) => r.status !== "maintenance" && occupiedMap[r.id]).length;
-    const avail = rooms.filter((r: any) => r.status !== "maintenance" && !occupiedMap[r.id]).length;
-    return { avail, occ, maint, total: rooms.length };
-  }, [categoryGroup.rooms, occupiedMap]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -314,6 +324,14 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
                                 >
                                   Occupied ↗
                                 </button>
+                              ) : live === "reserved" ? (
+                                <button
+                                  onClick={() => setExpandedRoomId(isExpanded ? null : r.id)}
+                                  className={`px-2.5 py-1 rounded-full text-xs font-semibold border cursor-pointer hover:opacity-80 transition-opacity ${STATUS_STYLES.reserved}`}
+                                  title="Click to view booking details"
+                                >
+                                  Reserved ↗
+                                </button>
                               ) : live === "maintenance" ? (
                                 <button
                                   onClick={() => toggleMaintenance(r)}
@@ -331,7 +349,7 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
                                   Available
                                 </button>
                               )}
-                              {live !== "occupied" && (
+                              {(live !== "occupied" && live !== "reserved") && (
                                 <span className="text-[10px] text-muted-foreground">
                                   {live === "maintenance" ? "→ click to unset" : "→ click to set maintenance"}
                                 </span>
@@ -417,6 +435,11 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
               {summary.avail > 0 && (
                 <span className={`px-3 py-1 rounded-full border ${STATUS_STYLES.available}`}>
                   {summary.avail} Available
+                </span>
+              )}
+              {summary.res > 0 && (
+                <span className={`px-3 py-1 rounded-full border ${STATUS_STYLES.reserved}`}>
+                  {summary.res} Reserved
                 </span>
               )}
               {summary.occ > 0 && (

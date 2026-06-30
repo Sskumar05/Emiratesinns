@@ -35,9 +35,19 @@ function Dashboard() {
     return () => { supabase.removeChannel(ch); };
   }, [refetch]);
 
+  const activeBookings = bookings.filter((b: any) => b.status === "confirmed" || b.status === "checked_in");
+  const occupiedRoomStatusMap = new Map<string, string>();
+  activeBookings.forEach((b: any) => {
+    (b.assigned_room_ids ?? []).forEach((id: string) => {
+      occupiedRoomStatusMap.set(id, b.status);
+    });
+  });
+
   const filteredRooms = rooms.filter((r: any) => hotelFilter === "all" || r.hotels?.slug === hotelFilter);
-  const occupied = filteredRooms.filter((r: any) => r.status === "occupied").length;
-  const available = filteredRooms.filter((r: any) => r.status === "available").length;
+  const reserved = filteredRooms.filter((r: any) => r.status !== "maintenance" && occupiedRoomStatusMap.get(r.id) === "confirmed").length;
+  const occupied = filteredRooms.filter((r: any) => r.status !== "maintenance" && occupiedRoomStatusMap.get(r.id) === "checked_in").length;
+  const available = filteredRooms.filter((r: any) => r.status !== "maintenance" && !occupiedRoomStatusMap.has(r.id)).length;
+  
   const cancelledToday = bookings.filter((b: any) =>
     (b.status === "cancelled" || b.status === "no_show") && b.cancelled_at?.slice(0, 10) === today
   ).length;
@@ -48,9 +58,9 @@ function Dashboard() {
 
   const stats = [
     { I: BedDouble, label: "Occupied Rooms", value: occupied, accent: true },
+    { I: BedDouble, label: "Reserved Rooms", value: reserved, accent: false },
     { I: CheckCircle2, label: "Available Rooms", value: available },
     { I: Users, label: "Total Customers", value: customers.length },
-    { I: XCircle, label: "Cancelled Today", value: cancelledToday },
   ];
 
   return (

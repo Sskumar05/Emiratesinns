@@ -5,7 +5,8 @@ import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useSendEmail } from "@/hooks/useSendEmail";
-import { Loader2, Search, Eye, X, MoreVertical, XCircle, UserX } from "lucide-react";
+import { Loader2, Search, Eye, X, MoreVertical, XCircle, UserX, MinusSquare } from "lucide-react";
+import { ReduceRoomsModal } from "@/components/admin/ReduceRoomsModal";
 
 export const Route = createFileRoute("/admin/bookings")({ component: AdminBookings });
 
@@ -42,6 +43,7 @@ function AdminBookings() {
   const [searchQuery, setSearchQuery] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [viewBooking, setViewBooking] = useState<any | null>(null);
+  const [reduceRoomsBooking, setReduceRoomsBooking] = useState<any | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const { sendConfirmation, sendCancellation } = useSendEmail();
 
@@ -340,6 +342,16 @@ function AdminBookings() {
                                   </button>
                                 )}
                                 
+                                {(b.status === "confirmed" || b.status === "checked_in") && b.num_rooms > 1 && (
+                                  <button
+                                    onClick={() => { setReduceRoomsBooking(b); setOpenDropdown(null); }}
+                                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-orange-500/10 flex items-center gap-2.5 transition-colors text-orange-500"
+                                  >
+                                    <MinusSquare className="h-4 w-4 shrink-0" />
+                                    Reduce Rooms
+                                  </button>
+                                )}
+                                
                                 {b.status === "confirmed" && (
                                   <>
                                     <button
@@ -380,6 +392,22 @@ function AdminBookings() {
           </tbody>
         </table>
       </div>
+
+      {/* Reduce Rooms Modal */}
+      {reduceRoomsBooking && (
+        <ReduceRoomsModal
+          isOpen={!!reduceRoomsBooking}
+          onClose={() => setReduceRoomsBooking(null)}
+          onSuccess={() => {
+            setReduceRoomsBooking(null);
+            qc.invalidateQueries({ queryKey: ["admin-bookings"] });
+            qc.invalidateQueries({ queryKey: ["all-rooms"] });
+            qc.invalidateQueries({ queryKey: ["room-modal-occupancy"] });
+          }}
+          booking={reduceRoomsBooking}
+          roomNumberMap={roomNumberMap}
+        />
+      )}
 
       {/* View Booking Modal */}
       {viewBooking && (
