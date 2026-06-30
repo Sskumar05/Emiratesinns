@@ -36,6 +36,27 @@ function AdminRooms() {
     queryFn: async () => (await supabase.from("hotels").select("*")).data ?? [],
   });
 
+  // Fetch active bookings to derive occupancy from assigned_room_ids
+  const { data: activeBookings = [] } = useQuery({
+    queryKey: ["active-bookings-occupancy"],
+    queryFn: async () =>
+      (
+        await supabase
+          .from("bookings")
+          .select("assigned_room_ids")
+          .in("status", ["confirmed", "checked_in"])
+      ).data ?? [],
+  });
+
+  // Build a Set of room IDs currently occupied by active bookings
+  const occupiedRoomIds = useMemo(() => {
+    const ids = new Set<string>();
+    activeBookings.forEach((b: any) => {
+      (b.assigned_room_ids ?? []).forEach((id: string) => ids.add(id));
+    });
+    return ids;
+  }, [activeBookings]);
+
   // Group rooms by hotel+category — each group appears exactly once
   const groupedCategories = useMemo(() => {
     const filtered = rooms.filter(
@@ -67,6 +88,7 @@ function AdminRooms() {
   function invalidate() {
     qc.invalidateQueries({ queryKey: ["admin-rooms"] });
     qc.invalidateQueries({ queryKey: ["rooms"] });
+    qc.invalidateQueries({ queryKey: ["active-bookings-occupancy"] });
   }
 
   async function deleteCategory(g: any) {
@@ -83,10 +105,11 @@ function AdminRooms() {
     else { toast.success("Category deleted"); invalidate(); }
   }
 
+  // statusBadge derives occupancy from active bookings, NOT rooms.status
   const statusBadge = (rooms: any[]) => {
-    const avail = rooms.filter((r) => r.status === "available").length;
-    const occ = rooms.filter((r) => r.status === "occupied").length;
     const maint = rooms.filter((r) => r.status === "maintenance").length;
+    const occ = rooms.filter((r) => r.status !== "maintenance" && occupiedRoomIds.has(r.id)).length;
+    const avail = rooms.filter((r) => r.status !== "maintenance" && !occupiedRoomIds.has(r.id)).length;
     return (
       <div className="flex flex-wrap gap-1.5 text-xs font-semibold">
         {avail > 0 && (
