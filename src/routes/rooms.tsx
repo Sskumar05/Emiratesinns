@@ -53,6 +53,31 @@ function RoomsPage() {
       (await supabase.from("rooms").select("*, hotels(name, slug, id)").order("price_per_night")).data ?? [],
   });
 
+  /* ── Load Global Stay Mode ───────────────────────────────────────────────── */
+  const { data: stayModeData } = useQuery({
+    queryKey: ["system_settings", "global_stay_mode"],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("system_settings")
+          .select("value")
+          .eq("key", "global_stay_mode")
+          .maybeSingle();
+        if (error) return "standard";
+        if (data) {
+          let val = data.value;
+          if (typeof val === "string") val = val.replace(/^"|"$/g, "");
+          return val;
+        }
+        return "standard";
+      } catch {
+        return "standard";
+      }
+    },
+    retry: false,
+  });
+  const is12HoursMode = stayModeData === "12_hours";
+
   /* ── Grouping logic (unchanged) ── */
   const grouped = useMemo(() => {
     const map: Record<string, any> = {};
@@ -331,10 +356,10 @@ function RoomsPage() {
                             className="font-bold text-foreground"
                             style={{ fontSize: "1.18rem", letterSpacing: "-0.02em" }}
                           >
-                            {formatINR(r.price_per_night)}
+                            {formatINR(is12HoursMode ? (r.price_12_hours || r.price_per_night) : r.price_per_night)}
                           </div>
                           <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mt-0.5">
-                            per night
+                            {is12HoursMode ? "12 Hours" : "per night"}
                           </div>
                         </div>
                       </div>

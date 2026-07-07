@@ -142,6 +142,7 @@ function bookingConfirmationTemplate(d: {
   numGuests: number;
   numRooms: number;
   numDays: number;
+  durationLabel?: string;
   totalAmount: string;
   paymentStatus: string;
 }): string {
@@ -166,7 +167,7 @@ function bookingConfirmationTemplate(d: {
         ${d.roomNumbers ? `<tr><td>Room Numbers</td><td>${d.roomNumbers}</td></tr>` : ""}
         <tr><td>Check-in Date</td><td>${d.checkIn}</td></tr>
         <tr><td>Check-out Date</td><td>${d.checkOut}</td></tr>
-        <tr><td>Duration</td><td>${d.numDays} Night${d.numDays !== 1 ? "s" : ""}</td></tr>
+        <tr><td>Duration</td><td>${d.durationLabel || `${d.numDays} Night${d.numDays !== 1 ? "s" : ""}`}</td></tr>
         <tr><td>Guests</td><td>${d.numGuests} Guest${d.numGuests !== 1 ? "s" : ""}</td></tr>
         <tr><td>Rooms</td><td>${d.numRooms} Room${d.numRooms !== 1 ? "s" : ""}</td></tr>
         <tr><td>Payment Status</td><td><span class="status-${d.paymentStatus === "paid" ? "confirmed" : "pending"}">${d.paymentStatus.charAt(0).toUpperCase() + d.paymentStatus.slice(1)}</span></td></tr>
@@ -195,6 +196,7 @@ function invoiceEmailTemplate(d: {
   checkIn: string;
   checkOut: string;
   numDays: number;
+  durationLabel?: string;
   amount: string;
   taxAmount: string;
   totalAmount: string;
@@ -222,7 +224,7 @@ function invoiceEmailTemplate(d: {
         <tr><td>Room Type</td><td>${d.roomType}</td></tr>
         <tr><td>Check-in</td><td>${d.checkIn}</td></tr>
         <tr><td>Check-out</td><td>${d.checkOut}</td></tr>
-        <tr><td>Duration</td><td>${d.numDays} Night${d.numDays !== 1 ? "s" : ""}</td></tr>
+        <tr><td>Duration</td><td>${d.durationLabel || `${d.numDays} Night${d.numDays !== 1 ? "s" : ""}`}</td></tr>
         <tr><td>Sub-total</td><td>${d.amount}</td></tr>
         <tr><td>Tax & Charges</td><td>${d.taxAmount}</td></tr>
       </table>
@@ -304,6 +306,7 @@ function adminNotificationTemplate(d: {
   numGuests: number;
   numRooms: number;
   numDays: number;
+  durationLabel?: string;
   totalAmount: string;
   createdAt: string;
 }): string {
@@ -333,7 +336,7 @@ function adminNotificationTemplate(d: {
         <tr><td>Room Type</td><td>${d.roomType}</td></tr>
         <tr><td>Check-in</td><td>${d.checkIn}</td></tr>
         <tr><td>Check-out</td><td>${d.checkOut}</td></tr>
-        <tr><td>Duration</td><td>${d.numDays} Night${d.numDays !== 1 ? "s" : ""}</td></tr>
+        <tr><td>Duration</td><td>${d.durationLabel || `${d.numDays} Night${d.numDays !== 1 ? "s" : ""}`}</td></tr>
         <tr><td>Guests</td><td>${d.numGuests}</td></tr>
         <tr><td>Rooms</td><td>${d.numRooms}</td></tr>
       </table>
@@ -400,6 +403,7 @@ Deno.serve(async (req) => {
         numGuests: Number(p.numGuests ?? 1),
         numRooms: Number(p.numRooms ?? 1),
         numDays: Number(p.numDays ?? 1),
+        durationLabel: p.durationLabel ? String(p.durationLabel) : undefined,
         totalAmount: String(p.totalAmount ?? ""),
         paymentStatus: String(p.paymentStatus ?? "pending"),
       });
@@ -414,6 +418,7 @@ Deno.serve(async (req) => {
         checkIn: String(p.checkIn ?? ""),
         checkOut: String(p.checkOut ?? ""),
         numDays: Number(p.numDays ?? 1),
+        durationLabel: p.durationLabel ? String(p.durationLabel) : undefined,
         amount: String(p.amount ?? ""),
         taxAmount: String(p.taxAmount ?? "₹0"),
         totalAmount: String(p.totalAmount ?? ""),
@@ -450,6 +455,7 @@ Deno.serve(async (req) => {
         numGuests: Number(p.numGuests ?? 1),
         numRooms: Number(p.numRooms ?? 1),
         numDays: Number(p.numDays ?? 1),
+        durationLabel: p.durationLabel ? String(p.durationLabel) : undefined,
         totalAmount: String(p.totalAmount ?? ""),
         createdAt: String(p.createdAt ?? new Date().toLocaleString()),
       });

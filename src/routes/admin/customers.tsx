@@ -2,12 +2,35 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
-import { Search, Eye, X, Mail, Phone, Calendar } from "lucide-react";
+import { Search, Eye, X, Mail, Phone, Calendar, FileSpreadsheet } from "lucide-react";
 import { formatINR, CATEGORY_LABELS } from "@/lib/hotel";
+import { downloadXlsx, fmtExcelDate } from "@/lib/exportExcel";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/customers")({ component: Customers });
 
 const formatBadgeText = (text: string) => (text || '').replace('_', ' ');
+
+function exportCustomersToExcel(filtered: any[]) {
+  if (filtered.length === 0) { toast.error("No data available to export."); return; }
+  const headers = [
+    "Customer ID", "Customer Name", "Mobile", "Email",
+    "Total Bookings", "Total Spend", "Current Stay", "Last Stay", "Status",
+  ];
+  const rows = filtered.map((c: any) => [
+    c.customerId,
+    c.full_name ?? "-",
+    c.mobile ?? "-",
+    c.email ?? "-",
+    c.totalBookings,
+    formatINR(c.totalSpend),
+    c.currentStay,
+    c.lastStay,
+    c.status,
+  ]);
+  downloadXlsx([headers, ...rows], "Customers", `Customers_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  toast.success("Excel exported successfully.");
+}
 
 const getStatusBadgeClass = (status: string) => {
   switch (status) {
@@ -154,15 +177,24 @@ function Customers() {
           </div> */}
         </div>
         
-        <div className="relative w-full xl:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search ID, Name, Mobile, Email..."
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            className="w-full bg-card border border-border pl-9 pr-4 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-gold"
-          />
+        <div className="flex items-center gap-3 w-full xl:w-auto">
+          <div className="relative w-full xl:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search ID, Name, Mobile, Email..."
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              className="w-full bg-card border border-border pl-9 pr-4 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-gold"
+            />
+          </div>
+          <button
+            onClick={() => exportCustomersToExcel(filtered)}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm font-semibold rounded-md shadow-sm transition-colors whitespace-nowrap shrink-0"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Export Excel
+          </button>
         </div>
       </div>
 

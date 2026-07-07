@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, Hotel, Sliders, Mail, CheckCircle, XCircle, Loader2, FlaskConical } from "lucide-react";
+import { Bell, Hotel, Sliders, Mail, CheckCircle, XCircle, Loader2, FlaskConical, Clock } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
 import {
   testBookingConfirmationEmail,
   testInvoiceEmail,
@@ -150,6 +152,75 @@ function Settings() {
     queryFn: async () => (await supabase.from("hotels").select("*")).data ?? [],
   });
 
+  const { data: stayModeData, refetch: refetchStayMode } = useQuery({
+    queryKey: ["system_settings", "global_stay_mode"],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("system_settings")
+          .select("value")
+          .eq("key", "global_stay_mode")
+          .maybeSingle();
+        // Table may not exist yet (migration pending) — fall back gracefully
+        if (error) return "standard";
+        if (data) {
+          let val = data.value;
+          if (typeof val === "string") val = val.replace(/^"|"$/g, "");
+          return val;
+        }
+        return "standard";
+      } catch {
+        return "standard";
+      }
+    },
+    retry: false,
+  });
+
+  const is12Hours = stayModeData === "12_hours";
+
+  const toggleStayMode = async (checked: boolean) => {
+    const newMode = checked ? "12_hours" : "standard";
+    try {
+      // Create or update setting
+      const { error: upsertError } = await supabase.from("system_settings").upsert({
+        key: "global_stay_mode",
+        value: newMode
+      }, { onConflict: "key" });
+
+      if (upsertError) {
+        // Surface a clear message if the table hasn't been migrated yet
+        if (upsertError.message?.includes("system_settings") || upsertError.code === "42P01") {
+          toast.error(
+            "The system_settings table does not exist yet. Please run the pending database migration first:\n\nnpx supabase db push",
+            { duration: 8000 }
+          );
+        } else {
+          throw upsertError;
+        }
+        return;
+      }
+
+      // Add audit log
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) {
+        await supabase.from("audit_logs").insert({
+          actor_id: userData.user.id,
+          actor_email: userData.user.email,
+          action: "Stay Mode Updated",
+          entity_type: "Settings",
+          previous_value: stayModeData,
+          new_value: newMode,
+          notes: `Stay Mode changed from ${stayModeData === 'standard' ? 'Standard Stay' : '12 Hours Stay'} to ${newMode === 'standard' ? 'Standard Stay' : '12 Hours Stay'}.`
+        });
+      }
+
+      toast.success("Stay Mode updated successfully.");
+      refetchStayMode();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to update Stay Mode");
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="bg-card border border-border p-8">
@@ -182,11 +253,51 @@ function Settings() {
           <Sliders className="h-5 w-5 text-gold" />
           <h3 className="font-display text-xl">General Settings</h3>
         </div>
-        <div className="space-y-4 text-sm">
+        <div className="space-y-4 text-sm mb-10">
           <Setting label="Currency" value="INR (₹)" />
           <Setting label="Time Zone" value="Asia/Kolkata" />
           <Setting label="Default Check-in" value="14:00" />
           <Setting label="Default Check-out" value="12:00" />
+        </div>
+
+        {/* --- Stay Mode Section --- */}
+        <div className="border-t border-border pt-8 mt-8">
+          <div className="flex items-center gap-3 mb-6">
+            <Clock className="h-5 w-5 text-gold" />
+            <h3 className="font-display text-xl">Stay Mode</h3>
+          </div>
+          
+          <div className="flex items-start gap-6 bg-surface p-6 rounded-xl border border-border">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="font-semibold text-base flex items-center gap-2">
+                  {is12Hours ? (
+                    <><span className="h-2 w-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]"></span> 12 Hours Stay</>
+                  ) : (
+                    <><span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span> Standard Stay (Default)</>
+                  )}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {is12Hours 
+                  ? "Guests stay exactly 12 hours from their Check-in Time. Automatically uses configured 12 Hours Rate."
+                  : "Guests stay based on Check-in Date and Check-out Date. Suitable for normal hotel bookings."
+                }
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-end gap-2 shrink-0 pt-1">
+              <div className="flex items-center gap-3 bg-card px-4 py-2 rounded-full border border-border shadow-sm">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Off</span>
+                <Switch 
+                  checked={is12Hours} 
+                  onCheckedChange={toggleStayMode} 
+                  className={is12Hours ? "data-[state=checked]:bg-orange-500" : "data-[state=unchecked]:bg-border"}
+                />
+                <span className={`text-xs font-semibold uppercase tracking-wider ${is12Hours ? "text-orange-500" : "text-muted-foreground"}`}>On</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -36,6 +36,7 @@ const BLANK_FORM = {
   bed_type: "",
   max_guests: 2,
   price_per_night: 5000,
+  price_12_hours: 3000,
   description: "",
   amenities: "",
   images: [] as string[],
@@ -64,6 +65,7 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
         bed_type: tpl.bed_type ?? "",
         max_guests: tpl.max_guests ?? 2,
         price_per_night: tpl.price_per_night ?? 5000,
+        price_12_hours: tpl.price_12_hours ?? 3000,
         description: tpl.description ?? "",
         amenities: Array.isArray(tpl.amenities) ? tpl.amenities.join(", ") : (tpl.amenities ?? ""),
         images: Array.isArray(tpl.images) ? tpl.images : [],
@@ -108,16 +110,23 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
     try {
       if (isEdit) {
         // ── EDIT: update only price_per_night across all rooms in this category ──
-        const hotelId = categoryGroup.hotel_id ?? categoryGroup.template?.hotel_id;
-        const category = categoryGroup.category ?? categoryGroup.template?.category;
+        const roomIds = categoryGroup.rooms.map((r: any) => r.id);
 
-        const { error } = await supabase
-          .from("rooms")
-          .update({ price_per_night: form.price_per_night, updated_at: new Date().toISOString() })
-          .eq("hotel_id", hotelId)
-          .eq("category", category);
+        const updatePromises = roomIds.map((id: string) =>
+          supabase
+            .from("rooms")
+            .update({ 
+              price_per_night: form.price_per_night, 
+              price_12_hours: form.price_12_hours,
+              updated_at: new Date().toISOString() 
+            })
+            .eq("id", id)
+        );
 
-        if (error) throw error;
+        const results = await Promise.all(updatePromises);
+        const errorResult = results.find(res => res.error);
+
+        if (errorResult?.error) throw errorResult.error;
         toast.success("Price updated across all rooms in this category!");
       } else {
         // ── ADD: validate, then insert first room row ──
@@ -174,6 +183,7 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
             bed_type: form.bed_type || null,
             max_guests: form.max_guests,
             price_per_night: form.price_per_night,
+            price_12_hours: form.price_12_hours,
             description: form.description || null,
             amenities,
             images: form.images,
@@ -217,7 +227,7 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
           <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/25 rounded-md px-4 py-3 text-sm text-amber-700 dark:text-amber-400 mt-2">
             <span className="shrink-0">ℹ️</span>
             <span>
-              Only <strong>Price Per Night</strong> can be changed here. To manage room numbers, use the{" "}
+              Only <strong>Prices</strong> can be changed here. To manage room numbers, use the{" "}
               <strong>Manage Room Numbers</strong> button on the main list.
             </span>
           </div>
@@ -262,6 +272,13 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
               "Price Per Night (₹) *",
               <input required type="number" min={0} value={form.price_per_night} className={rw}
                 onChange={(e) => setForm({ ...form, price_per_night: parseInt(e.target.value) || 0 })} />
+            )}
+
+            {/* 12-Hour Price — always editable */}
+            {field(
+              "12-Hour Price (₹) *",
+              <input required type="number" min={0} value={form.price_12_hours} className={rw}
+                onChange={(e) => setForm({ ...form, price_12_hours: parseInt(e.target.value) || 0 })} />
             )}
 
             {/* Capacity */}

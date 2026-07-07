@@ -2,15 +2,15 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { WebsiteLayout } from "@/components/website/WebsiteLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORY_LABELS, formatINR, isoDate, addDays } from "@/lib/hotel";
+import { CATEGORY_LABELS, formatINR, isoDate, addDays, fmtDateTime, getDurationLabel, getRateLabel } from "@/lib/hotel";
 import { motion } from "framer-motion";
-import { Check, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
+import { Check, ArrowRight, ArrowLeft, Loader2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { sendAdminNotification } from "@/lib/email";
 import { useState } from "react";
 
-/** Format ISO date string as "28 Jun 2026" */
+/** Format ISO date string as "28 Jun 2026" - legacy, remove usage where we need time too */
 function fmtDate(iso: string): string {
   if (!iso) return "";
   const d = new Date(iso + "T00:00:00");
@@ -65,6 +65,33 @@ function Booking() {
     num_days: search.numDays || 1,
   });
 
+  const { data: stayModeData } = useQuery({
+    queryKey: ["system_settings", "global_stay_mode"],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("system_settings")
+          .select("value")
+          .eq("key", "global_stay_mode")
+          .maybeSingle();
+        // Table may not exist yet (migration pending) — fall back gracefully
+        if (error) return "standard";
+        if (data) {
+          let val = data.value;
+          if (typeof val === "string") val = val.replace(/^"|"$/g, "");
+          return val;
+        }
+        return "standard";
+      } catch {
+        return "standard";
+      }
+    },
+    // Never throw to UI — always resolve with a default
+    retry: false,
+  });
+
+  const is12HoursMode = stayModeData === "12_hours";
+
   const { data: room } = useQuery({
     queryKey: ["room", roomId],
     enabled: !!roomId,
@@ -79,9 +106,28 @@ function Booking() {
   }
   if (!room) return <WebsiteLayout><div className="container-luxe py-32 text-center text-muted-foreground font-medium">Loading…</div></WebsiteLayout>;
 
-  const price = Number(room.price_per_night);
-  const total = price * form.num_rooms * form.num_days;
-  const checkout = isoDate(addDays(form.check_in_date, form.num_days));
+  const standardPrice = Number(room.price_per_night);
+  const hours12Price = Number(room.price_12_hours || 0);
+  
+  const price = is12HoursMode ? hours12Price : standardPrice;
+  const total = is12HoursMode 
+    ? price * form.num_rooms 
+    : price * form.num_rooms * form.num_days;
+    
+  let checkout = isoDate(addDays(form.check_in_date, form.num_days));
+  let checkoutTime = "12:00";
+  
+  // For 12h stay, compute checkout date+time by adding exactly 12h to check_in datetime
+  const checkInMs = new Date(`${form.check_in_date}T${form.check_in_time || "14:00"}:00`).getTime();
+  const checkOutMs = is12HoursMode
+    ? checkInMs + 12 * 60 * 60 * 1000
+    : new Date(`${isoDate(addDays(form.check_in_date, form.num_days))}T12:00:00`).getTime();
+
+  if (is12HoursMode) {
+    const d = new Date(checkOutMs);
+    checkout = d.toISOString().split("T")[0];
+    checkoutTime = d.toTimeString().slice(0, 5);
+  }
 
   async function submitBooking() {
     const parsed = guestSchema.safeParse(form);
@@ -114,25 +160,40 @@ function Booking() {
       const { data: siblingRooms, error: srErr } = await srQuery;
       if (srErr) throw srErr;
 
-      // Get overlapping active bookings to know which rooms are already taken
-      const { data: overlapping, error: ovErr } = await supabase
+      // Get all ACTIVE (confirmed / checked_in) bookings to check room conflicts.
+      // We use confirmed + checked_in only — pending bookings have not been paid yet
+      // and their room allocation is considered tentative (overwritten at payment).
+      const { data: allActive, error: ovErr } = await supabase
         .from("bookings")
-        .select("assigned_room_ids")
+        .select("assigned_room_ids, check_in_date, check_in_time, check_out_date, stay_type")
         .eq("hotel_id", (room as any).hotel_id)
         .eq("category", (room as any).category)
-        .in("status", ["pending", "confirmed", "checked_in"])
-        .lt("check_in_date", checkout)
-        .gt("check_out_date", form.check_in_date);
+        .in("status", ["confirmed", "checked_in"]);
       if (ovErr) throw ovErr;
 
+      // requestedStart / requestedEnd are pre-computed above as checkInMs / checkOutMs
+      const requestedStart = checkInMs;
+      const requestedEnd = checkOutMs;
+
+      const overlapping = (allActive ?? []).filter((b: any) => {
+        // Parse existing booking's start time
+        const bStart = new Date(`${b.check_in_date}T${b.check_in_time || "14:00"}:00`).getTime();
+        // Compute existing booking's end time the same way
+        const bEnd = b.stay_type === "12_hours"
+          ? bStart + 12 * 60 * 60 * 1000
+          : new Date(`${b.check_out_date}T12:00:00`).getTime();
+        // Standard interval overlap: A overlaps B iff A.start < B.end && A.end > B.start
+        return bStart < requestedEnd && bEnd > requestedStart;
+      });
+
       const bookedIds = new Set<string>(
-        (overlapping ?? []).flatMap((b: any) => b.assigned_room_ids ?? []),
+        overlapping.flatMap((b: any) => b.assigned_room_ids ?? []),
       );
       const available = (siblingRooms ?? []).filter((r: any) => !bookedIds.has(r.id));
 
       if (available.length < form.num_rooms) {
         throw new Error(
-          `Only ${available.length} room${available.length !== 1 ? "s" : ""} available for these dates. Please adjust your selection.`,
+          `Only ${available.length} room${available.length !== 1 ? "s" : ""} available for the selected time. Please adjust your selection.`,
         );
       }
 
@@ -157,6 +218,7 @@ function Booking() {
           status: "pending",
           payment_status: "pending",
           assigned_room_ids: assignedRoomIds,
+          stay_type: is12HoursMode ? "12_hours" : "standard",
         })
         .select()
         .single();
@@ -174,7 +236,7 @@ function Booking() {
         checkOut: checkout,
         numGuests: form.num_guests,
         numRooms: form.num_rooms,
-        numDays: form.num_days,
+        numDays: is12HoursMode ? 0 : form.num_days,
         totalAmount: formatINR(total),
         createdAt: new Date().toLocaleString("en-IN"),
       }).catch((err) => console.warn("[booking] Admin notification failed:", err));
@@ -218,17 +280,23 @@ function Booking() {
                   <div className="text-primary font-bold text-3xl mb-6">{formatINR(price)}<span className="text-sm text-muted-foreground font-semibold ml-2">/night</span></div>
                   
                   <div className="bg-muted/50 rounded-lg p-4 space-y-2.5 border border-border">
+                    {is12HoursMode && (
+                      <div className="bg-orange-500/10 text-orange-600 border border-orange-500/20 px-3 py-2 rounded-md flex items-center gap-2 mb-3">
+                        <Clock className="h-4 w-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">12 Hours Stay Mode</span>
+                      </div>
+                    )}
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Check-In</span>
-                      <span className="text-sm font-semibold">{fmtDate(form.check_in_date)}</span>
+                      <span className="text-sm text-muted-foreground">Check-in</span>
+                      <span className="text-sm font-semibold">{fmtDateTime(form.check_in_date, form.check_in_time)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Check-Out</span>
-                      <span className="text-sm font-semibold text-primary">{fmtDate(checkout)}</span>
+                      <span className="text-sm text-muted-foreground">Check-out</span>
+                      <span className="text-sm font-semibold text-primary">{fmtDateTime(checkout, checkoutTime)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Duration</span>
-                      <span className="text-sm font-semibold">{form.num_days} {form.num_days === 1 ? "Night" : "Nights"}</span>
+                      <span className="text-sm text-muted-foreground">Stay</span>
+                      <span className="text-sm font-semibold">{getDurationLabel(form.num_days, is12HoursMode ? "12_hours" : "standard")}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Guests</span>
@@ -248,18 +316,40 @@ function Booking() {
           {step === 2 && (
             <div>
               <h2 className="font-bold text-3xl mb-8 text-foreground tracking-tight">Guest details</h2>
+              
+              <div className="mb-8 bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 p-4 rounded-lg flex items-start gap-3">
+                <div className="shrink-0 mt-0.5">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-current text-xs font-bold">i</span>
+                </div>
+                <div className="space-y-1 text-sm font-medium">
+                  <p className="font-bold uppercase tracking-wider text-xs mb-2">Primary Guest Information</p>
+                  <p>Please carry a valid Aadhaar Card or any Government-issued Photo ID<br/>(Passport, Driving Licence, Voter ID, etc.) during hotel check-in for identity verification.</p>
+                  <p className="opacity-80">This ID will be verified at the reception during check-in.</p>
+                </div>
+              </div>
+
               <div className="grid sm:grid-cols-2 gap-6">
                 <Field label="Full Name *" value={form.full_name} onChange={(v) => setForm({ ...form, full_name: v })} />
                 <Field label="Mobile Number *" value={form.mobile} onChange={(v) => setForm({ ...form, mobile: v })} />
                 <div className="sm:col-span-2">
                   <Field label="Email Address *" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
                 </div>
+                {is12HoursMode && (
+                  <>
+                    <div className="sm:col-span-1">
+                      <Field label="Check-In Time *" type="time" value={form.check_in_time || "14:00"} onChange={(v) => setForm({ ...form, check_in_time: v })} />
+                    </div>
+                    <div className="sm:col-span-1">
+                      <Field label="Check-Out Time (Auto)" type="time" value={checkoutTime} onChange={() => {}} disabled />
+                    </div>
+                  </>
+                )}
               </div>
               
-              <div className="mt-8 bg-gold/10 text-gold-hover p-4 rounded-md border border-gold/20 flex items-start gap-3">
+              {/* <div className="mt-8 bg-gold/10 text-gold-hover p-4 rounded-md border border-gold/20 flex items-start gap-3">
                 <Check className="w-5 h-5 mt-0.5 shrink-0 text-gold" />
                 <p className="text-sm font-medium">Your room details (Check-in, Duration, Guests) have been saved from your selection. Please provide your contact information to proceed.</p>
-              </div>
+              </div> */}
 
               <div className="flex justify-between items-center mt-10 pt-6 border-t border-border">
                 <button onClick={() => setStep(1)} className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center"><ArrowLeft className="h-4 w-4 mr-2" />Back</button>
@@ -276,11 +366,11 @@ function Booking() {
                   ["Hotel", (room as any).hotels?.name],
                   ["Room Category", CATEGORY_LABELS[room.category]],
                   ["Number of Rooms", `${form.num_rooms} Room${form.num_rooms !== 1 ? "s" : ""}`],
-                  ["Check-In", `${fmtDate(form.check_in_date)} · ${form.check_in_time}`],
-                  ["Check-Out", fmtDate(checkout)],
-                  ["Duration", `${form.num_days} ${form.num_days === 1 ? "Night" : "Nights"}`],
+                  ["Check-in", fmtDateTime(form.check_in_date, form.check_in_time)],
+                  ["Check-out", fmtDateTime(checkout, checkoutTime)],
+                  ["Duration", getDurationLabel(form.num_days, is12HoursMode ? "12_hours" : "standard")],
                   ["Guests", `${form.num_guests} ${form.num_guests === 1 ? "Guest" : "Guests"}`],
-                  ["Price / room / night", formatINR(price)],
+                  [getRateLabel(is12HoursMode ? "12_hours" : "standard"), formatINR(price)],
                 ].map(([k, v]) => (
                   <div key={k} className="flex justify-between py-4 px-4 sm:px-6">
                     <dt className="text-sm font-semibold text-muted-foreground">{k}</dt>
@@ -307,12 +397,12 @@ function Booking() {
   );
 }
 
-function Field({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
+function Field({ label, value, onChange, type = "text", disabled }: { label: string; value: string; onChange: (v: string) => void; type?: string; disabled?: boolean }) {
   return (
     <label className="block">
       <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</span>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-background border border-border rounded-md px-4 py-3 text-sm focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none transition-colors" />
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled}
+        className={`w-full bg-background border border-border rounded-md px-4 py-3 text-sm focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-muted" : ""}`} />
     </label>
   );
 }

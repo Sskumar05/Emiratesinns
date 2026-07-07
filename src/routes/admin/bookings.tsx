@@ -5,8 +5,10 @@ import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useSendEmail } from "@/hooks/useSendEmail";
-import { Loader2, Search, Eye, X, MoreVertical, XCircle, UserX, MinusSquare } from "lucide-react";
+import { Loader2, Search, Eye, X, MoreVertical, XCircle, UserX, MinusSquare, FileSpreadsheet } from "lucide-react";
 import { ReduceRoomsModal } from "@/components/admin/ReduceRoomsModal";
+import { addDays, isoDate } from "@/lib/hotel";
+import { downloadXlsx, fmtExcelDate } from "@/lib/exportExcel";
 
 export const Route = createFileRoute("/admin/bookings")({ component: AdminBookings });
 
@@ -46,6 +48,37 @@ function AdminBookings() {
   const [reduceRoomsBooking, setReduceRoomsBooking] = useState<any | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const { sendConfirmation, sendCancellation } = useSendEmail();
+
+  function exportToExcel(filtered: any[], roomNumberMap: Record<string, string>) {
+    if (filtered.length === 0) { toast.error("No data available to export."); return; }
+    const resolveRooms = (ids: any) =>
+      Array.isArray(ids) && ids.length > 0
+        ? ids.map((id: string) => roomNumberMap[id] ?? id).filter(Boolean).join(", ")
+        : "-";
+    const headers = [
+      "Booking ID", "Customer Name", "Mobile", "Hotel", "Room Category",
+      "Room Number(s)", "Guests", "Check-In", "Check-Out", "Stay Type",
+      "Booking Status", "Payment Status", "Amount", "Created Date",
+    ];
+    const rows = filtered.map((b: any) => [
+      b.booking_code,
+      b.customers?.full_name ?? "-",
+      b.customers?.mobile ?? "-",
+      b.hotels?.name ?? "-",
+      CATEGORY_LABELS[b.category as keyof typeof CATEGORY_LABELS] ?? b.category,
+      resolveRooms(b.assigned_room_ids),
+      b.num_guests,
+      fmtExcelDate(b.check_in_date),
+      fmtExcelDate(b.check_out_date),
+      b.stay_type === "12_hours" ? "12 Hours" : "Standard",
+      (b.status ?? "").replace("_", " "),
+      (b.payment_status ?? "").replace("_", " "),
+      formatINR(b.total_amount),
+      fmtExcelDate(b.created_at),
+    ]);
+    downloadXlsx([headers, ...rows], "Bookings", `Bookings_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success("Excel exported successfully.");
+  }
 
   const { data: hotels = [] } = useQuery({
     queryKey: ["hotels"],
@@ -195,15 +228,24 @@ function AdminBookings() {
           </select>
         </div>
         
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search ID, Name, Mobile..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-card border border-border pl-9 pr-4 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-gold"
-          />
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="relative w-full md:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search ID, Name, Mobile..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-card border border-border pl-9 pr-4 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-gold"
+            />
+          </div>
+          <button
+            onClick={() => exportToExcel(filtered, roomNumberMap)}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm font-semibold rounded-md shadow-sm transition-colors whitespace-nowrap shrink-0"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Export Excel
+          </button>
         </div>
       </div>
 
@@ -476,6 +518,12 @@ function AdminBookings() {
                       </span>
                     </div>
                     <div className="flex justify-between">
+                      <span className="text-muted-foreground">Stay Mode:</span>
+                      <span className={`px-2 py-0.5 text-[10px] uppercase tracking-wider font-semibold rounded-full ${viewBooking.stay_type === '12_hours' ? 'bg-orange-500/10 text-orange-600 border border-orange-500/20' : 'bg-surface border border-border text-foreground'}`}>
+                        {viewBooking.stay_type === '12_hours' ? '12 Hours Stay' : 'Standard Stay'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Booking Date:</span>
                       <span className="font-medium">{new Date(viewBooking.created_at).toLocaleString('en-IN')}</span>
                     </div>
@@ -490,15 +538,22 @@ function AdminBookings() {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Check-In:</span>
-                      <span className="font-medium">{viewBooking.check_in_date}</span>
+                      <span className="font-medium">{viewBooking.check_in_date} {viewBooking.check_in_time ? `· ${viewBooking.check_in_time}` : ''}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Check-Out:</span>
-                      <span className="font-medium">{viewBooking.check_out_date}</span>
+                      <span className="font-medium">
+                        {viewBooking.check_out_date}
+                        {viewBooking.stay_type === '12_hours' && viewBooking.check_in_time ? (() => {
+                           const d = new Date(`${viewBooking.check_in_date}T${viewBooking.check_in_time}:00`);
+                           d.setHours(d.getHours() + 12);
+                           return ` · ${d.toTimeString().slice(0, 5)}`;
+                        })() : ''}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Nights:</span>
-                      <span className="font-medium">{viewBooking.num_days} Night(s)</span>
+                      <span className="text-muted-foreground">Duration:</span>
+                      <span className="font-medium">{viewBooking.stay_type === '12_hours' ? '12 Hours' : `${viewBooking.num_days} Night(s)`}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Guests:</span>

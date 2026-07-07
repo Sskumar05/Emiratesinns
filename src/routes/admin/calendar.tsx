@@ -31,8 +31,21 @@ function CalendarPage() {
   const filteredBookings = bookings.filter((b: any) => hotelF === "all" || b.hotels?.slug === hotelF);
 
   const getOccupiedCount = (dateStr: string) => {
-    return filteredBookings.filter((b: any) => b.check_in_date <= dateStr && b.check_out_date > dateStr)
-      .reduce((sum: number, b: any) => sum + (b.num_rooms ?? 1), 0);
+    const dayStart = new Date(`${dateStr}T00:00:00`).getTime();
+    const dayEnd = new Date(`${dateStr}T23:59:59`).getTime();
+
+    return filteredBookings.filter((b: any) => {
+      const bStart = new Date(`${b.check_in_date}T${b.check_in_time || "14:00"}:00`).getTime();
+      let bEnd;
+      if (b.stay_type === "12_hours") {
+        const d = new Date(bStart);
+        d.setHours(d.getHours() + 12);
+        bEnd = d.getTime();
+      } else {
+        bEnd = new Date(`${b.check_out_date}T12:00:00`).getTime();
+      }
+      return bStart < dayEnd && bEnd > dayStart;
+    }).reduce((sum: number, b: any) => sum + (b.num_rooms ?? 1), 0);
   };
 
   // --- Summary Metrics ---
@@ -76,7 +89,21 @@ function CalendarPage() {
   // --- Modal Logic ---
   const selectedDateBookings = useMemo(() => {
     if (!selectedDate) return [];
-    return filteredBookings.filter((b: any) => b.check_in_date <= selectedDate && b.check_out_date > selectedDate);
+    const dayStart = new Date(`${selectedDate}T00:00:00`).getTime();
+    const dayEnd = new Date(`${selectedDate}T23:59:59`).getTime();
+
+    return filteredBookings.filter((b: any) => {
+      const bStart = new Date(`${b.check_in_date}T${b.check_in_time || "14:00"}:00`).getTime();
+      let bEnd;
+      if (b.stay_type === "12_hours") {
+        const d = new Date(bStart);
+        d.setHours(d.getHours() + 12);
+        bEnd = d.getTime();
+      } else {
+        bEnd = new Date(`${b.check_out_date}T12:00:00`).getTime();
+      }
+      return bStart < dayEnd && bEnd > dayStart;
+    });
   }, [selectedDate, filteredBookings]);
 
   const selectedDateCheckIns = useMemo(() => {
@@ -117,7 +144,7 @@ function CalendarPage() {
     <div className="flex flex-col space-y-8 min-h-0">
       
       {/* --- Summary Cards --- */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {[
           { label: "Total Rooms", value: totalRooms, icon: BedDouble },
           { label: "Month Bookings", value: totalBookingsMonth, icon: CalendarIcon },
@@ -135,7 +162,7 @@ function CalendarPage() {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* --- Toolbar --- */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card p-4 rounded-xl border border-border shadow-sm">

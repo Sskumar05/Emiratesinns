@@ -1,11 +1,4 @@
-import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
-
-// ─── Date formatter ──────────────────────────────────────────────────────────
-export function fmtInvoiceDate(iso: string): string {
-  if (!iso) return "";
-  const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-}
+import { CATEGORY_LABELS, formatINR, fmtDateTime, getDurationLabel, getRateLabel } from "@/lib/hotel";
 
 // ─── Build invoice HTML from a booking-like object ────────────────────────
 // Accepts both:
@@ -35,6 +28,17 @@ export function generateInvoiceHTML(data: any): string {
     : booking.created_at
       ? new Date(booking.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
       : now;
+
+  const stayType = booking.stay_type ?? "standard";
+  const durationLabel = getDurationLabel(nights, stayType);
+  const rateLabel = getRateLabel(stayType);
+  const checkInFormatted = fmtDateTime(booking.check_in_date, booking.check_in_time);
+  
+  const checkOutFormatted = fmtDateTime(booking.check_out_date, stayType === '12_hours' ? (() => {
+    const d = new Date(`${booking.check_in_date}T${booking.check_in_time || "14:00"}:00`);
+    d.setHours(d.getHours() + 12);
+    return d.toTimeString().slice(0, 5);
+  })() : '12:00');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -126,11 +130,11 @@ export function generateInvoiceHTML(data: any): string {
         <tr><td>Booking Reference</td><td>${bookingCode}</td></tr>
         <tr><td>Hotel</td><td>${hotel.name ?? "—"}</td></tr>
         <tr><td>Room Category</td><td>${cat}</td></tr>
-        <tr><td>Check-In Date</td><td>${fmtInvoiceDate(booking.check_in_date)}</td></tr>
-        <tr><td>Check-Out Date</td><td>${fmtInvoiceDate(booking.check_out_date)}</td></tr>
-        <tr><td>Number of Nights</td><td>${nights}</td></tr>
+        <tr><td>Check-in</td><td>${checkInFormatted}</td></tr>
+        <tr><td>Check-out</td><td>${checkOutFormatted}</td></tr>
+        <tr><td>Duration</td><td>${durationLabel}</td></tr>
         <tr><td>Number of Guests</td><td>${guests}</td></tr>
-        <tr><td>Price Per Night</td><td>${pricePerNight}</td></tr>
+        <tr><td>${rateLabel}</td><td>${pricePerNight}</td></tr>
         <tr><td>Booking Date</td><td>${bookingDate}</td></tr>
       </tbody>
     </table>
@@ -147,8 +151,8 @@ export function generateInvoiceHTML(data: any): string {
       </thead>
       <tbody>
         <tr>
-          <td>${cat} · ${nights} Night${nights !== 1 ? "s" : ""}</td>
-          <td class="text-right">${pricePerNight} × ${nights}</td>
+          <td>${cat} · ${durationLabel}</td>
+          <td class="text-right">${pricePerNight} × ${stayType === '12_hours' ? booking.num_rooms : nights * booking.num_rooms}</td>
         </tr>
         ${isInvoiceRow && (data.tax_amount ?? 0) > 0
           ? `<tr><td>Taxes &amp; Charges</td><td class="text-right">${formatINR(data.tax_amount)}</td></tr>`

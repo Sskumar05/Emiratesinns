@@ -3,7 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
 import { useState, useMemo } from "react";
-import { Search, Eye, X } from "lucide-react";
+import { Search, Eye, X, FileSpreadsheet } from "lucide-react";
+import { downloadXlsx, fmtExcelDate } from "@/lib/exportExcel";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/cancelled")({ component: Cancelled });
 
@@ -50,6 +52,32 @@ function Cancelled() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [viewBooking, setViewBooking] = useState<any | null>(null);
+
+  function exportToExcel(filtered: any[], roomNumberMap: Record<string, string>) {
+    if (filtered.length === 0) { toast.error("No data available to export."); return; }
+    const resolveRooms = (ids: any) =>
+      Array.isArray(ids) && ids.length > 0
+        ? ids.map((id: string) => roomNumberMap[id] ?? id).filter(Boolean).join(", ")
+        : "-";
+    const headers = [
+      "Booking ID", "Customer Name", "Mobile", "Hotel", "Room Number(s)",
+      "Cancelled Date", "Cancelled By", "Refund Status", "Amount", "Cancellation Reason",
+    ];
+    const rows = filtered.map((b: any) => [
+      b.booking_code,
+      b.customers?.full_name ?? "-",
+      b.customers?.mobile ?? "-",
+      b.hotels?.name ?? "-",
+      resolveRooms(b.assigned_room_ids),
+      fmtExcelDate(b.cancelled_at),
+      getCancelledBy(b.cancellation_reason),
+      (b.payment_status ?? "").replace("_", " "),
+      formatINR(b.total_amount),
+      b.cancellation_reason ?? "-",
+    ]);
+    downloadXlsx([headers, ...rows], "Cancelled Bookings", `Cancelled_Bookings_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success("Excel exported successfully.");
+  }
 
   const { data: hotels = [] } = useQuery({
     queryKey: ["hotels"],
@@ -158,15 +186,24 @@ function Cancelled() {
           </div> */}
         </div>
         
-        <div className="relative w-full xl:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search ID, Name, Mobile, Room..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-card border border-border pl-9 pr-4 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-gold"
-          />
+        <div className="flex items-center gap-3 w-full xl:w-auto">
+          <div className="relative w-full xl:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search ID, Name, Mobile, Room..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-card border border-border pl-9 pr-4 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-gold"
+            />
+          </div>
+          <button
+            onClick={() => exportToExcel(filtered, roomNumberMap)}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm font-semibold rounded-md shadow-sm transition-colors whitespace-nowrap shrink-0"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Export Excel
+          </button>
         </div>
       </div>
 

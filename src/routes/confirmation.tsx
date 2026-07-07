@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { WebsiteLayout } from "@/components/website/WebsiteLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
-import { generateInvoiceHTML as _generateInvoiceHTML, downloadInvoice, fmtInvoiceDate as fmtDate } from "@/lib/invoicePdf";
+import { CATEGORY_LABELS, formatINR, fmtDateTime, getDurationLabel, getRateLabel } from "@/lib/hotel";
+import { generateInvoiceHTML as _generateInvoiceHTML, downloadInvoice } from "@/lib/invoicePdf";
 import { Check, Download, Mail, Building, Loader2, CheckCircle2, AlertTriangle, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback } from "react";
@@ -62,11 +62,15 @@ function Confirmation() {
       bookingCode: booking.booking_code,
       hotelName: hotel?.name ?? "Emirates Grand Inn",
       roomType: CATEGORY_LABELS[booking.category] ?? booking.category,
-      checkIn: fmtDate(booking.check_in_date),
-      checkOut: fmtDate(booking.check_out_date),
+      checkIn: fmtDateTime(booking.check_in_date, booking.check_in_time),
+      checkOut: fmtDateTime(booking.check_out_date, booking.stay_type === '12_hours' ? (() => {
+                 const d = new Date(`${booking.check_in_date}T${booking.check_in_time || "14:00"}:00`);
+                 d.setHours(d.getHours() + 12);
+                 return d.toTimeString().slice(0, 5);
+              })() : '12:00'),
+      durationLabel: getDurationLabel(booking.num_days, booking.stay_type),
       numGuests: booking.num_guests,
       numRooms: booking.num_rooms,
-      numDays: booking.num_days,
       totalAmount: formatINR(booking.total_amount),
       paymentStatus: booking.payment_status ?? "pending",
     });
@@ -142,11 +146,15 @@ function Confirmation() {
               ["Mobile", customer.mobile ?? "—"],
               ["Email", customer.email ?? "—"],
               ["Room Category", cat],
-              ["Check-In", `${fmtDate(booking.check_in_date)}${booking.check_in_time ? "  ·  " + booking.check_in_time : ""}`],
-              ["Check-Out", fmtDate(booking.check_out_date)],
-              ["Duration", `${booking.num_days} Night${booking.num_days !== 1 ? "s" : ""}`],
+              ["Check-in", fmtDateTime(booking.check_in_date, booking.check_in_time)],
+              ["Check-out", fmtDateTime(booking.check_out_date, booking.stay_type === '12_hours' ? (() => {
+                 const d = new Date(`${booking.check_in_date}T${booking.check_in_time || "14:00"}:00`);
+                 d.setHours(d.getHours() + 12);
+                 return d.toTimeString().slice(0, 5);
+              })() : '12:00')],
+              ["Duration", getDurationLabel(booking.num_days, booking.stay_type)],
               ["Guests", `${booking.num_guests} Guest${booking.num_guests !== 1 ? "s" : ""}`],
-              ["Price / Night", formatINR(booking.price_per_night)],
+              [getRateLabel(booking.stay_type), formatINR(booking.price_per_night)],
               ["Total Paid", formatINR(booking.total_amount)],
               ["Payment Status", (booking.payment_status ?? "pending").charAt(0).toUpperCase() + (booking.payment_status ?? "pending").slice(1)],
             ].map(([k, v]) => (

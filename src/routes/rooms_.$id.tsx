@@ -60,6 +60,31 @@ function RoomDetail() {
       (await supabase.from("rooms").select("*, hotels(id, name, slug, address)").eq("id", id).maybeSingle()).data,
   });
 
+  // ── Load Global Stay Mode ─────────────────────────────────────────────────
+  const { data: stayModeData } = useQuery({
+    queryKey: ["system_settings", "global_stay_mode"],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("system_settings")
+          .select("value")
+          .eq("key", "global_stay_mode")
+          .maybeSingle();
+        if (error) return "standard";
+        if (data) {
+          let val = data.value;
+          if (typeof val === "string") val = val.replace(/^"|"$/g, "");
+          return val;
+        }
+        return "standard";
+      } catch {
+        return "standard";
+      }
+    },
+    retry: false,
+  });
+  const is12HoursMode = stayModeData === "12_hours";
+
   // ── Load all sibling rooms in same hotel + category + room_type ───────────
   const { data: siblingRooms = [] } = useQuery({
     queryKey: ["sibling-rooms", room?.hotel_id, room?.category, room?.room_type],
@@ -80,24 +105,45 @@ function RoomDetail() {
     }
   });
 
-  // ── Load overlapping active bookings for the selected dates ───────────────
-  // Refetches automatically whenever checkInDate / checkOutDate change
-  const { data: overlappingBookings = [] } = useQuery({
-    queryKey: ["room-overlap", room?.hotel_id, room?.category, checkInDate, checkOutDate],
+  // ── Load all active bookings for this room category ───────────────
+  const { data: allActiveBookings = [] } = useQuery({
+    queryKey: ["room-active-bookings", room?.hotel_id, room?.category],
     enabled: !!room,
     queryFn: async () =>
       (
         await supabase
           .from("bookings")
-          .select("assigned_room_ids, num_rooms")
+          .select("assigned_room_ids, num_rooms, check_in_date, check_in_time, check_out_date, stay_type")
           .eq("hotel_id", room!.hotel_id)
           .eq("category", room!.category)
           .in("status", BLOCKING_STATUSES)
-          // Overlap: booking.check_in < our checkOut  AND  booking.check_out > our checkIn
-          .lt("check_in_date", checkOutDate)
-          .gt("check_out_date", checkInDate)
       ).data ?? [],
   });
+
+  const overlappingBookings = useMemo(() => {
+    const requestedStart = new Date(`${checkInDate}T14:00:00`).getTime();
+    let requestedEnd;
+    if (is12HoursMode) {
+      const d = new Date(requestedStart);
+      d.setHours(d.getHours() + 12);
+      requestedEnd = d.getTime();
+    } else {
+      requestedEnd = new Date(`${checkOutDate}T12:00:00`).getTime();
+    }
+
+    return allActiveBookings.filter((b: any) => {
+      const bStart = new Date(`${b.check_in_date}T${b.check_in_time || "14:00"}:00`).getTime();
+      let bEnd;
+      if (b.stay_type === "12_hours") {
+        const d = new Date(bStart);
+        d.setHours(d.getHours() + 12);
+        bEnd = d.getTime();
+      } else {
+        bEnd = new Date(`${b.check_out_date}T12:00:00`).getTime();
+      }
+      return bStart < requestedEnd && bEnd > requestedStart;
+    });
+  }, [allActiveBookings, checkInDate, checkOutDate, is12HoursMode]);
 
   // ── Derive available rooms for the selected date range ────────────────────
   const { availableRooms, totalRooms, bookedCount } = useMemo(() => {
@@ -121,7 +167,7 @@ function RoomDetail() {
 
   // Derived values
   const numNights = useMemo(() => calcNights(checkInDate, checkOutDate), [checkInDate, checkOutDate]);
-  const isDateInvalid = numNights < 1;
+  const isDateInvalid = is12HoursMode ? false : numNights < 1;
   const isSoldOut = availableCount === 0 && siblingRooms.length > 0;
 
   // Clamp numRooms when availability changes
@@ -166,8 +212,10 @@ function RoomDetail() {
           "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80",
         ];
 
-  const price = Number(room.price_per_night) || 0;
-  const totalAmount = price * numRooms * numNights;
+  const standardPrice = Number(room.price_per_night) || 0;
+  const hours12Price = Number(room.price_12_hours) || 0;
+  const price = is12HoursMode ? hours12Price : standardPrice;
+  const totalAmount = is12HoursMode ? (price * numRooms) : (price * numRooms * numNights);
 
   const handleBookNow = () => {
     if (isDateInvalid || isSoldOut) return;
@@ -177,7 +225,7 @@ function RoomDetail() {
         roomId: room.id,
         hotelId: (room as any).hotels?.id,
         checkInDate,
-        numDays: numNights,
+        numDays: is12HoursMode ? 1 : numNights,
         numGuests,
         numRooms,
       } as any,
@@ -333,7 +381,7 @@ function RoomDetail() {
                     <span className="font-extrabold text-[2rem] leading-none text-primary">
                       {formatINR(price)}
                     </span>
-                    <span className="text-sm font-semibold text-muted-foreground">/ room / night</span>
+                    <span className="text-sm font-semibold text-muted-foreground">/ room {is12HoursMode ? "(12 Hrs)" : "/ night"}</span>
                   </div>
                 </div>
 
@@ -364,13 +412,14 @@ function RoomDetail() {
                         d.setDate(d.getDate() + 1);
                         return isoDate(d);
                       })()}
-                      value={checkOutDate}
+                      value={is12HoursMode ? checkInDate : checkOutDate}
                       onChange={(e) => setCheckOutDate(e.target.value)}
+                      disabled={is12HoursMode}
                       className={`w-full bg-background border rounded-lg px-3 py-2.5 text-sm font-medium focus:ring-1 focus:outline-none transition-colors ${
                         isDateInvalid
                           ? "border-red-400 focus:border-red-400 focus:ring-red-400"
                           : "border-border focus:border-gold focus:ring-gold"
-                      }`}
+                      } ${is12HoursMode ? "opacity-60 cursor-not-allowed bg-muted" : ""}`}
                     />
                   </div>
                 </div>
@@ -412,16 +461,16 @@ function RoomDetail() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5">
-                      <Moon className="h-3 w-3" /> Nights
+                      <Moon className="h-3 w-3" /> {is12HoursMode ? "Duration" : "Nights"}
                     </label>
                     <motion.div
-                      key={numNights}
+                      key={is12HoursMode ? "12h" : numNights}
                       initial={{ opacity: 0.7, scale: 0.97 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.2 }}
                       className="w-full bg-muted/70 border border-border rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground select-none"
                     >
-                      {isDateInvalid ? "—" : `${numNights} ${numNights === 1 ? "Night" : "Nights"}`}
+                      {is12HoursMode ? "12 Hours" : (isDateInvalid ? "—" : `${numNights} ${numNights === 1 ? "Night" : "Nights"}`)}
                     </motion.div>
                   </div>
 
@@ -499,7 +548,7 @@ function RoomDetail() {
                 >
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">
-                      {formatINR(price)} × {numRooms} room{numRooms !== 1 ? "s" : ""} × {isDateInvalid ? "—" : `${numNights} night${numNights !== 1 ? "s" : ""}`}
+                      {formatINR(price)} × {numRooms} room{numRooms !== 1 ? "s" : ""} {is12HoursMode ? "" : `× ${isDateInvalid ? "—" : `${numNights} night${numNights !== 1 ? "s" : ""}`}`}
                     </span>
                     <span className="font-semibold">
                       {isDateInvalid ? "—" : formatINR(totalAmount)}

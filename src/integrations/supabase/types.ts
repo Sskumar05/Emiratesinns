@@ -75,6 +75,7 @@ export type Database = {
           payment_status: Database["public"]["Enums"]["payment_status"]
           price_per_night: number
           status: Database["public"]["Enums"]["booking_status"]
+          stay_type: string
           total_amount: number
           updated_at: string
         }
@@ -99,6 +100,7 @@ export type Database = {
           payment_status?: Database["public"]["Enums"]["payment_status"]
           price_per_night: number
           status?: Database["public"]["Enums"]["booking_status"]
+          stay_type?: string
           total_amount: number
           updated_at?: string
         }
@@ -123,6 +125,7 @@ export type Database = {
           payment_status?: Database["public"]["Enums"]["payment_status"]
           price_per_night?: number
           status?: Database["public"]["Enums"]["booking_status"]
+          stay_type?: string
           total_amount?: number
           updated_at?: string
         }
@@ -306,6 +309,7 @@ export type Database = {
           images: string[]
           max_guests: number
           price_per_night: number
+          price_12_hours: number
           room_number: string
           room_type: string | null
           status: Database["public"]["Enums"]["room_status"]
@@ -323,6 +327,7 @@ export type Database = {
           images?: string[]
           max_guests?: number
           price_per_night?: number
+          price_12_hours?: number
           room_number: string
           room_type?: string | null
           status?: Database["public"]["Enums"]["room_status"]
@@ -340,6 +345,7 @@ export type Database = {
           images?: string[]
           max_guests?: number
           price_per_night?: number
+          price_12_hours?: number
           room_number?: string
           room_type?: string | null
           status?: Database["public"]["Enums"]["room_status"]
@@ -373,6 +379,30 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
         }
         Relationships: []
       }

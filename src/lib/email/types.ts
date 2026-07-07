@@ -17,6 +17,7 @@ export interface BookingConfirmationPayload {
   numGuests: number;
   numRooms: number;
   numDays: number;
+  durationLabel?: string;
   totalAmount: string;
   paymentStatus: string;
 }
@@ -31,6 +32,7 @@ export interface InvoiceEmailPayload {
   checkIn: string;
   checkOut: string;
   numDays: number;
+  durationLabel?: string;
   amount: string;
   taxAmount: string;
   totalAmount: string;
@@ -66,6 +68,7 @@ export interface AdminNotificationPayload {
   numGuests: number;
   numRooms: number;
   numDays: number;
+  durationLabel?: string;
   totalAmount: string;
   createdAt: string;
 }

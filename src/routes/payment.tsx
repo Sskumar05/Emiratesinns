@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { WebsiteLayout } from "@/components/website/WebsiteLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { formatINR } from "@/lib/hotel";
+import { formatINR, fmtDateTime, getDurationLabel } from "@/lib/hotel";
 import { Lock, CreditCard, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
@@ -63,6 +63,26 @@ function Payment() {
               <div className="font-bold text-3xl text-primary">{formatINR(booking.total_amount)}</div>
             </div>
           </div>
+          
+          <div className="bg-muted/30 border border-border rounded-lg p-5 mb-8 space-y-3">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Check-in</span>
+              <span className="font-semibold">{fmtDateTime(booking.check_in_date, booking.check_in_time)}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Check-out</span>
+              <span className="font-semibold">{fmtDateTime(booking.check_out_date, booking.stay_type === '12_hours' ? (() => {
+                 const d = new Date(`${booking.check_in_date}T${booking.check_in_time || "14:00"}:00`);
+                 d.setHours(d.getHours() + 12);
+                 return d.toTimeString().slice(0, 5);
+              })() : '12:00')}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Duration</span>
+              <span className="font-semibold">{getDurationLabel(booking.num_days, booking.stay_type)}</span>
+            </div>
+          </div>
+          
           <div className="bg-background border border-dashed border-border rounded-md p-6 mb-8 text-center text-sm font-medium text-muted-foreground">
             <CreditCard className="h-6 w-6 mx-auto text-primary mb-3" />
             Razorpay checkout will open here once API keys are configured. For now, click below to simulate a successful payment.
