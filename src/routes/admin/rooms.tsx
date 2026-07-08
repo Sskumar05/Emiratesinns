@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
+import { getOccupiedRoomStatusMap } from "@/lib/occupancy";
 import { useState, useMemo } from "react";
 import { Pencil, Trash2, Plus, Users, BedDouble, List } from "lucide-react";
 import { toast } from "sonner";
@@ -24,6 +25,30 @@ function AdminRooms() {
   // Filters
   const [hotelF, setHotelF] = useState("all");
   const [catF, setCatF] = useState("all");
+
+  const { data: stayModeData } = useQuery({
+    queryKey: ["system_settings", "global_stay_mode"],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("system_settings")
+          .select("value")
+          .eq("key", "global_stay_mode")
+          .maybeSingle();
+        if (error) return "standard";
+        if (data) {
+          let val = data.value;
+          if (typeof val === "string") val = val.replace(/^"|"$/g, "");
+          return val;
+        }
+        return "standard";
+      } catch {
+        return "standard";
+      }
+    },
+    retry: false,
+  });
+  const is12HoursMode = stayModeData === "12_hours";
 
   const { data: rooms = [], isLoading: roomsLoading } = useQuery({
     queryKey: ["admin-rooms"],
@@ -50,26 +75,7 @@ function AdminRooms() {
 
   // Build a Map of room IDs to booking status
   const occupiedRoomStatusMap = useMemo(() => {
-    const map = new Map<string, string>();
-    const now = new Date().getTime();
-
-    activeBookings.filter((b: any) => {
-      const bStart = new Date(`${b.check_in_date}T${b.check_in_time || "14:00"}:00`).getTime();
-      let bEnd;
-      if (b.stay_type === "12_hours") {
-        const d = new Date(bStart);
-        d.setHours(d.getHours() + 12);
-        bEnd = d.getTime();
-      } else {
-        bEnd = new Date(`${b.check_out_date}T12:00:00`).getTime();
-      }
-      return now >= bStart && now <= bEnd;
-    }).forEach((b: any) => {
-      (b.assigned_room_ids ?? []).forEach((id: string) => {
-        map.set(id, b.status);
-      });
-    });
-    return map;
+    return getOccupiedRoomStatusMap(activeBookings);
   }, [activeBookings]);
 
   // Group rooms by hotel+category — each group appears exactly once
@@ -90,6 +96,7 @@ function AdminRooms() {
           category: r.category,
           room_type: r.room_type,
           price_per_night: r.price_per_night,
+          price_12_hours: r.price_12_hours,
           max_guests: r.max_guests,
           bed_type: r.bed_type ?? "",
           template: r, // one room row as the canonical source for category fields
@@ -196,7 +203,7 @@ function AdminRooms() {
         <table className="w-full text-sm">
           <thead className="bg-surface text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border">
             <tr>
-              {["Hotel", "Category", "Price / Night", "Capacity", "Availability", "Actions"].map((h) => (
+              {["Hotel", "Category", is12HoursMode ? "Price / 12 Hours" : "Price / Night", "Capacity", "Availability", "Actions"].map((h) => (
                 <th key={h} className="text-left py-4 px-6 font-semibold">{h}</th>
               ))}
             </tr>
@@ -242,7 +249,7 @@ function AdminRooms() {
                       )}
                     </div>
                   </td>
-                  <td className="py-4 px-6 font-semibold">{formatINR(g.price_per_night)}</td>
+                  <td className="py-4 px-6 font-semibold">{formatINR(is12HoursMode ? (g.price_12_hours || g.price_per_night) : g.price_per_night)}</td>
                   <td className="py-4 px-6">
                     <div className="flex flex-col gap-1 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">

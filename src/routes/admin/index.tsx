@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { BedDouble, CheckCircle2, Users, XCircle, TrendingUp } from "lucide-react";
 import { formatINR, CATEGORY_LABELS } from "@/lib/hotel";
+import { getOccupiedRoomStatusMap } from "@/lib/occupancy";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/admin/")({
@@ -35,27 +36,7 @@ function Dashboard() {
     return () => { supabase.removeChannel(ch); };
   }, [refetch]);
 
-  const now = new Date().getTime();
-  const activeBookings = bookings.filter((b: any) => {
-    if (b.status !== "confirmed" && b.status !== "checked_in") return false;
-    const bStart = new Date(`${b.check_in_date}T${b.check_in_time || "14:00"}:00`).getTime();
-    let bEnd;
-    if (b.stay_type === "12_hours") {
-      const d = new Date(bStart);
-      d.setHours(d.getHours() + 12);
-      bEnd = d.getTime();
-    } else {
-      bEnd = new Date(`${b.check_out_date}T12:00:00`).getTime();
-    }
-    return now >= bStart && now <= bEnd;
-  });
-
-  const occupiedRoomStatusMap = new Map<string, string>();
-  activeBookings.forEach((b: any) => {
-    (b.assigned_room_ids ?? []).forEach((id: string) => {
-      occupiedRoomStatusMap.set(id, b.status);
-    });
-  });
+  const occupiedRoomStatusMap = getOccupiedRoomStatusMap(bookings);
 
   const filteredRooms = rooms.filter((r: any) => hotelFilter === "all" || r.hotels?.slug === hotelFilter);
   const reserved = filteredRooms.filter((r: any) => r.status !== "maintenance" && occupiedRoomStatusMap.get(r.id) === "confirmed").length;
