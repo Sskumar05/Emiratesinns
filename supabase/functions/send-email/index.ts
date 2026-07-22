@@ -1,8 +1,24 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-const FROM_ADDRESS = "Hotel Booking <onboarding@resend.dev>";
-const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "admin@example.com";
+
+// ── Sender address ────────────────────────────────────────────────────────────
+// Set the FROM_ADDRESS secret in Supabase Edge Function secrets (Dashboard →
+// Project → Edge Functions → Secrets) to your verified Resend sender, e.g.:
+//   Emirates Inn <reservations@emiratesinns.com>
+// Docs: https://resend.com/docs/dashboard/domains/introduction
+const _fromEnv = Deno.env.get("FROM_ADDRESS");
+if (!_fromEnv) {
+  console.warn(
+    "[send-email] WARNING: FROM_ADDRESS secret is not set. " +
+    "Falling back to Resend test sender (onboarding@resend.dev). " +
+    "Production emails will ONLY be deliverable to the Resend account-owner email. " +
+    "Set FROM_ADDRESS to a verified custom sender, e.g.: Emirates Inn <reservations@emiratesinns.com>"
+  );
+}
+const FROM_ADDRESS = _fromEnv ?? "Hotel Booking <booking@emiratesinns.com>";
+
+const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "sshathiskumar54@gmail.com";
 
 // ── Retry helper ─────────────────────────────────────────────────────────────
 async function fetchWithRetry(

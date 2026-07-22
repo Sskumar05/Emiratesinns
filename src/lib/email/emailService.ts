@@ -114,5 +114,9 @@ export async function sendAdminNotification(
   payload: AdminNotificationPayload,
 ): Promise<SendEmailResult> {
   // `to` is overridden by ADMIN_EMAIL secret inside the function
-  return invoke("admin_notification", "admin@example.com", payload as Record<string, unknown>);
+  return invoke(
+  "admin_notification",
+  "admin@hotel.internal",
+  payload as Record<string, unknown>
+);
 }
