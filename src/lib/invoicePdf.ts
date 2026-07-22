@@ -173,28 +173,25 @@ export function generateInvoiceHTML(data: any): string {
 </html>`;
 }
 
-// ─── Trigger browser print-to-PDF via hidden iframe ──────────────────────────
-// iframe is sized to exact A4 pixels at 96dpi (794 × 1123)
-export function downloadInvoice(data: any) {
+// ─── Trigger direct browser PDF file download ────────────────────────────────
+export function downloadInvoice(data: any, customFilename?: string) {
   const html = generateInvoiceHTML(data);
-  const iframe = document.createElement("iframe");
-  // A4 at 96dpi = 794 × 1123 px — prevents layout reflow that causes a second page
-  iframe.style.cssText =
-    "position:fixed;top:-9999px;left:-9999px;width:794px;height:1123px;border:none;overflow:hidden";
-  document.body.appendChild(iframe);
+  const bookingCode = data.booking_code || data.bookings?.booking_code || "REF";
+  const filename = customFilename || `EmiratesInn-Invoice-${bookingCode}.pdf`;
 
-  const doc = iframe.contentDocument || iframe.contentWindow?.document;
-  if (!doc) return;
-  doc.open();
-  doc.write(html);
-  doc.close();
-
-  // Allow fonts + layout to settle before printing
-  setTimeout(() => {
-    iframe.contentWindow?.focus();
-    iframe.contentWindow?.print();
-    setTimeout(() => {
-      if (document.body.contains(iframe)) document.body.removeChild(iframe);
-    }, 4000);
-  }, 1000);
+  try {
+    const blob = new Blob([html], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  } catch (err) {
+    console.error("[invoicePdf] Direct download error:", err);
+    throw err;
+  }
 }
+
