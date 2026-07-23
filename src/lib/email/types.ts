@@ -7,6 +7,7 @@ export type EmailType =
 
 // ─── Booking Confirmation ────────────────────────────────────────────────────
 export interface BookingConfirmationPayload {
+  bookingId?: string;
   customerName: string;
   bookingCode: string;
   hotelName: string;

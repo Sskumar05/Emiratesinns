@@ -82,30 +82,30 @@ function Payment() {
       // 3. Automatically send booking confirmation email with attached backend PDF invoice
       const customer = (booking as any)?.customers;
       const hotel = (booking as any)?.hotels;
-      if (customer?.email) {
-        try {
-          await sendBookingConfirmation(customer.email, {
-            customerName: customer.full_name || "Valued Guest",
-            bookingCode: booking.booking_code,
-            hotelName: hotel?.name ?? "Emirates Grand Inn",
-            roomType: CATEGORY_LABELS[booking.category] ?? booking.category,
-            checkIn: fmtDateTime(booking.check_in_date, booking.check_in_time),
-            checkOut: fmtDateTime(booking.check_out_date, booking.stay_type === '12_hours' ? (() => {
-               const d = new Date(`${booking.check_in_date}T${booking.check_in_time || "14:00"}:00`);
-               d.setHours(d.getHours() + 12);
-               return d.toTimeString().slice(0, 5);
-            })() : '12:00'),
-            durationLabel: getDurationLabel(booking.num_days, booking.stay_type),
-            numGuests: booking.num_guests,
-            numRooms: booking.num_rooms,
-            numDays: booking.num_days,
-            totalAmount: formatINR(booking.total_amount),
-            paymentStatus: "paid",
-            pdfBase64: pdfResult?.pdfBase64,
-          });
-        } catch (emailErr) {
-          console.warn("[payment] Automatic confirmation email failed or queued:", emailErr);
-        }
+      
+      try {
+        await sendBookingConfirmation(customer?.email || "pending_resolution@emirates.internal", {
+          bookingId: booking.id,
+          customerName: customer?.full_name || "Valued Guest",
+          bookingCode: booking.booking_code,
+          hotelName: hotel?.name ?? "Emirates Grand Inn",
+          roomType: CATEGORY_LABELS[booking.category] ?? booking.category,
+          checkIn: fmtDateTime(booking.check_in_date, booking.check_in_time),
+          checkOut: fmtDateTime(booking.check_out_date, booking.stay_type === '12_hours' ? (() => {
+             const d = new Date(`${booking.check_in_date}T${booking.check_in_time || "14:00"}:00`);
+             d.setHours(d.getHours() + 12);
+             return d.toTimeString().slice(0, 5);
+          })() : '12:00'),
+          durationLabel: getDurationLabel(booking.num_days, booking.stay_type),
+          numGuests: booking.num_guests,
+          numRooms: booking.num_rooms,
+          numDays: booking.num_days,
+          totalAmount: formatINR(booking.total_amount),
+          paymentStatus: "paid",
+          pdfBase64: pdfResult?.pdfBase64,
+        });
+      } catch (emailErr) {
+        console.warn("[payment] Automatic confirmation email failed or queued:", emailErr);
       }
 
       await queryClient.invalidateQueries({ queryKey: ["booking", bookingId] });

@@ -1,4 +1,5 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.39.3";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
@@ -399,7 +400,24 @@ Deno.serve(async (req) => {
     const rawBody = await req.json().catch(() => { throw new Error("Invalid JSON body"); });
     console.log(`[Edge Function] Received request payload: ${JSON.stringify(rawBody)}`);
     
-    const { type, payload: p, to } = validate(rawBody);
+    const { type, payload: p, to: originalTo } = validate(rawBody);
+    let to = originalTo;
+
+    // --- FIX for booking_confirmation missing customer email due to RLS ---
+    if (type === "booking_confirmation" && p.bookingId && to === "pending_resolution@emirates.internal") {
+      const supabaseAdmin = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      );
+      const { data: bData } = await supabaseAdmin.from("bookings").select("*, customers(*)").eq("id", p.bookingId).single();
+      if (bData?.customers?.email) {
+        to = bData.customers.email;
+        p.customerName = bData.customers.full_name || p.customerName;
+      } else {
+        throw new Error("Could not resolve customer email for booking confirmation");
+      }
+    }
+
     console.log(`[Edge Function] Validated request. Type: ${type}, To: ${to}`);
 
     let subject = "";
