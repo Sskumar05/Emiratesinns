@@ -53,10 +53,10 @@ function Home() {
             </p>
     
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/rooms" className="bg-gold text-white px-8 py-4 text-sm font-semibold rounded-md shadow-md inline-flex items-center justify-center gap-2 hover:bg-gold-hover transition">
+              <Link to="/rooms" className="bg-gold text-white px-8 py-4 text-sm font-semibold rounded-3xl shadow-md inline-flex items-center justify-center gap-2 hover:bg-gold-hover transition">
                 Reserve Your Stay <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link to="/about" className="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-8 py-4 text-sm font-semibold rounded-md inline-flex items-center justify-center hover:bg-white/20 transition">
+              <Link to="/about" className="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-8 py-4 text-sm font-semibold rounded-3xl inline-flex items-center justify-center hover:bg-white/20 transition">
                 Our Story
               </Link>
             </div>
@@ -181,7 +181,7 @@ function Home() {
           </div> */}
           <h2 className="font-serif font-bold text-3xl sm:text-4xl md:text-6xl mb-6 text-foreground tracking-tight">Your story begins here.</h2>
           <p className="text-muted-foreground max-w-xl mx-auto mb-10 text-lg font-light">Reserve your suite and let our team craft an unforgettable stay.</p>
-          <Link to="/rooms" className="bg-gold text-white px-10 py-4 text-sm font-semibold rounded-md shadow-md inline-flex items-center gap-2 hover:bg-gold-hover transition">
+          <Link to="/rooms" className="bg-gold text-white px-10 py-4 text-sm font-semibold rounded-2xl shadow-md inline-flex items-center gap-2 hover:bg-gold-hover transition">
             Begin Reservation <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
