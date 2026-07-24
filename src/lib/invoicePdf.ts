@@ -9,7 +9,7 @@ export function generateInvoiceHTML(data: any): string {
   const isInvoiceRow = !!data.invoice_number;
 
   const booking  = isInvoiceRow ? (data.bookings ?? {})   : data;
-  const customer = data.customers ?? {};
+  const customer = data.customers || booking.customers || {};
   const hotel    = booking.hotels ?? data.hotels ?? {};
 
   const now          = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
