@@ -3,7 +3,7 @@ import { WebsiteLayout } from "@/components/website/WebsiteLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Wifi, Tv, Car, Droplet, ChefHat, Camera, Wine, ArrowRight, Ban } from "lucide-react";
 
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/rooms")({
   component: RoomsPage,
 });
 
-/* ─── Static maps (unchanged) ───────────────────────────── */
+/* ─── Static maps ─────────────────────────────────────────── */
 const AMENITY_ICON: Record<string, typeof Wifi> = {
   WiFi: Wifi, TV: Tv, Parking: Car, "Hot Water": Droplet,
   Kitchen: ChefHat, CCTV: Camera, "Welcome Drink": Wine,
@@ -35,25 +35,276 @@ const cardVariant = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
 };
 
+/* ─── Hotel section config ───────────────────────────────── */
+const HOTEL_SECTIONS = [
+  {
+    slug: "emirates-inn",
+    title: "Emirates Inn",
+    // category + optional room_type combos that belong to this hotel
+    allowedTypes: [
+      { category: "ac_double", room_type: "NON AC" },  // Deluxe (NON AC)
+      { category: "ac_double", room_type: "AC" },      // Deluxe (AC)
+      { category: "ac_four",   room_type: null },       // Four Bed
+    ],
+  },
+  {
+    slug: "emirates-grand-inn",
+    title: "Emirates Grand Inn",
+    allowedTypes: [
+      { category: "ac_double", room_type: "AC" },      // Deluxe (AC)
+      { category: "ac_triple", room_type: "AC" },      // Triple (AC)
+    ],
+  },
+];
+
+/* ─── RoomCard ───────────────────────────────────────────── */
+function RoomCard({ r, is12HoursMode }: { r: any; is12HoursMode: boolean }) {
+  const isSoldOut = r._availableCount === 0;
+
+  return (
+    <motion.div
+      key={`${r.hotel_id ?? ""}_${r.category}_${r.room_type || "none"}`}
+      variants={cardVariant}
+      className="group flex flex-col w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.333rem)]"
+      style={{
+        background: "#FFFFFF",
+        border: isSoldOut
+          ? "1px solid rgba(0,0,0,0.08)"
+          : "1px solid rgba(180,155,90,0.18)",
+        borderRadius: "22px",
+        boxShadow: "0 4px 20px -6px rgba(13,35,58,0.08), 0 1px 4px rgba(0,0,0,0.04)",
+        overflow: "hidden",
+        opacity: isSoldOut ? 0.72 : 1,
+        transition: "box-shadow 350ms ease, transform 350ms ease, border-color 350ms ease",
+      }}
+      whileHover={isSoldOut ? {} : {
+        y: -6,
+        boxShadow: "0 16px 40px -8px rgba(13,35,58,0.14), 0 0 0 1px rgba(180,155,90,0.32)",
+      }}
+    >
+      {/* ── Thumbnail ── */}
+      <div className="relative overflow-hidden" style={{ aspectRatio: "4 / 3" }}>
+        <img
+          src={r.images?.[0] || ROOM_IMG}
+          alt={CATEGORY_LABELS[r.category] ?? r.category}
+          loading="lazy"
+          className={`w-full h-full object-cover transition-transform duration-600 ${
+            isSoldOut ? "grayscale" : "group-hover:scale-[1.06]"
+          }`}
+          style={{ display: "block" }}
+        />
+
+        {/* Hotel name badge — top left */}
+        <div
+          className="absolute top-4 left-4"
+          style={{
+            background: "rgba(255,255,255,0.92)",
+            backdropFilter: "blur(6px)",
+            borderRadius: "8px",
+            padding: "4px 10px",
+            fontSize: "0.68rem",
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "var(--color-gold)",
+            border: "1px solid rgba(180,155,90,0.25)",
+          }}
+        >
+          {r.hotels?.name}
+        </div>
+
+        {/* Sold-out overlay */}
+        {isSoldOut && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span
+              className="text-white font-bold text-xs uppercase tracking-widest"
+              style={{
+                background: "rgba(180,30,30,0.92)",
+                borderRadius: "999px",
+                padding: "6px 18px",
+                backdropFilter: "blur(4px)",
+              }}
+            >
+              Sold Out
+            </span>
+          </div>
+        )}
+
+        {/* Bottom gradient for depth */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.18), transparent)" }}
+        />
+      </div>
+
+      {/* ── Card Body ── */}
+      <div className="flex flex-col flex-1 p-6">
+
+        {/* Title + Price row */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1 pr-3">
+            <h3
+              className="font-serif font-bold text-foreground leading-tight"
+              style={{ fontSize: "1.2rem" }}
+            >
+              {CATEGORY_LABELS[r.category] ?? r.category} {r.room_type ? `(${r.room_type})` : ""}
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1 font-light">
+              {r._totalCount} room{r._totalCount !== 1 ? "s" : ""} available
+            </p>
+          </div>
+
+          {/* Price */}
+          <div className="text-right flex-shrink-0">
+            <div
+              className="font-bold text-foreground"
+              style={{ fontSize: "1.18rem", letterSpacing: "-0.02em" }}
+            >
+              {formatINR(is12HoursMode ? (r.price_12_hours || r.price_per_night) : r.price_per_night)}
+            </div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mt-0.5">
+              {is12HoursMode ? "12 Hours" : "per night"}
+            </div>
+          </div>
+        </div>
+
+        {/* Gold separator */}
+        <div
+          className="w-8 h-px mb-5"
+          style={{ background: "rgba(180,155,90,0.4)" }}
+        />
+
+        {/* Amenity icons */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {(r.amenities ?? []).slice(0, 5).map((a: string) => {
+            const I = AMENITY_ICON[a];
+            return I ? (
+              <div
+                key={a}
+                title={a}
+                className="flex items-center justify-center"
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: "50%",
+                  background: "rgba(180,155,90,0.08)",
+                  border: "1px solid rgba(180,155,90,0.2)",
+                }}
+              >
+                <I className="text-gold" style={{ width: 15, height: 15 }} strokeWidth={1.5} />
+              </div>
+            ) : null;
+          })}
+        </div>
+
+        {/* CTA — always pushed to bottom */}
+        <div className="mt-auto">
+          {isSoldOut ? (
+            <div
+              className="w-full flex items-center justify-center gap-2 font-semibold text-sm cursor-not-allowed select-none"
+              style={{
+                background: "rgba(0,0,0,0.04)",
+                color: "var(--color-muted-foreground)",
+                borderRadius: "12px",
+                padding: "13px 0",
+                border: "1px solid rgba(0,0,0,0.07)",
+              }}
+            >
+              <Ban className="h-4 w-4" /> Sold Out
+            </div>
+          ) : (
+            <Link
+              to="/rooms/$id"
+              params={{ id: r.id }}
+              className="w-full block text-center font-semibold text-sm text-white hover:opacity-90 transition-opacity"
+              style={{
+                background: "var(--color-gold)",
+                borderRadius: "12px",
+                padding: "13px 0",
+                boxShadow: "0 4px 14px -4px rgba(180,155,90,0.5)",
+              }}
+            >
+              View Details &amp; Book{" "}
+              <ArrowRight className="inline h-4 w-4 ml-1" />
+            </Link>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── HotelSection ───────────────────────────────────────── */
+function HotelSection({
+  title,
+  cards,
+  is12HoursMode,
+}: {
+  title: string;
+  cards: any[];
+  is12HoursMode: boolean;
+}) {
+  return (
+    <div className="mb-16">
+      {/* Section heading */}
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-8 h-px" style={{ background: "rgba(180,155,90,0.5)" }} />
+        <h2
+          className="font-serif font-bold text-foreground"
+          style={{ fontSize: "clamp(1.4rem, 3vw, 2rem)" }}
+        >
+          {title}
+        </h2>
+        <div className="flex-1 h-px" style={{ background: "rgba(180,155,90,0.15)" }} />
+      </div>
+
+      {cards.length === 0 ? (
+        <div
+          className="text-center py-14 rounded-2xl"
+          style={{
+            background: "#FFFFFF",
+            border: "1px solid rgba(180,155,90,0.12)",
+            color: "var(--color-muted-foreground)",
+          }}
+        >
+          <p className="font-light text-base">No rooms available for {title} at the moment.</p>
+        </div>
+      ) : (
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          variants={staggerContainer}
+          className="flex flex-wrap justify-center gap-8"
+        >
+          {cards.map((r: any) => (
+            <RoomCard
+              key={`${r.hotel_id ?? ""}_${r.category}_${r.room_type || "none"}`}
+              r={r}
+              is12HoursMode={is12HoursMode}
+            />
+          ))}
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Component ──────────────────────────────────────────── */
 function RoomsPage() {
-  /* ── State (maxPrice removed) ── */
-  const [hotel, setHotel] = useState<string>("all");
-  const [category, setCategory] = useState<string>("all");
-
-  /* ── Data fetching (unchanged) ── */
-  const { data: hotels = [] } = useQuery({
-    queryKey: ["hotels"],
-    queryFn: async () => (await supabase.from("hotels").select("*").order("name")).data ?? [],
-  });
-
+  /* ── Data fetching (single query) ── */
   const { data: rooms = [], isLoading } = useQuery({
     queryKey: ["rooms"],
-    queryFn: async () =>
-      (await supabase.from("rooms").select("*, hotels(name, slug, id)").order("price_per_night")).data ?? [],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("rooms")
+        .select("*, hotels(name, slug, id)")
+        .order("price_per_night");
+      return data ?? [];
+    },
   });
 
-  /* ── Load Global Stay Mode ───────────────────────────────────────────────── */
+  /* ── Load Global Stay Mode ── */
   const { data: stayModeData } = useQuery({
     queryKey: ["system_settings", "global_stay_mode"],
     queryFn: async () => {
@@ -78,32 +329,49 @@ function RoomsPage() {
   });
   const is12HoursMode = stayModeData === "12_hours";
 
-  /* ── Grouping logic (unchanged) ── */
-  const grouped = useMemo(() => {
-    const map: Record<string, any> = {};
+  /* ── Group rooms by hotel slug, de-duplicate by category+room_type ── */
+  const groupedByHotel = useMemo(() => {
+    // First, de-duplicate: one card per (hotel_id, category, room_type) combo
+    const cardMap: Record<string, any> = {};
     for (const r of rooms) {
-      const hotelId = (r as any).hotel_id ?? (r as any).hotels?.id ?? "";
-      const key = `${hotelId}__${(r as any).category}__${(r as any).room_type || "none"}`;
-      if (!map[key]) {
-        map[key] = { ...r, _availableCount: 0, _maintenanceCount: 0, _totalCount: 0 };
+      const hotelSlug = (r as any).hotels?.slug ?? "";
+      const key = `${hotelSlug}__${(r as any).category}__${(r as any).room_type || "none"}`;
+      if (!cardMap[key]) {
+        cardMap[key] = { ...r, _availableCount: 0, _maintenanceCount: 0, _totalCount: 0 };
       }
-      map[key]._totalCount++;
-      if ((r as any).status === "available") map[key]._availableCount++;
-      if ((r as any).status === "maintenance") map[key]._maintenanceCount++;
+      cardMap[key]._totalCount++;
+      if ((r as any).status === "available") cardMap[key]._availableCount++;
+      if ((r as any).status === "maintenance") cardMap[key]._maintenanceCount++;
     }
-    return Object.values(map);
+    const deduped = Object.values(cardMap);
+
+    // Then group by hotel slug
+    const bySlug: Record<string, any[]> = {};
+    for (const card of deduped) {
+      const slug = (card as any).hotels?.slug ?? "";
+      if (!bySlug[slug]) bySlug[slug] = [];
+      bySlug[slug].push(card);
+    }
+    return bySlug;
   }, [rooms]);
 
-  /* ── Filtering (maxPrice removed) ── */
-  const filtered = useMemo(
-    () =>
-      grouped.filter(
-        (r: any) =>
-          (hotel === "all" || r.hotels?.slug === hotel) &&
-          (category === "all" || r.category === category),
-      ),
-    [grouped, hotel, category],
-  );
+  /* ── For each hotel section, filter to only the allowed room types ── */
+  const sectionCards = useMemo(() => {
+    return HOTEL_SECTIONS.map((section) => {
+      const hotelCards = groupedByHotel[section.slug] ?? [];
+      const filtered = hotelCards.filter((card: any) =>
+        section.allowedTypes.some((allowed) => {
+          const categoryMatch = card.category === allowed.category;
+          const typeMatch =
+            allowed.room_type === null
+              ? true
+              : card.room_type === allowed.room_type;
+          return categoryMatch && typeMatch;
+        })
+      );
+      return { ...section, cards: filtered };
+    });
+  }, [groupedByHotel]);
 
   return (
     <WebsiteLayout>
@@ -161,275 +429,25 @@ function RoomsPage() {
         </motion.div>
       </section>
 
-      {/* ── 2. FILTERS ───────────────────────────────────── */}
-      <section className="py-6 bg-background">
-        <div className="container-luxe">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-5"
-            style={{
-              background: "#FFFFFF",
-              border: "1px solid rgba(180,155,90,0.2)",
-              borderRadius: "18px",
-              padding: "0.875rem clamp(1rem, 2.5vw, 1.5rem)",
-              boxShadow: "0 4px 24px -6px rgba(13,35,58,0.07), 0 1px 4px rgba(0,0,0,0.04)",
-            }}
-          >
-            {/* Hotel filter */}
-            <div>
-              <label
-                className="text-xs font-semibold uppercase text-muted-foreground mb-1.5 block"
-                style={{ letterSpacing: "0.12em" }}
-              >
-                Property
-              </label>
-              <select
-                id="filter-hotel"
-                value={hotel}
-                onChange={(e) => setHotel(e.target.value)}
-                className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none transition-colors"
-                style={{ fontFamily: "inherit" }}
-              >
-                <option value="all">All Properties</option>
-                {hotels.map((h: any) => (
-                  <option key={h.id} value={h.slug}>{h.name}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Category filter */}
-            <div>
-              <label
-                className="text-xs font-semibold uppercase text-muted-foreground mb-2.5 block"
-                style={{ letterSpacing: "0.12em" }}
-              >
-                Category
-              </label>
-              <select
-                id="filter-category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none transition-colors"
-                style={{ fontFamily: "inherit" }}
-              >
-                <option value="all">All Categories</option>
-                {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
-              </select>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── 3. ROOM CARDS ────────────────────────────────── */}
+      {/* ── 2. HOTEL SECTIONS ─────────────────────────────── */}
       <section
-        className="pt-4 pb-28"
+        className="pt-14 pb-28"
         style={{ background: "#FAF9F6" }}
       >
         <div className="container-luxe">
           {isLoading ? (
-            /* Loading state */
             <div className="text-center py-28 text-muted-foreground font-light text-lg">
               Loading rooms…
             </div>
-          ) : filtered.length === 0 ? (
-            /* Empty state */
-            <div className="text-center py-28">
-              <p className="text-muted-foreground font-light text-lg">No rooms match your current filters.</p>
-              <button
-                onClick={() => { setHotel("all"); setCategory("all"); }}
-                className="mt-6 text-sm font-semibold text-gold underline underline-offset-4 hover:text-gold/80 transition"
-              >
-                Clear filters
-              </button>
-            </div>
           ) : (
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-40px" }}
-              variants={staggerContainer}
-              className="flex flex-wrap justify-center gap-8"
-            >
-              {filtered.map((r: any) => {
-                const isSoldOut = r._availableCount === 0;
-
-                return (
-                  <motion.div
-                    key={`${r.hotel_id ?? ""}_${r.category}_${r.room_type || "none"}`}
-                    variants={cardVariant}
-                    className="group flex flex-col w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.333rem)]"
-                    style={{
-                      background: "#FFFFFF",
-                      border: isSoldOut
-                        ? "1px solid rgba(0,0,0,0.08)"
-                        : "1px solid rgba(180,155,90,0.18)",
-                      borderRadius: "22px",
-                      boxShadow: "0 4px 20px -6px rgba(13,35,58,0.08), 0 1px 4px rgba(0,0,0,0.04)",
-                      overflow: "hidden",
-                      opacity: isSoldOut ? 0.72 : 1,
-                      transition: "box-shadow 350ms ease, transform 350ms ease, border-color 350ms ease",
-                    }}
-                    whileHover={isSoldOut ? {} : {
-                      y: -6,
-                      boxShadow: "0 16px 40px -8px rgba(13,35,58,0.14), 0 0 0 1px rgba(180,155,90,0.32)",
-                    }}
-                  >
-                    {/* ── Thumbnail ── */}
-                    <div className="relative overflow-hidden" style={{ aspectRatio: "4 / 3" }}>
-                      <img
-                        src={r.images?.[0] || ROOM_IMG}
-                        alt={CATEGORY_LABELS[r.category] ?? r.category}
-                        loading="lazy"
-                        className={`w-full h-full object-cover transition-transform duration-600 ${
-                          isSoldOut ? "grayscale" : "group-hover:scale-[1.06]"
-                        }`}
-                        style={{ display: "block" }}
-                      />
-
-                      {/* Hotel name badge — top left */}
-                      <div
-                        className="absolute top-4 left-4"
-                        style={{
-                          background: "rgba(255,255,255,0.92)",
-                          backdropFilter: "blur(6px)",
-                          borderRadius: "8px",
-                          padding: "4px 10px",
-                          fontSize: "0.68rem",
-                          fontWeight: 700,
-                          letterSpacing: "0.1em",
-                          textTransform: "uppercase",
-                          color: "var(--color-gold)",
-                          border: "1px solid rgba(180,155,90,0.25)",
-                        }}
-                      >
-                        {r.hotels?.name}
-                      </div>
-
-                      {/* Sold-out overlay */}
-                      {isSoldOut && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span
-                            className="text-white font-bold text-xs uppercase tracking-widest"
-                            style={{
-                              background: "rgba(180,30,30,0.92)",
-                              borderRadius: "999px",
-                              padding: "6px 18px",
-                              backdropFilter: "blur(4px)",
-                            }}
-                          >
-                            Sold Out
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Bottom gradient for depth */}
-                      <div
-                        className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
-                        style={{ background: "linear-gradient(to top, rgba(0,0,0,0.18), transparent)" }}
-                      />
-                    </div>
-
-                    {/* ── Card Body ── */}
-                    <div className="flex flex-col flex-1 p-6">
-
-                      {/* Title + Price row */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1 pr-3">
-                          <h3
-                            className="font-serif font-bold text-foreground leading-tight"
-                            style={{ fontSize: "1.2rem" }}
-                          >
-                            {CATEGORY_LABELS[r.category]} {r.room_type ? `(${r.room_type})` : ""}
-                          </h3>
-                          <p className="text-xs text-muted-foreground mt-1 font-light">
-                            {r._totalCount} room{r._totalCount !== 1 ? "s" : ""} available
-                          </p>
-                        </div>
-
-                        {/* Price */}
-                        <div className="text-right flex-shrink-0">
-                          <div
-                            className="font-bold text-foreground"
-                            style={{ fontSize: "1.18rem", letterSpacing: "-0.02em" }}
-                          >
-                            {formatINR(is12HoursMode ? (r.price_12_hours || r.price_per_night) : r.price_per_night)}
-                          </div>
-                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mt-0.5">
-                            {is12HoursMode ? "12 Hours" : "per night"}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Gold separator */}
-                      <div
-                        className="w-8 h-px mb-5"
-                        style={{ background: "rgba(180,155,90,0.4)" }}
-                      />
-
-                      {/* Amenity icons */}
-                      <div className="flex flex-wrap gap-2 mb-6">
-                        {(r.amenities ?? []).slice(0, 5).map((a: string) => {
-                          const I = AMENITY_ICON[a];
-                          return I ? (
-                            <div
-                              key={a}
-                              title={a}
-                              className="flex items-center justify-center"
-                              style={{
-                                width: 34,
-                                height: 34,
-                                borderRadius: "50%",
-                                background: "rgba(180,155,90,0.08)",
-                                border: "1px solid rgba(180,155,90,0.2)",
-                              }}
-                            >
-                              <I className="text-gold" style={{ width: 15, height: 15 }} strokeWidth={1.5} />
-                            </div>
-                          ) : null;
-                        })}
-                      </div>
-
-                      {/* CTA — always pushed to bottom */}
-                      <div className="mt-auto">
-                        {isSoldOut ? (
-                          <div
-                            className="w-full flex items-center justify-center gap-2 font-semibold text-sm cursor-not-allowed select-none"
-                            style={{
-                              background: "rgba(0,0,0,0.04)",
-                              color: "var(--color-muted-foreground)",
-                              borderRadius: "12px",
-                              padding: "13px 0",
-                              border: "1px solid rgba(0,0,0,0.07)",
-                            }}
-                          >
-                            <Ban className="h-4 w-4" /> Sold Out
-                          </div>
-                        ) : (
-                          <Link
-                            to="/rooms/$id"
-                            params={{ id: r.id }}
-                            className="w-full block text-center font-semibold text-sm text-white hover:opacity-90 transition-opacity"
-                            style={{
-                              background: "var(--color-gold)",
-                              borderRadius: "12px",
-                              padding: "13px 0",
-                              boxShadow: "0 4px 14px -4px rgba(180,155,90,0.5)",
-                            }}
-                          >
-                            View Details &amp; Book{" "}
-                            <ArrowRight className="inline h-4 w-4 ml-1" />
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
+            sectionCards.map((section) => (
+              <HotelSection
+                key={section.slug}
+                title={section.title}
+                cards={section.cards}
+                is12HoursMode={is12HoursMode}
+              />
+            ))
           )}
         </div>
       </section>

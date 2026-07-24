@@ -179,16 +179,21 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
       <main className="flex-1">{children ?? <Outlet />}</main>
 
       <footer className="bg-primary text-primary-foreground mt-24">
-        {/* Desktop: 3-col balanced grid | Tablet: 2-col | Mobile: 1-col */}
-        <div className="footer-grid container-luxe py-16 grid grid-cols-1 sm:grid-cols-2 gap-10">
+        {/*
+          Layout:
+            Mobile/tablet  → single column, stacked vertically
+            Desktop (lg+)  → two flex children:
+              • Brand: ~42% wide, left-aligned
+              • Nav group: ~58% wide, flex justify-end so columns hug the right edge
+        */}
+        <div
+          className="container-luxe py-16 flex flex-col lg:flex-row lg:items-start gap-12"
+        >
 
           {/* ── Brand Column ── */}
-          <div className="sm:col-span-2 lg:col-span-1" style={{ maxWidth: "340px" }}>
+          <div style={{ flex: "0 0 42%", maxWidth: "360px" }}>
             <div className="flex items-center gap-3 mb-5">
-              <div>
-                {/* <Building className="h-5 w-5 text-white" /> */}
-                <img src={emirates} className="h-15 w-15" />
-              </div>
+              <img src={emirates} className="h-15 w-15" />
               <span className="font-bold text-lg tracking-tight">Emirates Inn</span>
             </div>
             <p className="text-sm text-primary-foreground/70 leading-relaxed">
@@ -196,48 +201,44 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
             </p>
           </div>
 
-          {/* ── Explore Column ── */}
-          <div>
-            <h4 className="text-sm font-semibold mb-6">Explore</h4>
-            <ul className="text-sm text-primary-foreground/70" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              {NAV.slice(1).map((n) => (
-                <li key={n.to}>
-                  <Link to={n.to as "."} className="hover:text-white transition-colors">{n.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* ── Right nav group: Explore + Contact pushed to the right ── */}
+          <div
+            className="flex flex-col sm:flex-row lg:justify-end gap-10 sm:gap-12"
+            style={{ flex: "1 1 0" }}
+          >
+            {/* Explore */}
+            <div style={{ minWidth: "120px" }}>
+              <h4 className="text-sm font-semibold mb-6">Explore</h4>
+              <ul className="text-sm text-primary-foreground/70" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {NAV.slice(1).map((n) => (
+                  <li key={n.to}>
+                    <Link to={n.to as "."} className="hover:text-white transition-colors">{n.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          {/* ── Contact Column ── */}
-          <div>
-            <h4 className="text-sm font-semibold mb-6">Contact</h4>
-            <ul className="text-sm text-primary-foreground/70" style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-              <li className="flex gap-3 items-center">
-                <Phone className="h-4 w-4 shrink-0" />
-                <span>+91 73392 26598</span>
-              </li>
-              <li className="flex gap-3 items-center">
-                <Mail className="h-4 w-4 shrink-0" />
-                <span>reservations@emiratesinn.com</span>
-              </li>
-              <li className="flex gap-3 items-start">
-                <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>East Coast Rd, Velankanni,<br />Tamil Nadu 611111 - India</span>
-              </li>
-            </ul>
+            {/* Contact */}
+            <div style={{ minWidth: "200px" }}>
+              <h4 className="text-sm font-semibold mb-6">Contact</h4>
+              <ul className="text-sm text-primary-foreground/70" style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+                <li className="flex gap-3 items-center">
+                  <Phone className="h-4 w-4 shrink-0" />
+                  <span>+91 73392 26598</span>
+                </li>
+                <li className="flex gap-3 items-center">
+                  <Mail className="h-4 w-4 shrink-0" />
+                  <span>reservations@emiratesinn.com</span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span>East Coast Rd, Velankanni,<br />Tamil Nadu 611111 - India</span>
+                </li>
+              </ul>
+            </div>
           </div>
 
         </div>
-
-        {/* Scoped responsive override: switch to balanced 3-col on large screens */}
-        <style>{`
-          @media (min-width: 1024px) {
-            .footer-grid {
-              grid-template-columns: 1.3fr 0.8fr 1fr !important;
-              column-gap: 3rem !important;
-            }
-          }
-        `}</style>
         <div className="border-t border-primary-foreground/10">
           <div className="container-luxe py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-primary-foreground/50">
             <span>© {new Date().getFullYear()} Emirates Inn & Emirates Grand Inn. All rights reserved.</span>
