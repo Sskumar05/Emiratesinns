@@ -27,8 +27,15 @@ function Payment() {
   const { data: booking } = useQuery({
     queryKey: ["booking", bookingId],
     enabled: !!bookingId,
-    queryFn: async () => (await supabase.from("bookings").select("*, hotels(name), customers(*)").eq("id", bookingId!).maybeSingle()).data,
+    queryFn: async () => {
+      const { data, error } = await (supabase.rpc as any)("get_invoice_data", { p_booking_id: bookingId! });
+      if (error || !data) return null;
+      // If it is an invoice row, the bookings data is nested inside it.
+      // Otherwise, the booking data is at the root.
+      return data.invoice_number ? (data.bookings ?? {}) : data;
+    },
   });
+
 
   const handleDownloadInvoice = useCallback(async () => {
     if (!booking || pdfLoading) return;

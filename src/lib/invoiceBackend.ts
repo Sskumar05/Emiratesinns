@@ -29,16 +29,6 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
 
   const hotel = booking.hotels ?? data.hotels ?? {};
 
-  // ── DIAGNOSTIC: trace exact objects reaching the PDF renderer ──
-  console.log("CUSTOMER OBJECT", customer);
-  console.log("BOOKING OBJECT", booking);
-  console.log("DATA OBJECT", data);
-  console.log({
-    full_name: customer?.full_name,
-    email: customer?.email,
-    mobile: customer?.mobile,
-  });
-
   const bookingCode = booking.booking_code ?? "REF";
   const invoiceNumber = isInvoiceRow
     ? data.invoice_number
@@ -285,57 +275,39 @@ export async function getOrGenerateInvoicePDF(bookingId: string): Promise<PDFInv
     throw new Error("Invalid request: Booking ID is required.");
   }
 
-  // 1. Check for existing invoice record, fetching the full customer & hotel relation
-  //    so we always have the latest customer data regardless of what was cached.
-  const { data: existingInv, error: invErr } = await supabase
-    .from("invoices")
-    .select("*, bookings(*, hotels(*), customers(*))")
-    .eq("booking_id", bookingId)
-    .maybeSingle();
+  // Fetch the invoice or booking data securely via SECURITY DEFINER RPC
+  const { data: invoiceData, error: rpcErr } = await (supabase.rpc as any)(
+    "get_invoice_data",
+    { p_booking_id: bookingId }
+  );
 
-  if (invErr) {
-    console.warn("[invoiceBackend] Invoice query warning:", invErr.message);
+  if (rpcErr || !invoiceData) {
+    console.error("[invoiceBackend] RPC error:", rpcErr);
+    throw new Error("Unable to retrieve booking or invoice record for invoice generation.");
   }
 
-  // 2. If an invoice record already exists, regenerate the PDF from the live relation data
-  //    (never return the stale cached pdf_url — it may have been generated before customer
-  //    data was available, producing blank fields).
-  if (existingInv) {
-    // existingInv.bookings already contains customers(*) and hotels(*) from the query above.
-    // Pass existingInv directly so generatePDFInvoice gets:
-    //   data.invoice_number  → marks it as isInvoiceRow = true
-    //   data.bookings        → booking fields
-    //   data.bookings.customers → full_name / email / mobile
-    //   data.bookings.hotels    → hotel name
-    const pdfResult = generatePDFInvoice(existingInv);
+  const isInvoiceRow = !!invoiceData.invoice_number;
 
-    // Overwrite the stored pdf_url so future downloads are also correct.
+  // 1. If an invoice record already exists, regenerate the PDF from the live RPC data
+  if (isInvoiceRow) {
+    const pdfResult = generatePDFInvoice(invoiceData);
+
+    // Overwrite the stored pdf_url in DB to ensure it has latest customer details.
     await supabase
       .from("invoices")
       .update({ pdf_url: pdfResult.pdfDataUrl })
-      .eq("id", existingInv.id);
+      .eq("id", invoiceData.id);
 
     return pdfResult;
   }
 
-  // 3. No invoice record yet — fetch the booking directly and generate for the first time.
-  const { data: booking, error: bErr } = await supabase
-    .from("bookings")
-    .select("*, hotels(*), customers(*)")
-    .eq("id", bookingId)
-    .maybeSingle();
+  // 2. No invoice record exists yet — generate PDF and insert new invoice record
+  const pdfResult = generatePDFInvoice(invoiceData);
 
-  if (bErr || !booking) {
-    throw new Error("Unable to retrieve booking record for invoice generation.");
-  }
-
-  const pdfResult = generatePDFInvoice(booking);
-
-  // Insert a new invoice record with the generated PDF.
   await supabase.from("invoices").insert({
-    booking_id: booking.id,
-    customer_id: booking.customer_id,
-    amount: booking.total_amount ?? 0,
+    booking_id: invoiceData.id,
+    customer_id: invoiceData.customer_id,
+    amount: invoiceData.total_amount ?? 0,
     status: "paid",
     invoice_number: pdfResult.invoiceNumber,
     pdf_url: pdfResult.pdfDataUrl,
@@ -343,4 +315,5 @@ export async function getOrGenerateInvoicePDF(bookingId: string): Promise<PDFInv
 
   return pdfResult;
 }
+
 

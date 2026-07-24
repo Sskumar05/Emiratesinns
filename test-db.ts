@@ -11,7 +11,7 @@ envFile.split("\n").forEach(line => {
   }
 });
 
-const supabase = createClient(env["VITE_SUPABASE_URL"], env["VITE_SUPABASE_ANON_KEY"]);
+const supabase = createClient(env["VITE_SUPABASE_URL"], env["VITE_SUPABASE_PUBLISHABLE_KEY"]);
 
 async function verify() {
   const { data: inv } = await supabase
