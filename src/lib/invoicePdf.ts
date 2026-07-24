@@ -7,8 +7,15 @@ import { CATEGORY_LABELS, formatINR, fmtDateTime, getDurationLabel, getRateLabel
 export function generateInvoiceHTML(data: any): string {
   const isInvoiceRow = !!data.invoice_number;
 
-  const booking  = isInvoiceRow ? (data.bookings ?? {})   : data;
-  const customer = data.customers || booking.customers || {};
+  const booking  = isInvoiceRow ? (data.bookings ?? {}) : data;
+
+  // Resolve customer from every possible location the Supabase query may return it
+  const customer =
+    data.customers ||
+    (data.bookings ?? {}).customers ||
+    booking.customers ||
+    {};
+
   const hotel    = booking.hotels ?? data.hotels ?? {};
 
   const now          = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });

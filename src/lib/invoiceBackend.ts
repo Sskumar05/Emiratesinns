@@ -20,7 +20,13 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
   });
   const isInvoiceRow = !!data.invoice_number;
   const booking = isInvoiceRow ? (data.bookings ?? {}) : data;
-  const customer = data.customers || booking.customers || {};
+
+  // Resolve customer from every possible location the Supabase query may return it
+  const customerFromRoot     = data.customers;                  // invoices.customers (direct FK join)
+  const customerFromBookings = (data.bookings ?? {}).customers; // invoices.bookings.customers (nested join)
+  const customerFromBooking  = booking.customers;               // bookings.customers (direct query path)
+  const customer = customerFromRoot || customerFromBookings || customerFromBooking || {};
+
   const hotel = booking.hotels ?? data.hotels ?? {};
 
   const bookingCode = booking.booking_code ?? "REF";
