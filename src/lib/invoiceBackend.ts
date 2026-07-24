@@ -29,6 +29,16 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
 
   const hotel = booking.hotels ?? data.hotels ?? {};
 
+  // ── DIAGNOSTIC: trace exact objects reaching the PDF renderer ──
+  console.log("CUSTOMER OBJECT", customer);
+  console.log("BOOKING OBJECT", booking);
+  console.log("DATA OBJECT", data);
+  console.log({
+    full_name: customer?.full_name,
+    email: customer?.email,
+    mobile: customer?.mobile,
+  });
+
   const bookingCode = booking.booking_code ?? "REF";
   const invoiceNumber = isInvoiceRow
     ? data.invoice_number
