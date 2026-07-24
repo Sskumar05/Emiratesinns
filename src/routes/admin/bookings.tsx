@@ -10,7 +10,16 @@ import { ReduceRoomsModal } from "@/components/admin/ReduceRoomsModal";
 import { addDays, isoDate } from "@/lib/hotel";
 import { downloadXlsx, fmtExcelDate } from "@/lib/exportExcel";
 
-export const Route = createFileRoute("/admin/bookings")({ component: AdminBookings });
+type Search = {
+  source?: string;
+};
+
+export const Route = createFileRoute("/admin/bookings")({
+  validateSearch: (s: Record<string, unknown>): Search => ({
+    source: typeof s.source === "string" ? s.source : undefined,
+  }),
+  component: AdminBookings,
+});
 
 const STATUSES = ["pending", "confirmed", "checked_in", "checked_out", "cancelled", "no_show"];
 
@@ -40,6 +49,7 @@ const formatBadgeText = (text: string) => (text || '').replace('_', ' ');
 
 function AdminBookings() {
   const qc = useQueryClient();
+  const search = Route.useSearch();
   const [hotelF, setHotelF] = useState("all");
   const [statusF, setStatusF] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,12 +66,13 @@ function AdminBookings() {
         ? ids.map((id: string) => roomNumberMap[id] ?? id).filter(Boolean).join(", ")
         : "-";
     const headers = [
-      "Booking ID", "Customer Name", "Mobile", "Hotel", "Room Category",
+      "Booking ID", "Source", "Customer Name", "Mobile", "Hotel", "Room Category",
       "Room Number(s)", "Guests", "Check-In", "Check-Out", "Stay Type",
       "Booking Status", "Payment Status", "Amount", "Created Date",
     ];
     const rows = filtered.map((b: any) => [
       b.booking_code,
+      (b.booking_source || "online").replace("_", " ").toUpperCase(),
       b.customers?.full_name ?? "-",
       b.customers?.mobile ?? "-",
       b.hotels?.name ?? "-",
@@ -185,6 +196,7 @@ function AdminBookings() {
 
   const filtered = useMemo(() => {
     return bookings.filter((b: any) => {
+      const matchSource = !search.source || b.booking_source === search.source;
       const matchHotel = hotelF === "all" || b.hotels?.slug === hotelF;
       const matchStatus = statusF === "all" || b.status === statusF;
       const q = searchQuery.toLowerCase();
@@ -194,9 +206,9 @@ function AdminBookings() {
         (b.customers?.full_name || "").toLowerCase().includes(q) ||
         (b.customers?.mobile || "").toLowerCase().includes(q);
 
-      return matchHotel && matchStatus && matchSearch;
+      return matchSource && matchHotel && matchStatus && matchSearch;
     });
-  }, [bookings, hotelF, statusF, searchQuery]);
+  }, [bookings, hotelF, statusF, searchQuery, search.source]);
 
   return (
     <div className="flex flex-col space-y-6 h-[calc(100vh-8rem)] lg:h-[calc(100vh-10rem)]">
@@ -255,6 +267,7 @@ function AdminBookings() {
             <tr>
               {[
                 "Booking ID",
+                "Source",
                 "Customer",
                 "Mobile",
                 "Hotel",
@@ -289,6 +302,7 @@ function AdminBookings() {
               return (
                 <tr key={b.id} className="hover:bg-surface/30 transition-colors">
                   <td className="py-3 px-4 text-gold font-medium whitespace-nowrap">{b.booking_code}</td>
+                  <td className="py-3 px-4 whitespace-nowrap text-xs font-semibold uppercase tracking-wider text-muted-foreground">{(b.booking_source || "online").replace("_", " ")}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{b.customers?.full_name}</td>
                   <td className="py-3 px-4 text-muted-foreground whitespace-nowrap">{b.customers?.mobile}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{b.hotels?.name}</td>

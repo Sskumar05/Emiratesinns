@@ -24,12 +24,14 @@ import { Route as RoomsIdRouteImport } from './routes/rooms_.$id'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminRoomsRouteImport } from './routes/admin/rooms'
 import { Route as AdminProfileRouteImport } from './routes/admin/profile'
+import { Route as AdminNewBookingRouteImport } from './routes/admin/new-booking'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminInvoicesRouteImport } from './routes/admin/invoices'
 import { Route as AdminCustomersRouteImport } from './routes/admin/customers'
 import { Route as AdminCancelledRouteImport } from './routes/admin/cancelled'
 import { Route as AdminCalendarRouteImport } from './routes/admin/calendar'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
+import { Route as AdminBookingSuccessRouteImport } from './routes/admin/booking-success'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin/audit-logs'
 
 const RoomsRoute = RoomsRouteImport.update({
@@ -107,6 +109,11 @@ const AdminProfileRoute = AdminProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminNewBookingRoute = AdminNewBookingRouteImport.update({
+  id: '/new-booking',
+  path: '/new-booking',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -137,6 +144,11 @@ const AdminBookingsRoute = AdminBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminBookingSuccessRoute = AdminBookingSuccessRouteImport.update({
+  id: '/booking-success',
+  path: '/booking-success',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
   id: '/audit-logs',
   path: '/audit-logs',
@@ -155,12 +167,14 @@ export interface FileRoutesByFullPath {
   '/payment': typeof PaymentRoute
   '/rooms': typeof RoomsRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
+  '/admin/booking-success': typeof AdminBookingSuccessRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/cancelled': typeof AdminCancelledRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/new-booking': typeof AdminNewBookingRoute
   '/admin/profile': typeof AdminProfileRoute
   '/admin/rooms': typeof AdminRoomsRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -178,12 +192,14 @@ export interface FileRoutesByTo {
   '/payment': typeof PaymentRoute
   '/rooms': typeof RoomsRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
+  '/admin/booking-success': typeof AdminBookingSuccessRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/cancelled': typeof AdminCancelledRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/new-booking': typeof AdminNewBookingRoute
   '/admin/profile': typeof AdminProfileRoute
   '/admin/rooms': typeof AdminRoomsRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -203,12 +219,14 @@ export interface FileRoutesById {
   '/payment': typeof PaymentRoute
   '/rooms': typeof RoomsRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
+  '/admin/booking-success': typeof AdminBookingSuccessRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/cancelled': typeof AdminCancelledRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/new-booking': typeof AdminNewBookingRoute
   '/admin/profile': typeof AdminProfileRoute
   '/admin/rooms': typeof AdminRoomsRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -229,12 +247,14 @@ export interface FileRouteTypes {
     | '/payment'
     | '/rooms'
     | '/admin/audit-logs'
+    | '/admin/booking-success'
     | '/admin/bookings'
     | '/admin/calendar'
     | '/admin/cancelled'
     | '/admin/customers'
     | '/admin/invoices'
     | '/admin/login'
+    | '/admin/new-booking'
     | '/admin/profile'
     | '/admin/rooms'
     | '/admin/settings'
@@ -252,12 +272,14 @@ export interface FileRouteTypes {
     | '/payment'
     | '/rooms'
     | '/admin/audit-logs'
+    | '/admin/booking-success'
     | '/admin/bookings'
     | '/admin/calendar'
     | '/admin/cancelled'
     | '/admin/customers'
     | '/admin/invoices'
     | '/admin/login'
+    | '/admin/new-booking'
     | '/admin/profile'
     | '/admin/rooms'
     | '/admin/settings'
@@ -276,12 +298,14 @@ export interface FileRouteTypes {
     | '/payment'
     | '/rooms'
     | '/admin/audit-logs'
+    | '/admin/booking-success'
     | '/admin/bookings'
     | '/admin/calendar'
     | '/admin/cancelled'
     | '/admin/customers'
     | '/admin/invoices'
     | '/admin/login'
+    | '/admin/new-booking'
     | '/admin/profile'
     | '/admin/rooms'
     | '/admin/settings'
@@ -410,6 +434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProfileRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/new-booking': {
+      id: '/admin/new-booking'
+      path: '/new-booking'
+      fullPath: '/admin/new-booking'
+      preLoaderRoute: typeof AdminNewBookingRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/login'
@@ -452,6 +483,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/booking-success': {
+      id: '/admin/booking-success'
+      path: '/booking-success'
+      fullPath: '/admin/booking-success'
+      preLoaderRoute: typeof AdminBookingSuccessRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/audit-logs': {
       id: '/admin/audit-logs'
       path: '/audit-logs'
@@ -464,12 +502,14 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteRouteChildren {
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
+  AdminBookingSuccessRoute: typeof AdminBookingSuccessRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
   AdminCalendarRoute: typeof AdminCalendarRoute
   AdminCancelledRoute: typeof AdminCancelledRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminInvoicesRoute: typeof AdminInvoicesRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminNewBookingRoute: typeof AdminNewBookingRoute
   AdminProfileRoute: typeof AdminProfileRoute
   AdminRoomsRoute: typeof AdminRoomsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
@@ -478,12 +518,14 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAuditLogsRoute: AdminAuditLogsRoute,
+  AdminBookingSuccessRoute: AdminBookingSuccessRoute,
   AdminBookingsRoute: AdminBookingsRoute,
   AdminCalendarRoute: AdminCalendarRoute,
   AdminCancelledRoute: AdminCancelledRoute,
   AdminCustomersRoute: AdminCustomersRoute,
   AdminInvoicesRoute: AdminInvoicesRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminNewBookingRoute: AdminNewBookingRoute,
   AdminProfileRoute: AdminProfileRoute,
   AdminRoomsRoute: AdminRoomsRoute,
   AdminSettingsRoute: AdminSettingsRoute,

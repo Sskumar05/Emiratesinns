@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR, fmtDateTime, getDurationLabel, getRateLabel } from "@/lib/hotel";
+import { robotoRegular, robotoMedium } from "@/lib/fonts";
 
 export interface PDFInvoiceResult {
   pdfBase64: string;
@@ -18,6 +19,12 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
     unit: "mm",
     format: "a4",
   });
+  // Register Roboto font
+  doc.addFileToVFS("Roboto-Regular.ttf", robotoRegular);
+  doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+  doc.addFileToVFS("Roboto-Medium.ttf", robotoMedium);
+  doc.addFont("Roboto-Medium.ttf", "Roboto", "bold");
+
   const isInvoiceRow = !!data.invoice_number;
   const booking = isInvoiceRow ? (data.bookings ?? {}) : data;
 
@@ -71,22 +78,22 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
   doc.rect(0, 0, 210, 4, "F");
 
   // ── Header Branding ──
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Roboto", "bold");
   doc.setFontSize(20);
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
   doc.text("EMIRATES GRAND INN", 15, 20);
 
-  doc.setFont("helvetica", "normal");
+  doc.setFont("Roboto", "normal");
   doc.setFontSize(9);
   doc.setTextColor(primaryGold[0], primaryGold[1], primaryGold[2]);
   doc.text("LUXURY HOTEL & SUITES", 15, 25);
 
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Roboto", "bold");
   doc.setFontSize(22);
   doc.setTextColor(primaryGold[0], primaryGold[1], primaryGold[2]);
   doc.text("INVOICE", 195, 20, { align: "right" });
 
-  doc.setFont("helvetica", "normal");
+  doc.setFont("Roboto", "normal");
   doc.setFontSize(9);
   doc.setTextColor(mutedGray[0], mutedGray[1], mutedGray[2]);
   doc.text(`Invoice No: ${invoiceNumber}`, 195, 26, { align: "right" });
@@ -100,7 +107,7 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
   // ── Section 1: Information Cards ──
   let y = 43;
 
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Roboto", "bold");
   doc.setFontSize(10);
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
   doc.text("GUEST INFORMATION", 15, y);
@@ -114,18 +121,20 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
   doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
   doc.rect(15, y, 85, 32, "S");
 
-  doc.setFont("helvetica", "normal");
+  doc.setFont("Roboto", "normal");
   doc.setFontSize(9);
   doc.setTextColor(mutedGray[0], mutedGray[1], mutedGray[2]);
-  doc.text("Full Name:", 18, y + 8);
-  doc.text("Email Address:", 18, y + 16);
-  doc.text("Mobile Number:", 18, y + 24);
+  doc.text("Full Name:", 19, y + 9);
+  doc.text("Email Address:", 19, y + 19);
+  doc.text("Mobile Number:", 19, y + 29);
 
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Roboto", "bold");
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
-  doc.text(String(customer.full_name ?? "Valued Guest"), 44, y + 8);
-  doc.text(String(customer.email ?? "—"), 44, y + 16);
-  doc.text(String(customer.mobile ?? "—"), 44, y + 24);
+  
+  const emailLines = doc.splitTextToSize(String(customer.email ?? "—"), 53);
+  doc.text(String(customer.full_name ?? "Valued Guest"), 45, y + 9);
+  doc.text(emailLines, 45, y + 19);
+  doc.text(String(customer.mobile ?? "—"), 45, y + 29);
 
   // Box 2: Reservation Summary
   doc.setFillColor(lightBg[0], lightBg[1], lightBg[2]);
@@ -133,44 +142,50 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
   doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
   doc.rect(110, y, 85, 32, "S");
 
-  doc.setFont("helvetica", "normal");
+  doc.setFont("Roboto", "normal");
   doc.setFontSize(9);
   doc.setTextColor(mutedGray[0], mutedGray[1], mutedGray[2]);
-  doc.text("Booking Code:", 113, y + 8);
-  doc.text("Hotel Property:", 113, y + 16);
-  doc.text("Payment Status:", 113, y + 24);
+  doc.text("Booking Code:", 114, y + 9);
+  doc.text("Hotel Property:", 114, y + 19);
+  doc.text("Payment Status:", 114, y + 29);
 
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Roboto", "bold");
   doc.setTextColor(primaryGold[0], primaryGold[1], primaryGold[2]);
-  doc.text(String(bookingCode), 142, y + 8);
+  doc.text(String(bookingCode), 142, y + 9);
 
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
-  doc.text(String(hotel.name ?? "Emirates Grand Inn"), 142, y + 16);
+  doc.text(String(hotel.name ?? "Emirates Grand Inn"), 142, y + 19);
 
   // Status Badge
   doc.setFillColor(220, 252, 231);
-  doc.rect(142, y + 20, 22, 5, "F");
+  doc.rect(142, y + 25.5, 20, 4.5, "F");
   doc.setTextColor(22, 163, 74);
   doc.setFontSize(8);
-  doc.text(paymentStatus, 153, y + 23.5, { align: "center" });
+  doc.text(paymentStatus, 152, y + 29, { align: "center" });
 
   // ── Section 2: Stay Details Table ──
-  y += 40;
+  y += 42;
 
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Roboto", "bold");
   doc.setFontSize(10);
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
   doc.text("STAY DETAILS", 15, y);
 
-  y += 5;
+  y += 4;
 
   doc.setFillColor(243, 244, 246);
-  doc.rect(15, y, 180, 7, "F");
-  doc.setFont("helvetica", "bold");
+  doc.rect(15, y, 180, 8, "F");
+  doc.setFont("Roboto", "bold");
   doc.setFontSize(8);
   doc.setTextColor(mutedGray[0], mutedGray[1], mutedGray[2]);
-  doc.text("DESCRIPTION FIELD", 20, y + 4.5);
-  doc.text("DETAILS", 100, y + 4.5);
+  doc.text("DESCRIPTION FIELD", 20, y + 5);
+  doc.text("DETAILS", 100, y + 5);
+  
+  doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+  doc.line(15, y + 8, 195, y + 8);
+  doc.line(15, y, 15, y + 8);
+  doc.line(195, y, 195, y + 8);
+  doc.line(15, y, 195, y);
 
   const stayRows = [
     ["Room Category", cat],
@@ -181,79 +196,114 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
     [rateLabel, formatINR(pricePerNight)],
   ];
 
-  y += 7;
-  doc.setFont("helvetica", "normal");
+  y += 8;
   doc.setFontSize(9);
 
   stayRows.forEach(([label, val], idx) => {
     if (idx % 2 === 1) {
       doc.setFillColor(249, 250, 251);
-      doc.rect(15, y, 180, 6.5, "F");
+      doc.rect(15, y, 180, 8, "F");
+    } else {
+      doc.setFillColor(255, 255, 255);
+      doc.rect(15, y, 180, 8, "F");
     }
+    
+    doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+    doc.line(15, y + 8, 195, y + 8); // bottom
+    doc.line(15, y, 15, y + 8); // left
+    doc.line(195, y, 195, y + 8); // right
+    
     doc.setTextColor(mutedGray[0], mutedGray[1], mutedGray[2]);
-    doc.text(label, 20, y + 4.5);
+    doc.setFont("Roboto", "normal");
+    doc.text(label, 20, y + 5.2);
+    
     doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
-    doc.setFont("helvetica", "bold");
-    doc.text(val, 100, y + 4.5);
-    doc.setFont("helvetica", "normal");
-    y += 6.5;
+    doc.setFont("Roboto", "bold");
+    if (idx === stayRows.length - 1) {
+        doc.text(val, 190, y + 5.2, { align: "right" });
+    } else {
+        doc.text(val, 100, y + 5.2);
+    }
+    y += 8;
   });
 
   // ── Section 3: Amount Breakdown ──
-  y += 8;
+  y += 10;
 
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Roboto", "bold");
   doc.setFontSize(10);
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
   doc.text("BILLING & TAX BREAKDOWN", 15, y);
 
-  y += 5;
+  y += 4;
 
   doc.setFillColor(243, 244, 246);
-  doc.rect(15, y, 180, 7, "F");
-  doc.setFont("helvetica", "bold");
+  doc.rect(15, y, 180, 8, "F");
+  doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+  doc.line(15, y, 195, y); // top
+  doc.line(15, y + 8, 195, y + 8); // bottom
+  doc.line(15, y, 15, y + 8); // left
+  doc.line(195, y, 195, y + 8); // right
+
+  doc.setFont("Roboto", "bold");
   doc.setFontSize(8);
   doc.setTextColor(mutedGray[0], mutedGray[1], mutedGray[2]);
-  doc.text("ITEM DESCRIPTION", 20, y + 4.5);
-  doc.text("AMOUNT", 190, y + 4.5, { align: "right" });
-
-  y += 7;
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
-  doc.text(`${cat} (${durationLabel}) × ${numRooms} Room(s)`, 20, y + 4.5);
-  doc.text(formatINR(totalAmount), 190, y + 4.5, { align: "right" });
+  doc.text("ITEM DESCRIPTION", 20, y + 5.2);
+  doc.text("AMOUNT", 190, y + 5.2, { align: "right" });
 
   y += 8;
+
+  doc.setFillColor(255, 255, 255);
+  doc.rect(15, y, 180, 8, "F");
+  doc.line(15, y + 8, 195, y + 8); // bottom
+  doc.line(15, y, 15, y + 8); // left
+  doc.line(195, y, 195, y + 8); // right
+
+  doc.setFont("Roboto", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
+  doc.text(`${cat} (${durationLabel}) × ${numRooms} Room(s)`, 20, y + 5.2);
+  doc.setFont("Roboto", "bold");
+  doc.text(formatINR(totalAmount), 190, y + 5.2, { align: "right" });
+  y += 8;
+
   if (taxAmount > 0) {
-    doc.text("Taxes & Service Charges", 20, y + 4.5);
-    doc.text(formatINR(taxAmount), 190, y + 4.5, { align: "right" });
+    doc.setFillColor(249, 250, 251);
+    doc.rect(15, y, 180, 8, "F");
+    doc.line(15, y + 8, 195, y + 8); // bottom
+    doc.line(15, y, 15, y + 8); // left
+    doc.line(195, y, 195, y + 8); // right
+
+    doc.setFont("Roboto", "normal");
+    doc.text("Taxes & Service Charges", 20, y + 5.2);
+    doc.setFont("Roboto", "bold");
+    doc.text(formatINR(taxAmount), 190, y + 5.2, { align: "right" });
     y += 8;
   }
 
   // Total Paid Accent Box
+  y += 4;
   doc.setFillColor(254, 249, 240);
   doc.setDrawColor(primaryGold[0], primaryGold[1], primaryGold[2]);
   doc.rect(15, y, 180, 10, "FD");
 
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Roboto", "bold");
   doc.setFontSize(11);
   doc.setTextColor(primaryGold[0], primaryGold[1], primaryGold[2]);
   doc.text("TOTAL AMOUNT PAID", 20, y + 6.5);
   doc.text(formatINR(totalAmount + taxAmount), 190, y + 6.5, { align: "right" });
 
   // ── Footer ──
-  const footerY = 270;
+  const footerY = 275;
   doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
   doc.line(15, footerY, 195, footerY);
 
-  doc.setFont("helvetica", "italic");
+  doc.setFont("Roboto", "normal"); // Fallback for italic since we only loaded normal and bold
   doc.setFontSize(8.5);
   doc.setTextColor(mutedGray[0], mutedGray[1], mutedGray[2]);
   doc.text('"Thank you for choosing Emirates Grand Inn. We look forward to welcoming you."', 105, footerY + 6, { align: "center" });
 
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Roboto", "bold");
   doc.setFontSize(9);
   doc.setTextColor(primaryGold[0], primaryGold[1], primaryGold[2]);
   doc.text("Emirates Grand Inn · Luxury Redefined", 105, footerY + 11, { align: "center" });
