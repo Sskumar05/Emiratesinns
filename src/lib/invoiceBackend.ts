@@ -18,7 +18,6 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
     unit: "mm",
     format: "a4",
   });
-  console.log("RAW DATA INVOICEBACKEND:", JSON.stringify(data, null, 2));
   const isInvoiceRow = !!data.invoice_number;
   const booking = isInvoiceRow ? (data.bookings ?? {}) : data;
   const customer = data.customers || booking.customers || {};
@@ -270,7 +269,8 @@ export async function getOrGenerateInvoicePDF(bookingId: string): Promise<PDFInv
     throw new Error("Invalid request: Booking ID is required.");
   }
 
-  // 1. Check for existing invoice record for this booking ID
+  // 1. Check for existing invoice record, fetching the full customer & hotel relation
+  //    so we always have the latest customer data regardless of what was cached.
   const { data: existingInv, error: invErr } = await supabase
     .from("invoices")
     .select("*, bookings(*, hotels(*), customers(*))")
@@ -281,22 +281,28 @@ export async function getOrGenerateInvoicePDF(bookingId: string): Promise<PDFInv
     console.warn("[invoiceBackend] Invoice query warning:", invErr.message);
   }
 
-  // 2. If PDF invoice already exists in database, return existing invoice directly
-  if (existingInv && existingInv.pdf_url) {
-    const bookingCode = existingInv.bookings?.booking_code || "REF";
-    const filename = `EmiratesInn-Invoice-${bookingCode}.pdf`;
-    const pdfDataUrl = existingInv.pdf_url;
-    const pdfBase64 = pdfDataUrl.includes(",") ? pdfDataUrl.split(",")[1] : pdfDataUrl;
+  // 2. If an invoice record already exists, regenerate the PDF from the live relation data
+  //    (never return the stale cached pdf_url — it may have been generated before customer
+  //    data was available, producing blank fields).
+  if (existingInv) {
+    // existingInv.bookings already contains customers(*) and hotels(*) from the query above.
+    // Pass existingInv directly so generatePDFInvoice gets:
+    //   data.invoice_number  → marks it as isInvoiceRow = true
+    //   data.bookings        → booking fields
+    //   data.bookings.customers → full_name / email / mobile
+    //   data.bookings.hotels    → hotel name
+    const pdfResult = generatePDFInvoice(existingInv);
 
-    return {
-      pdfBase64,
-      pdfDataUrl,
-      filename,
-      invoiceNumber: existingInv.invoice_number || `INV-${bookingCode}`,
-    };
+    // Overwrite the stored pdf_url so future downloads are also correct.
+    await supabase
+      .from("invoices")
+      .update({ pdf_url: pdfResult.pdfDataUrl })
+      .eq("id", existingInv.id);
+
+    return pdfResult;
   }
 
-  // 3. Otherwise fetch booking record with full customer & hotel details
+  // 3. No invoice record yet — fetch the booking directly and generate for the first time.
   const { data: booking, error: bErr } = await supabase
     .from("bookings")
     .select("*, hotels(*), customers(*)")
@@ -307,28 +313,18 @@ export async function getOrGenerateInvoicePDF(bookingId: string): Promise<PDFInv
     throw new Error("Unable to retrieve booking record for invoice generation.");
   }
 
-  // 4. Generate PDF invoice document
-  const pdfResult = generatePDFInvoice(existingInv ? { ...existingInv, bookings: booking } : booking);
+  const pdfResult = generatePDFInvoice(booking);
 
-  // 5. Store PDF securely in DB (pdf_url column) & associate with booking record
-  if (existingInv) {
-    await supabase
-      .from("invoices")
-      .update({
-        pdf_url: pdfResult.pdfDataUrl,
-        invoice_number: existingInv.invoice_number || pdfResult.invoiceNumber,
-      })
-      .eq("id", existingInv.id);
-  } else {
-    await supabase.from("invoices").insert({
-      booking_id: booking.id,
-      customer_id: booking.customer_id,
-      amount: booking.total_amount ?? 0,
-      status: "paid",
-      invoice_number: pdfResult.invoiceNumber,
-      pdf_url: pdfResult.pdfDataUrl,
-    });
-  }
+  // Insert a new invoice record with the generated PDF.
+  await supabase.from("invoices").insert({
+    booking_id: booking.id,
+    customer_id: booking.customer_id,
+    amount: booking.total_amount ?? 0,
+    status: "paid",
+    invoice_number: pdfResult.invoiceNumber,
+    pdf_url: pdfResult.pdfDataUrl,
+  });
 
   return pdfResult;
 }
+

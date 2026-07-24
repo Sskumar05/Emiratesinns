@@ -5,7 +5,6 @@ import { CATEGORY_LABELS, formatINR, fmtDateTime, getDurationLabel, getRateLabel
 //  • Bookings row  (has .customers, .hotels, .booking_code, .payment_status …)
 //  • Invoices row  (has .bookings{}, .customers{}, .invoice_number, .status …)
 export function generateInvoiceHTML(data: any): string {
-  console.log("RAW DATA INVOICEPDF:", JSON.stringify(data, null, 2));
   const isInvoiceRow = !!data.invoice_number;
 
   const booking  = isInvoiceRow ? (data.bookings ?? {})   : data;
