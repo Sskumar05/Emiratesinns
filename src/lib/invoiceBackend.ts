@@ -18,7 +18,7 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
     unit: "mm",
     format: "a4",
   });
-
+  console.log("RAW DATA INVOICEBACKEND:", JSON.stringify(data, null, 2));
   const isInvoiceRow = !!data.invoice_number;
   const booking = isInvoiceRow ? (data.bookings ?? {}) : data;
   const customer = data.customers || booking.customers || {};
