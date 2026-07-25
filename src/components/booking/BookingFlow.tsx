@@ -118,6 +118,21 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
     queryFn: async () => (await supabase.from("rooms").select("*").eq("hotel_id", selectedHotelId!).order("room_number")).data || [],
   });
 
+  // Derive ordered, deduplicated category keys from this hotel's rooms only.
+  // We walk the array in DB order and push each category key the first time we
+  // see it — no Set/Map over the name, so "ac_double" and "non_ac_double" both
+  // survive even if their CATEGORY_LABELS display name happens to be the same.
+  const hotelCategories = useMemo(() => {
+    if (!isAdmin || !allRooms.length) return [] as string[];
+    const seen: string[] = [];
+    for (const r of allRooms as any[]) {
+      if (r.category && !seen.includes(r.category)) {
+        seen.push(r.category);
+      }
+    }
+    return seen;
+  }, [allRooms, isAdmin]);
+
   const { data: activeBookings = [] } = useQuery({
     queryKey: ["active-bookings", selectedHotelId],
     enabled: isAdmin && !!selectedHotelId,
@@ -155,7 +170,8 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
     }
   }
 
-  const total = is12HoursMode ? price * form.num_rooms : price * form.num_rooms * form.num_days;
+  const effectiveNumRooms = isAdmin ? Math.max(1, selectedRoomIds.length) : form.num_rooms;
+  const total = is12HoursMode ? price * effectiveNumRooms : price * effectiveNumRooms * form.num_days;
   const balanceReturn = Math.max(0, payment.amountReceived - total);
 
   // Admin Availability Map
@@ -183,8 +199,8 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     
     if (isAdmin) {
-      if (form.num_rooms !== selectedRoomIds.length) {
-        toast.error(`Please select exactly ${form.num_rooms} room(s).`); return;
+      if (selectedRoomIds.length === 0) {
+        toast.error("Please select at least one room."); return;
       }
       if (!selectedHotelId || !selectedCategory) {
         toast.error("Hotel and Category must be selected"); return;
@@ -229,10 +245,10 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
         const bookedIds = new Set<string>(overlapping.flatMap((b: any) => b.assigned_room_ids ?? []));
         const available = (siblingRooms ?? []).filter((r: any) => !bookedIds.has(r.id));
 
-        if (available.length < form.num_rooms) {
+        if (available.length < effectiveNumRooms) {
           throw new Error(`Only ${available.length} room${available.length !== 1 ? "s" : ""} available. Please adjust.`);
         }
-        assignedRoomIds = available.slice(0, form.num_rooms).map((r: any) => r.id);
+        assignedRoomIds = available.slice(0, effectiveNumRooms).map((r: any) => r.id);
       }
 
       // Step 3: Insert Booking
@@ -240,7 +256,7 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
         customer_id: customerId,
         hotel_id: activeHotelId,
         category: activeCategory,
-        num_rooms: form.num_rooms,
+        num_rooms: effectiveNumRooms,
         num_guests: form.num_guests,
         check_in_date: form.check_in_date,
         check_in_time: form.check_in_time,
@@ -302,7 +318,7 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
               checkOut: fmtDateTime(checkout, checkoutTime),
               durationLabel: getDurationLabel(form.num_days, is12HoursMode ? "12_hours" : "standard"),
               numGuests: form.num_guests,
-              numRooms: form.num_rooms,
+              numRooms: effectiveNumRooms,
               numDays: form.num_days,
               totalAmount: formatINR(total),
               paymentStatus: "paid",
@@ -324,7 +340,7 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
           checkIn: form.check_in_date,
           checkOut: checkout,
           numGuests: form.num_guests,
-          numRooms: form.num_rooms,
+          numRooms: effectiveNumRooms,
           numDays: is12HoursMode ? 0 : form.num_days,
           totalAmount: formatINR(total),
           createdAt: new Date().toLocaleString("en-IN"),
@@ -357,10 +373,6 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
     if (selectedRoomIds.includes(id)) {
       setSelectedRoomIds(prev => prev.filter(r => r !== id));
     } else {
-      if (selectedRoomIds.length >= form.num_rooms) {
-        toast.error(`You can only select ${form.num_rooms} room(s).`);
-        return;
-      }
       setSelectedRoomIds(prev => [...prev, id]);
     }
   };
@@ -390,16 +402,15 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
               <div className="grid sm:grid-cols-2 gap-6 mb-8">
                 <label className="block sm:col-span-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Hotel *</span>
-                  <select value={selectedHotelId || ""} onChange={e => setSelectedHotelId(e.target.value)} className="w-full bg-background border border-border rounded-md px-4 py-3 text-sm focus:border-gold focus:outline-none">
+                  <select value={selectedHotelId || ""} onChange={e => { setSelectedHotelId(e.target.value); setSelectedCategory(null); setSelectedRoomIds([]); }} className="w-full bg-background border border-border rounded-md px-4 py-3 text-sm focus:border-gold focus:outline-none">
                     <option value="" disabled>Select a hotel...</option>
                     {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                   </select>
                 </label>
                 <Field label="Check-In Date *" type="date" value={form.check_in_date} onChange={v => setForm({ ...form, check_in_date: v })} />
-                <Field label="Check-In Time *" type="time" value={form.check_in_time} onChange={v => setForm({ ...form, check_in_time: v })} />
+                <Field label="Check-Out Date (Auto)" type="date" value={checkout} onChange={() => {}} disabled />
                 {!is12HoursMode && <Field label="Duration (Days) *" type="number" value={form.num_days.toString()} onChange={v => setForm({ ...form, num_days: parseInt(v) || 1 })} />}
-                <Field label="Number of Rooms *" type="number" value={form.num_rooms.toString()} onChange={v => setForm({ ...form, num_rooms: parseInt(v) || 1 })} />
-                {/* <Field label="Number of Guests *" type="number" value={form.num_guests.toString()} onChange={v => setForm({ ...form, num_guests: parseInt(v) || 1 })} /> */}
+                <Field label="Check-In Time *" type="time" value={form.check_in_time} onChange={v => setForm({ ...form, check_in_time: v })} />
               </div>
               <button onClick={() => {
                 if (!selectedHotelId) { toast.error("Please select a hotel"); return; }
@@ -446,39 +457,113 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Room Category *</span>
               <select value={selectedCategory || ""} onChange={e => { setSelectedCategory(e.target.value); setSelectedRoomIds([]); }} className="w-full bg-background border border-border rounded-md px-4 py-3 text-sm focus:border-gold focus:outline-none">
                 <option value="" disabled>Select a category...</option>
-                {Object.keys(CATEGORY_LABELS).map(cat => <option key={cat} value={cat}>{CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS]}</option>)}
+                {hotelCategories.map((cat: any) => <option key={cat} value={cat}>{CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS] || cat}</option>)}
               </select>
             </label>
             {selectedCategory && (
                <p className="text-sm text-muted-foreground mb-4">Available Rooms for this category: <strong className="text-foreground">{availableRoomsCount}</strong></p>
             )}
             
-            {selectedCategory && (
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 mt-4">
-                {allRooms.filter(r => r.category === selectedCategory).map(room => {
-                  const status = occupancyMap.get(room.id) || room.status;
-                  const isAvailable = status === "available" || !status;
-                  const isSelected = selectedRoomIds.includes(room.id);
-                  let bg = "bg-surface text-muted-foreground opacity-50 cursor-not-allowed";
-                  if (isSelected) bg = "bg-primary text-white border-primary shadow-md";
-                  else if (isAvailable) bg = "bg-card text-foreground hover:border-gold cursor-pointer";
-                  else if (status === "cleaning") bg = "bg-blue-100 text-blue-800 opacity-50 cursor-not-allowed";
-                  else if (status === "maintenance") bg = "bg-orange-100 text-orange-800 opacity-50 cursor-not-allowed";
-                  return (
-                    <div key={room.id} onClick={() => isAvailable ? toggleRoom(room.id) : null} className={`border border-border rounded-md p-3 text-center transition-all ${bg}`}>
-                      <div className="font-bold text-lg">{room.room_number}</div>
-                      <div className="text-[10px] uppercase tracking-wider">{isSelected ? "Selected" : status || "Available"}</div>
+            {selectedCategory && (() => {
+              const categoryRooms = allRooms.filter(r => r.category === selectedCategory);
+
+              // Split into groups by room_type. Preserve DB order within each group.
+              const acRooms    = categoryRooms.filter(r => (r as any).room_type?.toUpperCase() !== "NON AC");
+              const nonAcRooms = categoryRooms.filter(r => (r as any).room_type?.toUpperCase() === "NON AC");
+
+              const hasTypes = acRooms.length > 0 && nonAcRooms.length > 0;
+
+              const countAvailable = (rooms: typeof categoryRooms) =>
+                rooms.filter(r => { const s = occupancyMap.get(r.id) || r.status; return s === "available" || !s; }).length;
+
+              // Shared card renderer — identical logic to before
+              const RoomCard = ({ room }: { room: (typeof categoryRooms)[0] }) => {
+                const status = occupancyMap.get(room.id) || room.status;
+                const isAvailable = status === "available" || !status;
+                const isSelected = selectedRoomIds.includes(room.id);
+                const roomType = (room as any).room_type as string | undefined;
+                const isNonAc = roomType?.toUpperCase() === "NON AC";
+
+                let bg = "bg-surface text-muted-foreground opacity-50 cursor-not-allowed";
+                if (isSelected) bg = "bg-primary text-white border-primary shadow-md";
+                else if (isAvailable) bg = "bg-card text-foreground hover:border-gold cursor-pointer";
+                else if (status === "cleaning") bg = "bg-blue-100 text-blue-800 opacity-50 cursor-not-allowed";
+                else if (status === "maintenance") bg = "bg-orange-100 text-orange-800 opacity-50 cursor-not-allowed";
+
+                return (
+                  <div
+                    key={room.id}
+                    onClick={() => isAvailable ? toggleRoom(room.id) : null}
+                    className={`border border-border rounded-md p-3 text-center transition-all select-none ${bg}`}
+                  >
+                    <div className="font-bold text-base leading-tight">{room.room_number}</div>
+                    <div className={`text-[9px] uppercase tracking-wider mt-0.5 font-semibold ${isSelected ? "opacity-90" : "opacity-70"}`}>
+                      {isSelected ? "✓ Selected" : status || "Available"}
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                  </div>
+                );
+              };
+
+              // Section renderer
+              const Section = ({ title, rooms, accentClass, dotClass }: {
+                title: string;
+                rooms: typeof categoryRooms;
+                accentClass: string;
+                dotClass: string;
+              }) => {
+                if (rooms.length === 0) return null;
+                const avail = countAvailable(rooms);
+                return (
+                  <div className="mb-8">
+                    <div className={`flex items-center gap-3 mb-3 pb-2 border-b ${accentClass}`}>
+                      <span className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${dotClass}`} />
+                      <span className="text-sm font-bold uppercase tracking-widest text-foreground">{title}</span>
+                      <span className="ml-auto text-xs font-semibold text-muted-foreground">
+                        {avail} available · {rooms.length} total
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2.5">
+                      {rooms.map(room => <RoomCard key={room.id} room={room} />)}
+                    </div>
+                  </div>
+                );
+              };
+
+              return (
+                <div className="mt-5">
+                  {hasTypes ? (
+                    <>
+                      <Section
+                        title="AC Rooms"
+                        rooms={acRooms}
+                        accentClass="border-green-500/30"
+                        dotClass="bg-green-500"
+                      />
+                      <Section
+                        title="NON AC Rooms"
+                        rooms={nonAcRooms}
+                        accentClass="border-amber-500/30"
+                        dotClass="bg-amber-400"
+                      />
+                    </>
+                  ) : (
+                    // Hotel has only one type — render a single ungrouped grid
+                    <Section
+                      title={acRooms.length > 0 ? "AC Rooms" : "NON AC Rooms"}
+                      rooms={acRooms.length > 0 ? acRooms : nonAcRooms}
+                      accentClass={acRooms.length > 0 ? "border-green-500/30" : "border-amber-500/30"}
+                      dotClass={acRooms.length > 0 ? "bg-green-500" : "bg-amber-400"}
+                    />
+                  )}
+                </div>
+              );
+            })()}
           </div>
           <div className="flex justify-between items-center mt-10 pt-6 border-t border-border">
             <button onClick={() => setStep(1)} className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center"><ArrowLeft className="h-4 w-4 mr-2" />Back</button>
             <button onClick={() => {
               if (!selectedCategory) { toast.error("Please select a room category"); return; }
-              if (selectedRoomIds.length !== form.num_rooms) { toast.error(`Please select exactly ${form.num_rooms} room(s)`); return; }
+              if (selectedRoomIds.length === 0) { toast.error("Please select at least one room"); return; }
               setStep(3);
             }} className="flex items-center justify-center gap-2 bg-gold text-white px-8 py-3.5 text-sm font-semibold rounded-md shadow-md hover:bg-gold-hover transition">Continue <ArrowRight className="h-4 w-4" /></button>
           </div>
@@ -557,7 +642,7 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
                 {[
                   ["Hotel", activeHotelName],
                   ["Room Category", CATEGORY_LABELS[activeCategory as keyof typeof CATEGORY_LABELS]],
-                  ["Number of Rooms", `${form.num_rooms} Room${form.num_rooms !== 1 ? "s" : ""}`],
+                  ["Number of Rooms", `${effectiveNumRooms} Room${effectiveNumRooms !== 1 ? "s" : ""}`],
                   isAdmin ? ["Room Numbers", allRooms.filter(r => selectedRoomIds.includes(r.id)).map(r => r.room_number).join(", ")] : null,
                   ["Check-in", fmtDateTime(form.check_in_date, form.check_in_time)],
                   ["Check-out", fmtDateTime(checkout, checkoutTime)],
