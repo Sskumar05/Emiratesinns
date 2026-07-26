@@ -135,16 +135,16 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;color:trans
   <div class="card" style="background-color:#12121c !important; color:#ffffff !important;">
     <div class="header" style="background-color:#1a1510 !important;">
       <span class="crown" style="color:#c8a050 !important;">♛</span>
-      <div class="brand" style="color:#d4af37 !important;">Emirates Grand Inn</div>
+      <div class="brand" style="color:#d4af37 !important;">Emirates Inn & Grand Inn</div>
       <div class="brand-sub" style="color:#d4af37 !important;">Luxury Hospitality</div>
     </div>
     <div style="background-color:#12121c !important; color:#ffffff !important;">
       ${content}
     </div>
     <div class="footer" style="background-color:#12121c !important;">
-      <p style="color:#a89f91 !important;">© ${new Date().getFullYear()} Emirates Grand Inn · All rights reserved</p>
+      <p style="color:#a89f91 !important;">© ${new Date().getFullYear()} Emirates Inn & Grand Inn · All rights reserved</p>
       <p style="margin-top:6px; color:#a89f91 !important;"><a href="mailto:${ADMIN_EMAIL}" style="color:#d4af37 !important;">${ADMIN_EMAIL}</a></p>
-      <p style="margin-top:10px;font-size:10px;color:#887f73 !important;">This is an automated message from Emirates Grand Inn reservation system.</p>
+      <p style="margin-top:10px;font-size:10px;color:#887f73 !important;">This is an automated message from Emirates Inn & Grand Inn reservation system.</p>
     </div>
   </div>
 </div>

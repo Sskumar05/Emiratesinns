@@ -613,14 +613,14 @@ function AdminBookings() {
               </div>
             </div>
             
-            <div className="p-6 border-t border-border flex justify-end">
+            {/* <div className="p-6 border-t border-border flex justify-end">
               <button
                 onClick={() => setViewBooking(null)}
                 className="px-6 py-2 bg-surface hover:bg-surface/80 text-foreground rounded-md transition-colors"
               >
                 Close
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       )}

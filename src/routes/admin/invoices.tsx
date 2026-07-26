@@ -6,8 +6,10 @@ import { Download, Mail, Eye, Search } from "lucide-react";
 import { toast } from "sonner";
 import { useSendEmail } from "@/hooks/useSendEmail";
 import { CATEGORY_LABELS } from "@/lib/hotel";
-import { downloadInvoice } from "@/lib/invoicePdf";
+import { downloadInvoice, generateInvoiceHTML } from "@/lib/invoicePdf";
 import { useState, useMemo } from "react";
+import { Printer } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/admin/invoices")({ component: Invoices });
 
@@ -32,6 +34,7 @@ const formatDate = (iso?: string) => {
 function Invoices() {
   const { sendInvoice, loading } = useSendEmail();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [previewInv, setPreviewInv] = useState<any>(null);
 
   const [q, setQ] = useState("");
   const [statusF, setStatusF] = useState("all");
@@ -237,19 +240,19 @@ function Invoices() {
                   <div className="flex gap-2 items-center">
                     <button
                       title="View Invoice"
-                      onClick={() => toast.info("PDF preview coming soon")}
+                      onClick={() => setPreviewInv(inv)}
                       className="flex items-center justify-center p-1.5 rounded bg-surface/50 border border-border text-foreground hover:border-gold hover:text-gold transition-colors"
                     >
                       <Eye className="h-4 w-4" />
                     </button>
-                    <button
+                    {/* <button
                       title="Download PDF"
                       disabled={downloadingId === inv.id}
                       onClick={() => handleDownloadPDF(inv)}
                       className="flex items-center justify-center p-1.5 rounded bg-surface/50 border border-border text-foreground hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-wait"
                     >
                       <Download className={`h-4 w-4 ${downloadingId === inv.id ? "animate-bounce" : ""}`} />
-                    </button>
+                    </button> */}
                     <button
                       title="Email Invoice"
                       disabled={loading}
@@ -266,6 +269,47 @@ function Invoices() {
         </table>
       </div>
 
+      {/* Invoice Preview Dialog */}
+      <Dialog open={!!previewInv} onOpenChange={(open) => !open && setPreviewInv(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="p-4 border-b bg-surface flex flex-row items-center justify-between">
+            <DialogTitle className="text-lg font-semibold text-foreground">Invoice Preview</DialogTitle>
+            <div className="flex items-center gap-3 pr-8">
+              <button
+                onClick={() => {
+                  const iframe = document.getElementById("invoice-preview-iframe") as HTMLIFrameElement;
+                  iframe?.contentWindow?.print();
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-background border border-border rounded-md hover:bg-muted transition-colors text-foreground"
+              >
+                <Printer className="h-4 w-4" /> Print
+              </button>
+              <button
+                disabled={downloadingId === previewInv?.id}
+                onClick={() => {
+                  if (previewInv) handleDownloadPDF(previewInv);
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gold text-white rounded-md hover:bg-gold/90 transition-colors disabled:opacity-50"
+              >
+                <Download className={`h-4 w-4 ${downloadingId === previewInv?.id ? "animate-bounce" : ""}`} /> 
+                Download PDF
+              </button>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto bg-muted/30 p-6 flex justify-center custom-scrollbar">
+            {previewInv && (
+              <div className="relative shadow-xl ring-1 ring-black/5 bg-white shrink-0" style={{ width: "210mm", height: "297mm" }}>
+                <iframe
+                  id="invoice-preview-iframe"
+                  srcDoc={generateInvoiceHTML(previewInv)}
+                  className="w-full h-full border-0"
+                  title="Invoice Preview"
+                />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -179,22 +179,66 @@ export function generateInvoiceHTML(data: any): string {
 </html>`;
 }
 
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
+
 // ─── Trigger direct browser PDF file download ────────────────────────────────
-export function downloadInvoice(data: any, customFilename?: string) {
+export async function downloadInvoice(data: any, customFilename?: string) {
   const html = generateInvoiceHTML(data);
   const bookingCode = data.booking_code || data.bookings?.booking_code || "REF";
   const filename = customFilename || `EmiratesInn-Invoice-${bookingCode}.pdf`;
 
   try {
-    const blob = new Blob([html], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.width = "210mm";
+    iframe.style.height = "297mm";
+    iframe.style.left = "-9999px";
+    iframe.style.top = "-9999px";
+    // Ensure iframe is rendered without any browser border/margin affecting it
+    iframe.frameBorder = "0";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      document.body.removeChild(iframe);
+      throw new Error("Could not access iframe document");
+    }
+
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    // Wait for styles and remote fonts to fully load
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    const canvas = await html2canvas(doc.body, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      windowWidth: doc.body.scrollWidth,
+      windowHeight: doc.body.scrollHeight,
+    });
+
+    if (!canvas || canvas.width === 0 || canvas.height === 0) {
+      document.body.removeChild(iframe);
+      throw new Error("Invalid canvas generated. HTML rendering failed.");
+    }
+
+    const imgData = canvas.toDataURL("image/png");
+    document.body.removeChild(iframe);
+
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(filename);
   } catch (err) {
     console.error("[invoicePdf] Direct download error:", err);
     throw err;

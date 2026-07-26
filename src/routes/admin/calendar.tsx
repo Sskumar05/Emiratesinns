@@ -409,14 +409,14 @@ function CalendarPage() {
 
             </div>
             
-            <div className="p-6 border-t border-border flex justify-end">
+            {/* <div className="p-6 border-t border-border flex justify-end">
               <button
                 onClick={() => setSelectedDate(null)}
                 className="px-6 py-2 bg-surface hover:bg-surface/80 text-foreground font-semibold rounded-md transition-colors shadow-sm"
               >
                 Close
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       )}
