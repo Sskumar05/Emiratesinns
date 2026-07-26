@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { WebsiteLayout } from "@/components/website/WebsiteLayout";
-import { Phone, Mail, MapPin, Clock, Wifi, Car, ShieldCheck, ArrowRight, Sparkles } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Wifi, Car, ShieldCheck, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -34,11 +35,61 @@ const cardVariant = {
 /* ─── Component ──────────────────────────────────────────── */
 function Contact() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Message sent — we'll respond shortly.");
-    setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      // 1. Save to Supabase
+      const { error } = await supabase.from("contact_messages").insert({
+        full_name: form.name,
+        email: form.email,
+        phone: form.phone,
+        subject: form.subject,
+        message: form.message,
+      });
+
+      if (error) throw error;
+
+      // 2. Send Emails via Edge Function
+      // Admin notification
+      await supabase.functions.invoke("send-email", {
+        body: {
+          type: "contact_admin_notification",
+          to: "admin@emiratesinns.com",
+          payload: {
+            fullName: form.name,
+            email: form.email,
+            phone: form.phone,
+            subject: form.subject,
+            message: form.message,
+            submittedAt: new Date().toLocaleString(),
+          },
+        },
+      });
+
+      // Customer confirmation
+      await supabase.functions.invoke("send-email", {
+        body: {
+          type: "contact_customer_confirmation",
+          to: form.email,
+          payload: {
+            fullName: form.name,
+          },
+        },
+      });
+
+      toast.success("Message sent — we'll respond shortly.");
+      setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+    } catch (error) {
+      console.error("Error submitting contact form:", error);
+      toast.error("Failed to send message. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -207,13 +258,14 @@ function Contact() {
 
                 <button
                   type="submit"
-                  className="w-full text-white font-semibold py-4 text-sm rounded-xl transition-opacity hover:opacity-90 uppercase tracking-widest"
+                  disabled={isSubmitting}
+                  className="w-full flex justify-center items-center gap-2 text-white font-semibold py-4 text-sm rounded-xl transition-opacity hover:opacity-90 uppercase tracking-widest disabled:opacity-70 disabled:cursor-not-allowed"
                   style={{
                     background: "var(--color-gold)",
                     boxShadow: "0 4px 14px -4px rgba(180,155,90,0.5)",
                   }}
                 >
-                  Send Message
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send Message"}
                 </button>
               </form>
             </motion.div>

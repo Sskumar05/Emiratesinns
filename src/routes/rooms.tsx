@@ -8,6 +8,11 @@ import { motion } from "framer-motion";
 import { Wifi, Tv, Car, Droplet, ChefHat, Camera, Wine, ArrowRight, Ban } from "lucide-react";
 
 export const Route = createFileRoute("/rooms")({
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      hotel: search.hotel as string | undefined,
+    }
+  },
   head: () => ({
     meta: [
       { title: "Rooms & Suites — Emirates Inn" },
@@ -292,6 +297,8 @@ function HotelSection({
 
 /* ─── Component ──────────────────────────────────────────── */
 function RoomsPage() {
+  const { hotel } = Route.useSearch();
+
   /* ── Data fetching (single query) ── */
   const { data: rooms = [], isLoading } = useQuery({
     queryKey: ["rooms"],
@@ -440,7 +447,9 @@ function RoomsPage() {
               Loading rooms…
             </div>
           ) : (
-            sectionCards.map((section) => (
+            sectionCards
+              .filter(section => !hotel || section.slug === hotel)
+              .map((section) => (
               <HotelSection
                 key={section.slug}
                 title={section.title}

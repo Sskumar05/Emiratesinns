@@ -91,56 +91,60 @@ function baseTemplate(content: string, preheader = ""): string {
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
 <title>Emirates Grand Inn</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:#0a0a0f;font-family:'Inter',Arial,sans-serif;color:#e8e0d0;-webkit-text-size-adjust:100%}
-  .wrapper{max-width:640px;margin:0 auto;padding:24px 16px}
-  .card{background:linear-gradient(135deg,#12121c 0%,#1a1a28 100%);border:1px solid rgba(200,160,80,0.25);border-radius:4px;overflow:hidden}
-  .header{background:linear-gradient(135deg,#1a1510 0%,#0f0f18 100%);padding:40px 40px 32px;text-align:center;border-bottom:1px solid rgba(200,160,80,0.3)}
-  .crown{font-size:28px;margin-bottom:12px;display:block}
-  .brand{font-family:'Playfair Display',Georgia,serif;font-size:26px;color:#c8a050;letter-spacing:0.06em;font-weight:700}
-  .brand-sub{font-size:10px;color:#a08040;letter-spacing:0.3em;text-transform:uppercase;margin-top:4px}
-  .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(200,160,80,0.5),transparent);margin:24px 0}
-  .content{padding:40px}
-  .section-title{font-family:'Playfair Display',Georgia,serif;font-size:22px;color:#e8d8a0;margin-bottom:20px;font-weight:600}
-  .greeting{font-size:15px;color:#b0a090;line-height:1.7;margin-bottom:28px}
+  body{background-color:#0a0a0f !important;font-family:'Inter',Arial,sans-serif;color:#ffffff !important;-webkit-text-size-adjust:100%}
+  .wrapper{max-width:640px;margin:0 auto;padding:24px 16px;background-color:#0a0a0f !important;}
+  .card{background:linear-gradient(135deg,#12121c 0%,#1a1a28 100%);background-color:#12121c !important;border:1px solid rgba(200,160,80,0.4) !important;border-radius:4px;overflow:hidden;color:#ffffff !important;}
+  .header{background:linear-gradient(135deg,#1a1510 0%,#0f0f18 100%);background-color:#1a1510 !important;padding:40px 40px 32px;text-align:center;border-bottom:1px solid rgba(200,160,80,0.5) !important;}
+  .crown{font-size:28px;margin-bottom:12px;display:block;color:#c8a050 !important;}
+  .brand{font-family:'Playfair Display',Georgia,serif;font-size:26px;color:#d4af37 !important;letter-spacing:0.06em;font-weight:700}
+  .brand-sub{font-size:10px;color:#d4af37 !important;letter-spacing:0.3em;text-transform:uppercase;margin-top:4px}
+  .divider{height:1px;background-color:#c8a050;opacity:0.3;margin:24px 0}
+  .content{padding:40px;background-color:#12121c !important;}
+  .section-title{font-family:'Playfair Display',Georgia,serif;font-size:22px;color:#e8d8a0 !important;margin-bottom:20px;font-weight:600}
+  .greeting{font-size:15px;color:#f0e6d2 !important;line-height:1.7;margin-bottom:28px}
   .detail-table{width:100%;border-collapse:collapse;margin:20px 0}
-  .detail-table tr{border-bottom:1px solid rgba(200,160,80,0.1)}
-  .detail-table tr:last-child{border-bottom:none}
+  .detail-table tr{border-bottom:1px solid rgba(200,160,80,0.3) !important;}
+  .detail-table tr:last-child{border-bottom:none !important;}
   .detail-table td{padding:12px 0;font-size:13px;line-height:1.5;vertical-align:top}
-  .detail-table td:first-child{color:#8a7a6a;width:42%;font-weight:400;letter-spacing:0.02em}
-  .detail-table td:last-child{color:#e8e0d0;font-weight:500;text-align:right}
-  .highlight-box{background:rgba(200,160,80,0.06);border:1px solid rgba(200,160,80,0.2);border-radius:2px;padding:20px;margin:24px 0;text-align:center}
-  .total-amount{font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#c8a050;font-weight:700}
-  .total-label{font-size:10px;color:#8a7a6a;letter-spacing:0.3em;text-transform:uppercase;margin-bottom:6px}
-  .badge{display:inline-block;padding:4px 14px;border:1px solid rgba(200,160,80,0.4);font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#c8a050;border-radius:2px}
-  .cta-btn{display:block;margin:28px auto 0;width:fit-content;padding:14px 36px;background:linear-gradient(135deg,#c8a050,#a07030);color:#0a0a0f;font-size:11px;letter-spacing:0.25em;text-transform:uppercase;font-weight:600;text-decoration:none;border-radius:2px}
-  .footer{padding:28px 40px;border-top:1px solid rgba(200,160,80,0.15);text-align:center}
-  .footer p{font-size:11px;color:#5a504a;line-height:1.7}
-  .footer a{color:#8a6a40;text-decoration:none}
-  .status-confirmed{color:#34d399}
-  .status-cancelled{color:#f87171}
-  .status-pending{color:#fbbf24}
-  .booking-code{font-family:monospace;font-size:20px;color:#c8a050;letter-spacing:0.15em;font-weight:600}
-  @media(max-width:600px){.content,.header,.footer{padding:24px 20px!important}.total-amount{font-size:22px}.brand{font-size:20px}}
+  .detail-table td:first-child{color:#d4c4b7 !important;width:42%;font-weight:400;letter-spacing:0.02em}
+  .detail-table td:last-child{color:#ffffff !important;font-weight:500;text-align:right}
+  .highlight-box{background-color:rgba(200,160,80,0.1) !important;border:1px solid rgba(200,160,80,0.4) !important;border-radius:2px;padding:20px;margin:24px 0;text-align:center}
+  .total-amount{font-family:'Playfair Display',Georgia,serif;font-size:28px;color:#d4af37 !important;font-weight:700}
+  .total-label{font-size:10px;color:#d4c4b7 !important;letter-spacing:0.3em;text-transform:uppercase;margin-bottom:6px}
+  .badge{display:inline-block;padding:4px 14px;border:1px solid rgba(200,160,80,0.6) !important;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#d4af37 !important;border-radius:2px}
+  .cta-btn{display:block;margin:28px auto 0;width:fit-content;padding:14px 36px;background:linear-gradient(135deg,#c8a050,#a07030);background-color:#c8a050 !important;color:#0a0a0f !important;font-size:11px;letter-spacing:0.25em;text-transform:uppercase;font-weight:600;text-decoration:none;border-radius:2px}
+  .footer{padding:28px 40px;border-top:1px solid rgba(200,160,80,0.3) !important;text-align:center;background-color:#12121c !important;}
+  .footer p{font-size:11px;color:#a89f91 !important;line-height:1.7}
+  .footer a{color:#d4af37 !important;text-decoration:none}
+  .status-confirmed{color:#34d399 !important;}
+  .status-cancelled{color:#f87171 !important;}
+  .status-pending{color:#fbbf24 !important;}
+  .booking-code{font-family:monospace;font-size:20px;color:#d4af37 !important;letter-spacing:0.15em;font-weight:600}
+  @media(max-width:600px){.content,.header,.footer{padding:24px 20px!important}.total-amount{font-size:22px !important;}.brand{font-size:20px !important;}}
 </style>
 </head>
-<body>
+<body style="background-color:#0a0a0f !important; color:#ffffff !important;">
 ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;color:transparent">${preheader}</div>` : ""}
-<div class="wrapper">
-  <div class="card">
-    <div class="header">
-      <span class="crown">♛</span>
-      <div class="brand">Emirates Grand Inn</div>
-      <div class="brand-sub">Luxury Hospitality</div>
+<div class="wrapper" style="background-color:#0a0a0f !important;">
+  <div class="card" style="background-color:#12121c !important; color:#ffffff !important;">
+    <div class="header" style="background-color:#1a1510 !important;">
+      <span class="crown" style="color:#c8a050 !important;">♛</span>
+      <div class="brand" style="color:#d4af37 !important;">Emirates Grand Inn</div>
+      <div class="brand-sub" style="color:#d4af37 !important;">Luxury Hospitality</div>
     </div>
-    ${content}
-    <div class="footer">
-      <p>© ${new Date().getFullYear()} Emirates Grand Inn · All rights reserved</p>
-      <p style="margin-top:6px"><a href="mailto:${ADMIN_EMAIL}">${ADMIN_EMAIL}</a></p>
-      <p style="margin-top:10px;font-size:10px;color:#3a302a">This is an automated message from Emirates Grand Inn reservation system.</p>
+    <div style="background-color:#12121c !important; color:#ffffff !important;">
+      ${content}
+    </div>
+    <div class="footer" style="background-color:#12121c !important;">
+      <p style="color:#a89f91 !important;">© ${new Date().getFullYear()} Emirates Grand Inn · All rights reserved</p>
+      <p style="margin-top:6px; color:#a89f91 !important;"><a href="mailto:${ADMIN_EMAIL}" style="color:#d4af37 !important;">${ADMIN_EMAIL}</a></p>
+      <p style="margin-top:10px;font-size:10px;color:#887f73 !important;">This is an automated message from Emirates Grand Inn reservation system.</p>
     </div>
   </div>
 </div>
@@ -367,6 +371,69 @@ function adminNotificationTemplate(d: {
   );
 }
 
+function contactAdminNotificationTemplate(d: {
+  fullName: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+  submittedAt: string;
+}): string {
+  return baseTemplate(
+    `<div class="content">
+      <div class="divider"></div>
+      <div class="section-title">New Contact Enquiry ✉️</div>
+      <p class="greeting">A new message has been received from the Contact Us form.</p>
+
+      <div style="text-align:center;margin-bottom:24px">
+        <div class="booking-code">${d.subject}</div>
+        <div style="font-size:11px;color:#7a6a5a;margin-top:6px">Received: ${d.submittedAt}</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <p style="font-size:10px;color:#8a7a6a;letter-spacing:0.25em;text-transform:uppercase;margin-bottom:12px">Sender Details</p>
+      <table class="detail-table" style="margin-bottom:20px">
+        <tr><td>Name</td><td>${d.fullName}</td></tr>
+        <tr><td>Email</td><td>${d.email}</td></tr>
+        <tr><td>Phone</td><td>${d.phone}</td></tr>
+      </table>
+
+      <p style="font-size:10px;color:#8a7a6a;letter-spacing:0.25em;text-transform:uppercase;margin-bottom:12px">Message</p>
+      <div style="background:rgba(200,160,80,0.06);border:1px solid rgba(200,160,80,0.2);border-radius:2px;padding:20px;margin-bottom:24px;font-size:13px;line-height:1.7;white-space:pre-wrap;">${d.message}</div>
+    </div>`,
+    `New Contact Enquiry - ${d.subject}`,
+  );
+}
+
+function contactCustomerConfirmationTemplate(d: {
+  fullName: string;
+}): string {
+  return baseTemplate(
+    `<div class="content">
+      <div class="divider"></div>
+      <div class="section-title">We Received Your Message</div>
+      <p class="greeting">Dear ${d.fullName},<br/><br/>
+      Thank you for reaching out to Emirates Grand Inn.</p>
+      
+      <p style="font-size:14px;color:#b0a090;line-height:1.7;margin-bottom:28px">
+        This is an automated confirmation that your enquiry has been successfully received by our system.
+      </p>
+
+      <div class="highlight-box">
+        <p style="font-size:13px;color:#e8d8a0;margin:0">
+          The Emirates Hotels team will review your message and contact you shortly.
+        </p>
+      </div>
+
+      <p style="font-size:12px;color:#7a6a5a;text-align:center;margin-top:20px">
+        We appreciate your interest in Emirates Grand Inn.
+      </p>
+    </div>`,
+    `We Received Your Message`,
+  );
+}
+
 // ── Validation ────────────────────────────────────────────────────────────────
 function validate(body: unknown): { type: string; payload: Record<string, unknown>; to: string } {
   if (!body || typeof body !== "object") throw new Error("Request body must be a JSON object");
@@ -376,7 +443,7 @@ function validate(body: unknown): { type: string; payload: Record<string, unknow
   if (!b.payload || typeof b.payload !== "object") throw new Error("Missing required field: payload");
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!EMAIL_RE.test(b.to as string)) throw new Error(`Invalid email address: ${b.to}`);
-  const allowed = ["booking_confirmation", "invoice", "cancellation", "admin_notification"];
+  const allowed = ["booking_confirmation", "invoice", "cancellation", "admin_notification", "contact_admin_notification", "contact_customer_confirmation"];
   if (!allowed.includes(b.type as string)) throw new Error(`Unknown email type: ${b.type}. Allowed: ${allowed.join(", ")}`);
   return { type: b.type as string, payload: b.payload as Record<string, unknown>, to: b.to as string };
 }
@@ -500,6 +567,26 @@ Deno.serve(async (req) => {
       const result = await sendViaResend({ to: ADMIN_EMAIL, subject, html, attachments });
       return new Response(JSON.stringify({ success: true, id: result.id, type }), {
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    } else if (type === "contact_admin_notification") {
+      subject = `New Contact Enquiry - ${p.subject}`;
+      html = contactAdminNotificationTemplate({
+        fullName: String(p.fullName ?? ""),
+        email: String(p.email ?? ""),
+        phone: String(p.phone ?? ""),
+        subject: String(p.subject ?? ""),
+        message: String(p.message ?? ""),
+        submittedAt: String(p.submittedAt ?? new Date().toLocaleString()),
+      });
+      // Always goes to admin
+      const result = await sendViaResend({ to: ADMIN_EMAIL, subject, html, attachments });
+      return new Response(JSON.stringify({ success: true, id: result.id, type }), {
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    } else if (type === "contact_customer_confirmation") {
+      subject = `We Received Your Message`;
+      html = contactCustomerConfirmationTemplate({
+        fullName: String(p.fullName ?? "Guest"),
       });
     }
 

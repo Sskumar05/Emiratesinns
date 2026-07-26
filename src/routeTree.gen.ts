@@ -28,6 +28,7 @@ import { Route as AdminNewBookingRouteImport } from './routes/admin/new-booking'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminInvoicesRouteImport } from './routes/admin/invoices'
 import { Route as AdminCustomersRouteImport } from './routes/admin/customers'
+import { Route as AdminContactMessagesRouteImport } from './routes/admin/contact-messages'
 import { Route as AdminCancelledRouteImport } from './routes/admin/cancelled'
 import { Route as AdminCalendarRouteImport } from './routes/admin/calendar'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
@@ -129,6 +130,11 @@ const AdminCustomersRoute = AdminCustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminContactMessagesRoute = AdminContactMessagesRouteImport.update({
+  id: '/contact-messages',
+  path: '/contact-messages',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminCancelledRoute = AdminCancelledRouteImport.update({
   id: '/cancelled',
   path: '/cancelled',
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/cancelled': typeof AdminCancelledRoute
+  '/admin/contact-messages': typeof AdminContactMessagesRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/cancelled': typeof AdminCancelledRoute
+  '/admin/contact-messages': typeof AdminContactMessagesRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
@@ -223,6 +231,7 @@ export interface FileRoutesById {
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/cancelled': typeof AdminCancelledRoute
+  '/admin/contact-messages': typeof AdminContactMessagesRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/admin/bookings'
     | '/admin/calendar'
     | '/admin/cancelled'
+    | '/admin/contact-messages'
     | '/admin/customers'
     | '/admin/invoices'
     | '/admin/login'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/admin/bookings'
     | '/admin/calendar'
     | '/admin/cancelled'
+    | '/admin/contact-messages'
     | '/admin/customers'
     | '/admin/invoices'
     | '/admin/login'
@@ -302,6 +313,7 @@ export interface FileRouteTypes {
     | '/admin/bookings'
     | '/admin/calendar'
     | '/admin/cancelled'
+    | '/admin/contact-messages'
     | '/admin/customers'
     | '/admin/invoices'
     | '/admin/login'
@@ -462,6 +474,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCustomersRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/contact-messages': {
+      id: '/admin/contact-messages'
+      path: '/contact-messages'
+      fullPath: '/admin/contact-messages'
+      preLoaderRoute: typeof AdminContactMessagesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/cancelled': {
       id: '/admin/cancelled'
       path: '/cancelled'
@@ -506,6 +525,7 @@ interface AdminRouteRouteChildren {
   AdminBookingsRoute: typeof AdminBookingsRoute
   AdminCalendarRoute: typeof AdminCalendarRoute
   AdminCancelledRoute: typeof AdminCancelledRoute
+  AdminContactMessagesRoute: typeof AdminContactMessagesRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminInvoicesRoute: typeof AdminInvoicesRoute
   AdminLoginRoute: typeof AdminLoginRoute
@@ -522,6 +542,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminBookingsRoute: AdminBookingsRoute,
   AdminCalendarRoute: AdminCalendarRoute,
   AdminCancelledRoute: AdminCancelledRoute,
+  AdminContactMessagesRoute: AdminContactMessagesRoute,
   AdminCustomersRoute: AdminCustomersRoute,
   AdminInvoicesRoute: AdminInvoicesRoute,
   AdminLoginRoute: AdminLoginRoute,

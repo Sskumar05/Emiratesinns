@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { WebsiteLayout } from "@/components/website/WebsiteLayout";
 import { motion } from "framer-motion";
 import { Wifi, Car, Droplet, Camera, Tv, ChefHat, Wine, Sparkles, MapPin, Star, ArrowRight, Building } from "lucide-react";
@@ -32,6 +32,8 @@ const TESTIMONIALS = [
 ];
 
 function Home() {
+  const navigate = useNavigate();
+
   return (
     <WebsiteLayout>
       {/* Hero */}
@@ -77,7 +79,8 @@ function Home() {
               { slug: "emirates-grand-inn", name: "Emirates Grand Inn", tag: "Flagship Luxury", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1200&q=80" },
             ].map((h, i) => (
               <motion.div key={h.slug} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.6 }}
-                className="group relative overflow-hidden bg-card rounded-lg shadow-card border border-border flex flex-col">
+                onClick={() => navigate({ to: '/rooms', search: { hotel: h.slug } })}
+                className="group relative overflow-hidden bg-card rounded-lg shadow-card border border-border flex flex-col cursor-pointer">
                 <div className="aspect-[4/3] overflow-hidden">
                   <img src={h.img} alt={h.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                 </div>
@@ -86,7 +89,7 @@ function Home() {
                     <span className="text-xs font-semibold uppercase tracking-wider text-gold mb-2 block">{h.tag}</span>
                     <h3 className="font-serif font-bold text-2xl mb-4 text-foreground">{h.name}</h3>
                   </div>
-                  <Link to="/rooms" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-gold transition mt-4">
+                  <Link to="/rooms" search={{ hotel: h.slug }} onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-gold transition mt-4">
                     Explore Rooms <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
