@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatINR } from "@/lib/hotel";
 import { Download, Mail, Eye, Search } from "lucide-react";
@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useSendEmail } from "@/hooks/useSendEmail";
 import { CATEGORY_LABELS } from "@/lib/hotel";
 import { downloadInvoice, generateInvoiceHTML } from "@/lib/invoicePdf";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Printer } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -32,6 +32,7 @@ const formatDate = (iso?: string) => {
 };
 
 function Invoices() {
+  const qc = useQueryClient();
   const { sendInvoice, loading } = useSendEmail();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [previewInv, setPreviewInv] = useState<any>(null);
@@ -46,6 +47,14 @@ function Invoices() {
     queryKey: ["hotels"],
     queryFn: async () => (await supabase.from("hotels").select("*")).data ?? [],
   });
+
+  // Realtime
+  useEffect(() => {
+    const ch = supabase.channel("admin-invoices-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "invoices" }, () => qc.invalidateQueries({ queryKey: ["invoices"] }))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
   const { data: invoices = [] } = useQuery({
     queryKey: ["invoices"],

@@ -1,16 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight, X, Calendar as CalendarIcon, Users, LogIn, LogOut, Percent, BedDouble } from "lucide-react";
 
 export const Route = createFileRoute("/admin/calendar")({ component: CalendarPage });
 
 function CalendarPage() {
+  const qc = useQueryClient();
   const [hotelF, setHotelF] = useState("all");
   const [view, setView] = useState<"month" | "week">("month");
   const [cursor, setCursor] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  // Realtime
+  useEffect(() => {
+    const ch = supabase.channel("admin-calendar-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => qc.invalidateQueries({ queryKey: ["calendar-bookings"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "rooms" }, () => qc.invalidateQueries({ queryKey: ["calendar-rooms"] }))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
   const { data: hotels = [] } = useQuery({ queryKey: ["hotels"], queryFn: async () => (await supabase.from("hotels").select("*")).data ?? [] });
   const { data: rooms = [] } = useQuery({ queryKey: ["calendar-rooms"], queryFn: async () => (await supabase.from("rooms").select("*, hotels(slug)")).data ?? [] });

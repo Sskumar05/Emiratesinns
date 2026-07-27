@@ -34,6 +34,9 @@ export function ReduceRoomsModal({ isOpen, onClose, onSuccess, booking, roomNumb
   const perRoomAmount = booking.num_rooms > 0 ? booking.total_amount / booking.num_rooms : 0;
   const newTotalAmount = perRoomAmount * remainingRoomsCount;
 
+  const amountAlreadyPaid = booking.amount_paid ?? (booking.payment_status === "paid" ? booking.total_amount : 0);
+  const balanceAmount = newTotalAmount - amountAlreadyPaid;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedToRelease.length === 0) {
@@ -74,7 +77,7 @@ export function ReduceRoomsModal({ isOpen, onClose, onSuccess, booking, roomNumb
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-xl font-bold">Reduce Rooms</DialogTitle>
           <p className="text-sm text-muted-foreground">
-            Select the room(s) you want to release from booking {booking.booking_code}.
+            Select the room(s) you want to release from booking <br/> {booking.booking_code}.
           </p>
         </DialogHeader>
 
@@ -129,6 +132,24 @@ export function ReduceRoomsModal({ isOpen, onClose, onSuccess, booking, roomNumb
               <span>New Total Amount:</span>
               <span>{formatINR(newTotalAmount)}</span>
             </div>
+            {balanceAmount > 0 && (
+              <div className="flex justify-between font-semibold text-red-500">
+                <span>Balance Amount to Pay:</span>
+                <span>{formatINR(balanceAmount)}</span>
+              </div>
+            )}
+            {balanceAmount === 0 && (
+              <div className="flex justify-between font-semibold text-emerald-500">
+                <span>No Balance Due</span>
+                <span></span>
+              </div>
+            )}
+            {balanceAmount < 0 && (
+              <div className="flex justify-between font-semibold text-blue-500">
+                <span>Refund Amount:</span>
+                <span>{formatINR(Math.abs(balanceAmount))}</span>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-2 flex-shrink-0">

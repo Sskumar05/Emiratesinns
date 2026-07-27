@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, Filter, Eye, Trash2, X, MessageSquare, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,6 +30,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 function ContactMessagesAdmin() {
+  const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
 
@@ -44,6 +45,14 @@ function ContactMessagesAdmin() {
       return data as Message[];
     },
   });
+
+  // Realtime
+  useEffect(() => {
+    const ch = supabase.channel("admin-contact-messages-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "contact_messages" }, () => qc.invalidateQueries({ queryKey: ["contact_messages"] }))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
   const filteredMessages = useMemo(() => {
     return messages.filter((m) => {

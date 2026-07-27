@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
 import { getOccupiedRoomStatusMap } from "@/lib/occupancy";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Pencil, Trash2, Plus, Users, BedDouble, List } from "lucide-react";
 import { toast } from "sonner";
 import { CategoryModal } from "@/components/admin/CategoryModal";
@@ -25,6 +25,15 @@ function AdminRooms() {
   // Filters
   const [hotelF, setHotelF] = useState("all");
   const [catF, setCatF] = useState("all");
+
+  // Realtime
+  useEffect(() => {
+    const ch = supabase.channel("admin-rooms-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "rooms" }, () => qc.invalidateQueries({ queryKey: ["admin-rooms"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => qc.invalidateQueries({ queryKey: ["active-bookings-occupancy"] }))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
   const { data: stayModeData } = useQuery({
     queryKey: ["system_settings", "global_stay_mode"],

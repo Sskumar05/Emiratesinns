@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { BedDouble, CheckCircle2, Users, XCircle, TrendingUp, Mail } from "lucide-react";
@@ -14,6 +14,7 @@ export const Route = createFileRoute("/admin/")({
 });
 
 function Dashboard() {
+  const qc = useQueryClient();
   const [hotelFilter, setHotelFilter] = useState<string>("all");
   const today = new Date().toISOString().slice(0, 10);
 
@@ -36,10 +37,13 @@ function Dashboard() {
   // Realtime
   useEffect(() => {
     const ch = supabase.channel("admin-dash")
-      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => refetch())
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => qc.invalidateQueries({ queryKey: ["bookings-all"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "rooms" }, () => qc.invalidateQueries({ queryKey: ["rooms-all"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "customers" }, () => qc.invalidateQueries({ queryKey: ["customers-count"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "contact_messages" }, () => qc.invalidateQueries({ queryKey: ["contact_messages_new"] }))
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [refetch]);
+  }, [qc]);
 
   const occupiedRoomStatusMap = getOccupiedRoomStatusMap(bookings);
 

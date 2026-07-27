@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, Eye, X, FileSpreadsheet } from "lucide-react";
 import { downloadXlsx, fmtExcelDate } from "@/lib/exportExcel";
 import { toast } from "sonner";
@@ -46,12 +46,22 @@ const formatDateTime = (iso?: string) => {
 };
 
 function Cancelled() {
+  const qc = useQueryClient();
   const [hotelF, setHotelF] = useState("all");
   const [statusF, setStatusF] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [viewBooking, setViewBooking] = useState<any | null>(null);
+
+  // Realtime
+  useEffect(() => {
+    const ch = supabase.channel("admin-cancelled-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => qc.invalidateQueries({ queryKey: ["cancelled"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "rooms" }, () => qc.invalidateQueries({ queryKey: ["all-rooms"] }))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
   function exportToExcel(filtered: any[], roomNumberMap: Record<string, string>) {
     if (filtered.length === 0) { toast.error("No data available to export."); return; }

@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
 import { toast } from "sonner";
 import { Loader2, Trash2, Plus, Pencil, Check, X, ExternalLink } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**
  * RoomNumbersModal
@@ -34,6 +34,7 @@ const STATUS_STYLES: Record<RoomStatus, string> = {
 };
 
 export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: Props) {
+  const qc = useQueryClient();
   const [addNumber, setAddNumber] = useState("");
   const [addLoading, setAddLoading] = useState(false);
 
@@ -44,6 +45,14 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
 
   // Which occupied room's booking details are expanded
   const [expandedRoomId, setExpandedRoomId] = useState<string | null>(null);
+
+  // Local copy of rooms so status badge updates instantly without waiting for parent refetch
+  const [localRooms, setLocalRooms] = useState<any[]>(categoryGroup?.rooms ?? []);
+
+  // Keep localRooms in sync whenever the parent passes fresh data (e.g. after add/delete/refetch)
+  useEffect(() => {
+    setLocalRooms(categoryGroup?.rooms ?? []);
+  }, [categoryGroup?.rooms]);
 
   // ── Fetch active bookings for this hotel+category ────────────────────────
   // NOTE: All hooks must be called unconditionally (Rules of Hooks).
@@ -62,6 +71,15 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
       ).data ?? [],
   });
 
+  // Realtime subscription for live booking updates within this category
+  useEffect(() => {
+    if (!isOpen || !categoryGroup) return;
+    const ch = supabase.channel(`admin-room-modal-${categoryGroup.hotel_id}-${categoryGroup.category}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => qc.invalidateQueries({ queryKey: ["room-modal-occupancy", categoryGroup.hotel_id, categoryGroup.category] }))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [isOpen, categoryGroup, qc]);
+
   // Map: room_id → booking details
   // Always runs; produces an empty map when activeBookings is empty.
   const occupiedMap = useMemo(() => {
@@ -76,13 +94,13 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
 
   // Summary counts — always runs; uses safe fallback when categoryGroup is null.
   const summary = useMemo(() => {
-    const rooms = categoryGroup?.rooms ?? [];
+    const rooms = localRooms;
     const maint = rooms.filter((r: any) => r.status === "maintenance").length;
     const res = rooms.filter((r: any) => r.status !== "maintenance" && occupiedMap[r.id]?.status === "confirmed").length;
     const occ = rooms.filter((r: any) => r.status !== "maintenance" && occupiedMap[r.id]?.status === "checked_in").length;
     const avail = rooms.filter((r: any) => r.status !== "maintenance" && !occupiedMap[r.id]).length;
     return { avail, res, occ, maint, total: rooms.length };
-  }, [categoryGroup?.rooms, occupiedMap]);
+  }, [localRooms, occupiedMap]);
 
   // ── Early return AFTER all hooks ─────────────────────────────────────────
   // Placing this guard here (not before hooks) ensures the hook call count
@@ -127,7 +145,7 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
           room_number: num,
           status: "available",
           room_type: tpl.room_type ?? null,
-          floor: tpl.floor ?? null,
+          // floor: tpl.floor ?? null,
           bed_type: tpl.bed_type ?? null,
           max_guests: tpl.max_guests,
           price_per_night: tpl.price_per_night,
@@ -161,8 +179,17 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
       .update({ status: newStatus, updated_at: new Date().toISOString() })
       .eq("id", r.id);
 
-    if (error) toast.error(error.message);
-    else { toast.success(`Room ${r.room_number} → ${newStatus}`); onSuccess(); }
+    if (error) {
+      toast.error(error.message);
+    } else {
+      // Immediately update local state so the badge reflects the new status without
+      // waiting for the parent to refetch and pass down updated props.
+      setLocalRooms((prev) =>
+        prev.map((room) => (room.id === r.id ? { ...room, status: newStatus } : room))
+      );
+      toast.success(`Room ${r.room_number} → ${newStatus}`);
+      onSuccess();
+    }
   }
 
   // ── Save inline edit ──────────────────────────────────────────────────────
@@ -217,18 +244,18 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto bg-card text-foreground">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[92vh] overflow-hidden flex flex-col bg-card text-foreground">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="text-xl font-bold">Manage Room Numbers</DialogTitle>
           <p className="text-sm text-muted-foreground">
             {categoryGroup.hotel_name} — {categoryLabel}
           </p>
         </DialogHeader>
 
-        <div className="mt-4 space-y-6">
+        <div className="mt-4 flex flex-col gap-6 flex-1 min-h-0">
 
           {/* ── Add room form ─────────────────────────────────────────────── */}
-          <form onSubmit={handleAdd} className="flex flex-col sm:flex-row items-end gap-3 bg-muted/30 p-4 rounded-lg border border-border">
+          <form onSubmit={handleAdd} className="flex flex-col sm:flex-row items-end gap-3 bg-muted/30 p-4 rounded-lg border border-border shrink-0">
             <div className="flex-1">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">
                 New Room Number
@@ -253,24 +280,25 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
           </form>
 
           {/* ── Room list ─────────────────────────────────────────────────── */}
-          <div className="border border-border rounded-lg overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-surface text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border">
-                <tr>
-                  <th className="text-left py-3 px-4">Room Number</th>
-                  <th className="text-left py-3 px-4">Live Status</th>
-                  <th className="text-right py-3 px-4">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {categoryGroup.rooms.length === 0 ? (
+          <div className="border border-border rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
+            <div className="overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+              <table className="w-full text-sm relative">
+                <thead className="bg-surface text-xs font-bold uppercase tracking-wider text-muted-foreground sticky top-0 z-20 shadow-[0_1px_0_0_var(--border)]">
+                  <tr>
+                    <th className="text-left py-3 px-4">Room Number</th>
+                    <th className="text-left py-3 px-4">Live Status</th>
+                    <th className="text-right py-3 px-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                {localRooms.length === 0 ? (
                   <tr>
                     <td colSpan={3} className="py-8 text-center text-muted-foreground text-sm">
                       No rooms yet. Add one above.
                     </td>
                   </tr>
                 ) : (
-                  categoryGroup.rooms.map((r: any) => {
+                  localRooms.map((r: any) => {
                     const live = liveStatus(r);
                     const booking = occupiedMap[r.id];
                     const isExpanded = expandedRoomId === r.id;
@@ -427,11 +455,12 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
                 )}
               </tbody>
             </table>
+            </div>
           </div>
 
           {/* Summary row */}
-          {categoryGroup.rooms.length > 0 && (
-            <div className="flex flex-wrap gap-3 text-xs font-semibold">
+          {localRooms.length > 0 && (
+            <div className="flex flex-wrap gap-3 text-xs font-semibold shrink-0">
               {summary.avail > 0 && (
                 <span className={`px-3 py-1 rounded-full border ${STATUS_STYLES.available}`}>
                   {summary.avail} Available

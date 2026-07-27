@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { useSendEmail } from "@/hooks/useSendEmail";
 import { Loader2, Search, Eye, X, MoreVertical, XCircle, UserX, MinusSquare, FileSpreadsheet } from "lucide-react";
@@ -58,6 +58,15 @@ function AdminBookings() {
   const [reduceRoomsBooking, setReduceRoomsBooking] = useState<any | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const { sendConfirmation, sendCancellation } = useSendEmail();
+
+  // Realtime
+  useEffect(() => {
+    const ch = supabase.channel("admin-bookings-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => qc.invalidateQueries({ queryKey: ["admin-bookings"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "rooms" }, () => qc.invalidateQueries({ queryKey: ["all-rooms"] }))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
   function exportToExcel(filtered: any[], roomNumberMap: Record<string, string>) {
     if (filtered.length === 0) { toast.error("No data available to export."); return; }

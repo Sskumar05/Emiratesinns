@@ -24,7 +24,7 @@ export function RoomModal({
     room_number: "",
     category: "ac_double",
     room_type: "",
-    floor: "",
+    // floor: "",
     bed_type: "",
     max_guests: 2,
     price_per_night: 5000,
@@ -46,7 +46,7 @@ export function RoomModal({
         room_number: "",
         category: "ac_double",
         room_type: "",
-        floor: "",
+        // floor: "",
         bed_type: "",
         max_guests: 2,
         price_per_night: 5000,
@@ -213,7 +213,7 @@ export function RoomModal({
             </div>
 
             {/* Floor */}
-            <div>
+            {/* <div>
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Floor</label>
               <input
                 type="text"
@@ -222,7 +222,7 @@ export function RoomModal({
                 onChange={e => setForm({...form, floor: e.target.value})}
                 className={isEdit ? readOnlyClass : editableClass}
               />
-            </div>
+            </div> */}
 
             {/* Bed Type */}
             <div>

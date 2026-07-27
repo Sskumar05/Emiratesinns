@@ -32,7 +32,7 @@ const BLANK_FORM = {
   hotel_id: "",
   category: "ac_double",
   room_type: "",
-  floor: "",
+  // floor: "",
   bed_type: "",
   max_guests: 2,
   price_per_night: 5000,
@@ -61,7 +61,7 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
         hotel_id: tpl.hotel_id ?? "",
         category: tpl.category ?? "ac_double",
         room_type: tpl.room_type ?? "",
-        floor: tpl.floor ?? "",
+        // floor: tpl.floor ?? "",
         bed_type: tpl.bed_type ?? "",
         max_guests: tpl.max_guests ?? 2,
         price_per_night: tpl.price_per_night ?? 5000,
@@ -179,7 +179,7 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
             room_number: form.initial_room_number.trim(),
             status: form.initial_status,
             room_type: trimmedRoomType,
-            floor: form.floor || null,
+            // floor: form.floor || null,
             bed_type: form.bed_type || null,
             max_guests: form.max_guests,
             price_per_night: form.price_per_night,
@@ -303,11 +303,11 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
             )}
 
             {/* Floor */}
-            {field(
+            {/* {field(
               "Floor",
               <input type="text" value={form.floor} disabled={isEdit} className={isEdit ? ro : rw}
                 onChange={(e) => setForm({ ...form, floor: e.target.value })} />
-            )}
+            )} */}
 
             {/* Images upload (add mode only) */}
             {!isEdit && field(

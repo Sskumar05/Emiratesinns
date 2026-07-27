@@ -326,8 +326,9 @@ function RoomDetail() {
               {[
                 { icon: Users, label: "Capacity", value: `Up to ${room.max_guests}` },
                 { icon: BedDouble, label: "Bed Type", value: room.bed_type || "Standard" },
-                { icon: Home, label: "Floor", value: room.floor || "N/A" },
-                { icon: DoorOpen, label: "Room Type", value: room.room_type || CATEGORY_LABELS[room.category] || "Standard" },
+                { icon: DoorOpen, label: "Room Type", value: "Door" },
+                { icon: Car, label: "Parking", value: "Available" },
+
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex flex-col gap-2 text-center items-center">
                   <div className="bg-primary/5 p-3 rounded-full text-primary">

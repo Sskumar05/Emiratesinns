@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, Eye, X, Mail, Phone, Calendar, FileSpreadsheet } from "lucide-react";
 import { formatINR, CATEGORY_LABELS } from "@/lib/hotel";
 import { downloadXlsx, fmtExcelDate } from "@/lib/exportExcel";
@@ -45,6 +45,7 @@ const getStatusBadgeClass = (status: string) => {
 };
 
 function Customers() {
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
   const [statusF, setStatusF] = useState("all");
   const [hotelF, setHotelF] = useState("all");
@@ -57,6 +58,15 @@ function Customers() {
     queryKey: ["hotels"],
     queryFn: async () => (await supabase.from("hotels").select("*")).data ?? [],
   });
+
+  // Realtime
+  useEffect(() => {
+    const ch = supabase.channel("admin-customers-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "customers" }, () => qc.invalidateQueries({ queryKey: ["customers"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => qc.invalidateQueries({ queryKey: ["all-bookings-for-cust"] }))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
   const { data: customersRaw = [] } = useQuery({
     queryKey: ["customers"],

@@ -15,10 +15,10 @@ const NAV_TOP: NavItem[] = [
 ];
 const NAV_BOTTOM: NavItem[] = [
   { to: "/admin/cancelled", label: "Cancelled", icon: XCircle },
-  { to: "/admin/contact-messages", label: "Contact Messages", icon: Mail },
   { to: "/admin/calendar", label: "Calendar", icon: Calendar },
   { to: "/admin/customers", label: "Customers", icon: Users },
   { to: "/admin/invoices", label: "Invoices", icon: FileText },
+  { to: "/admin/contact-messages", label: "Contact", icon: Mail },
   { to: "/admin/profile", label: "Profile", icon: UserCog },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
