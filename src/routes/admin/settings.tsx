@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Bell, Hotel, Sliders, Mail, CheckCircle, XCircle, Loader2, FlaskConical, Clock } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -178,6 +178,52 @@ function Settings() {
 
   const is12Hours = stayModeData === "12_hours";
 
+  // ── Default Check-in / Check-out Times ──────────────────────────────────────
+  const [ciTime, setCiTime] = useState("11:00");
+  const [coTime, setCoTime] = useState("22:00");
+
+  const { data: defaultTimesData } = useQuery({
+    queryKey: ["system_settings", "default_check_times"],
+    queryFn: async () => {
+      try {
+        const [ciRes, coRes] = await Promise.all([
+          supabase.from("system_settings").select("value").eq("key", "default_check_in_time").maybeSingle(),
+          supabase.from("system_settings").select("value").eq("key", "default_check_out_time").maybeSingle(),
+        ]);
+        const ci = ciRes.data?.value ?? "11:00";
+        const co = coRes.data?.value ?? "22:00";
+        return {
+          checkIn:  typeof ci === "string" ? ci.replace(/^"|"$/g, "") : "11:00",
+          checkOut: typeof co === "string" ? co.replace(/^"|"$/g, "") : "22:00",
+        };
+      } catch {
+        return { checkIn: "11:00", checkOut: "22:00" };
+      }
+    },
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (defaultTimesData) {
+      setCiTime(defaultTimesData.checkIn);
+      setCoTime(defaultTimesData.checkOut);
+    }
+  }, [defaultTimesData]);
+
+  const saveCheckTimes = async () => {
+    try {
+      const [ciErr, coErr] = await Promise.all([
+        supabase.from("system_settings").upsert({ key: "default_check_in_time",  value: ciTime }, { onConflict: "key" }).then(r => r.error),
+        supabase.from("system_settings").upsert({ key: "default_check_out_time", value: coTime }, { onConflict: "key" }).then(r => r.error),
+      ]);
+      if (ciErr) throw ciErr;
+      if (coErr) throw coErr;
+      toast.success("Default times saved.");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to save default times");
+    }
+  };
+
   const toggleStayMode = async (checked: boolean) => {
     const newMode = checked ? "12_hours" : "standard";
     try {
@@ -256,8 +302,17 @@ function Settings() {
         <div className="space-y-4 text-sm mb-10">
           <Setting label="Currency" value="INR (₹)" />
           <Setting label="Time Zone" value="Asia/Kolkata" />
-          <Setting label="Default Check-in" value="14:00" />
-          <Setting label="Default Check-out" value="12:00" />
+          <div className="flex justify-between py-2 border-b border-border items-center">
+            <span className="text-muted-foreground">Default Check-in</span>
+            <input type="time" value={ciTime} onChange={e => setCiTime(e.target.value)} className="bg-background border border-border rounded px-2 py-1 text-sm focus:outline-none focus:border-gold/60" />
+          </div>
+          <div className="flex justify-between py-2 border-b border-border items-center">
+            <span className="text-muted-foreground">Default Check-out</span>
+            <input type="time" value={coTime} onChange={e => setCoTime(e.target.value)} className="bg-background border border-border rounded px-2 py-1 text-sm focus:outline-none focus:border-gold/60" />
+          </div>
+          <div className="flex justify-end pt-2">
+            <button onClick={saveCheckTimes} className="border border-gold/40 text-gold px-5 py-1.5 text-xs uppercase tracking-[0.2em] hover:bg-gold/10">Save Settings</button>
+          </div>
         </div>
 
         {/* --- Stay Mode Section --- */}
@@ -266,7 +321,6 @@ function Settings() {
             <Clock className="h-5 w-5 text-gold" />
             <h3 className="font-display text-xl">Stay Mode</h3>
           </div>
-          
           <div className="flex items-start gap-6 bg-surface p-6 rounded-xl border border-border">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
@@ -301,7 +355,7 @@ function Settings() {
         </div>
       </div>
 
-      <div className="bg-card border border-border p-8">
+      {/* <div className="bg-card border border-border p-8">
         <div className="flex items-center gap-3 mb-6">
           <Bell className="h-5 w-5 text-gold" />
           <h3 className="font-display text-xl">Notifications</h3>
@@ -311,7 +365,7 @@ function Settings() {
           <Toggle label="SMS/WhatsApp confirmations" defaultOn />
           <Toggle label="Daily summary email" defaultOn />
         </div>
-      </div>
+      </div> */}
 
       <div className="bg-card border border-border p-8">
         <div className="flex items-center gap-3 mb-6">

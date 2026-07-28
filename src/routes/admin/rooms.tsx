@@ -87,6 +87,16 @@ function AdminRooms() {
     return getOccupiedRoomStatusMap(activeBookings);
   }, [activeBookings]);
 
+  // Dynamically derive available categories based on selected hotel
+  const availableCategories = useMemo(() => {
+    const relevantRooms = hotelF === "all" ? rooms : rooms.filter((r: any) => r.hotels?.slug === hotelF);
+    const categories = new Set<string>();
+    relevantRooms.forEach((r: any) => {
+      if (r.category) categories.add(r.category);
+    });
+    return Array.from(categories);
+  }, [rooms, hotelF]);
+
   // Group rooms by hotel+category — each group appears exactly once
   const groupedCategories = useMemo(() => {
     const filtered = rooms.filter(
@@ -178,7 +188,10 @@ function AdminRooms() {
         <div className="flex flex-wrap gap-3">
           <select
             value={hotelF}
-            onChange={(e) => setHotelF(e.target.value)}
+            onChange={(e) => {
+              setHotelF(e.target.value);
+              setCatF("all");
+            }}
             className="bg-card border border-border px-3 py-2 text-sm rounded-md"
           >
             <option value="all">All Hotels</option>
@@ -193,8 +206,10 @@ function AdminRooms() {
             className="bg-card border border-border px-3 py-2 text-sm rounded-md"
           >
             <option value="all">All Categories</option>
-            {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
+            {availableCategories.map((catKey) => (
+              <option key={catKey} value={catKey}>
+                {CATEGORY_LABELS[catKey as keyof typeof CATEGORY_LABELS] ?? catKey}
+              </option>
             ))}
           </select>
         </div>
@@ -293,13 +308,13 @@ function AdminRooms() {
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => deleteCategory(g)}
                         className="text-muted-foreground hover:text-red-500 transition-colors"
                         title="Delete Category & All Rooms"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </button>
+                      </button> */}
                     </div>
                   </td>
                 </tr>

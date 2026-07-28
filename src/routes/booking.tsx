@@ -40,7 +40,7 @@ function Booking() {
 
   return (
     <WebsiteLayout>
-      <BookingFlow 
+      <BookingFlow
         isAdmin={false}
         initialRoomId={search.roomId}
         initialSearch={search}

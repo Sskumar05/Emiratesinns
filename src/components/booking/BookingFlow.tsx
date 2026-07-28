@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR, isoDate, addDays, fmtDateTime, getDurationLabel, getRateLabel } from "@/lib/hotel";
@@ -9,6 +9,16 @@ import { z } from "zod";
 import { sendAdminNotification, sendBookingConfirmation } from "@/lib/email";
 import { getOccupiedRoomStatusMap } from "@/lib/occupancy";
 import { getOrGenerateInvoicePDF } from "@/lib/invoiceBackend";
+
+const format12Hour = (time24: string) => {
+  if (!time24) return "";
+  const [h, m] = time24.split(":");
+  if (!h || !m) return time24;
+  let hour = parseInt(h, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  return `${hour.toString().padStart(2, '0')}:${m} ${ampm}`;
+};
 
 export interface BookingCreatedPayload {
   bookingId: string;
@@ -99,6 +109,34 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
   });
   const is12HoursMode = stayModeData === "12_hours";
 
+  // ── Default Check-in / Check-out Times (from Admin Settings) ────────────────
+  const { data: defaultTimesData } = useQuery({
+    queryKey: ["system_settings", "default_check_times"],
+    queryFn: async () => {
+      try {
+        const [ciRes, coRes] = await Promise.all([
+          supabase.from("system_settings").select("value").eq("key", "default_check_in_time").maybeSingle(),
+          supabase.from("system_settings").select("value").eq("key", "default_check_out_time").maybeSingle(),
+        ]);
+        const ci = ciRes.data?.value ?? "11:00";
+        const co = coRes.data?.value ?? "22:00";
+        return {
+          checkIn:  typeof ci === "string" ? ci.replace(/^"|"$/g, "") : "11:00",
+          checkOut: typeof co === "string" ? co.replace(/^"|"$/g, "") : "22:00",
+        };
+      } catch {
+        return { checkIn: "11:00", checkOut: "22:00" };
+      }
+    },
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (defaultTimesData?.checkIn) {
+      setForm(prev => ({ ...prev, check_in_time: defaultTimesData.checkIn }));
+    }
+  }, [defaultTimesData?.checkIn]);
+
   // Data queries
   const { data: hotels = [] } = useQuery({
     queryKey: ["hotels"],
@@ -141,15 +179,23 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
 
   // Calculate actual checkout based on mode
   let checkout = isoDate(addDays(form.check_in_date, form.num_days));
-  let checkoutTime = "12:00";
+  let checkoutTime = defaultTimesData?.checkOut ?? "22:00";
   const checkInMs = new Date(`${form.check_in_date}T${form.check_in_time || "14:00"}:00`).getTime();
-  const checkOutMs = is12HoursMode
-    ? checkInMs + 12 * 60 * 60 * 1000
+  
+  const hourlyMatch = stayModeData ? stayModeData.match(/^(\d+)_hours$/) : null;
+  const isHourly = !!hourlyMatch || is12HoursMode;
+  const stayDurationHours = hourlyMatch ? parseInt(hourlyMatch[1], 10) : (is12HoursMode ? 12 : 0);
+
+  const checkOutMs = isHourly
+    ? checkInMs + stayDurationHours * 60 * 60 * 1000
     : new Date(`${isoDate(addDays(form.check_in_date, form.num_days))}T12:00:00`).getTime();
 
-  if (is12HoursMode) {
+  if (isHourly) {
     const d = new Date(checkOutMs);
-    checkout = d.toISOString().split("T")[0];
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    checkout = `${year}-${month}-${day}`;
     checkoutTime = d.toTimeString().slice(0, 5);
   }
 
@@ -618,8 +664,22 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
 
             {!isAdmin && is12HoursMode && (
               <>
-                <div className="sm:col-span-1"><Field label="Check-In Time *" type="time" value={form.check_in_time || "14:00"} onChange={(v) => setForm({ ...form, check_in_time: v })} /></div>
-                <div className="sm:col-span-1"><Field label="Check-Out Time (Auto)" type="time" value={checkoutTime} onChange={() => {}} disabled /></div>
+                <div className="sm:col-span-1">
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Check-In Time *</span>
+                    <select value={form.check_in_time || "14:00"} onChange={(e) => setForm({ ...form, check_in_time: e.target.value })} className="w-full bg-background border border-border rounded-md px-4 py-3 text-sm focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none transition-colors">
+                      {Array.from({ length: 48 }).map((_, i) => {
+                        const h = Math.floor(i / 2);
+                        const m = i % 2 === 0 ? "00" : "30";
+                        const v24 = `${h.toString().padStart(2, '0')}:${m}`;
+                        return <option key={v24} value={v24}>{format12Hour(v24)}</option>;
+                      })}
+                    </select>
+                  </label>
+                </div>
+                <div className="sm:col-span-1">
+                  <Field label="Check-Out Time (Auto)" type="text" value={format12Hour(checkoutTime)} onChange={() => {}} disabled />
+                </div>
               </>
             )}
           </div>

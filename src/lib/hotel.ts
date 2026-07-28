@@ -47,7 +47,7 @@ export function fmtDateTime(dateStr: string, timeStr?: string | null): string {
   const year = parts.find(p => p.type === 'year')?.value;
 
   const timeFormatter = new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
+    hour: "2-digit",
     minute: "2-digit",
     hour12: true,
   });
