@@ -6,6 +6,7 @@ import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Wifi, Tv, Car, Droplet, ChefHat, Camera, Wine, ArrowRight, Ban } from "lucide-react";
+import logo from "@/assets/line_logo.png";
 
 export const Route = createFileRoute("/rooms")({
   validateSearch: (search: Record<string, unknown>) => {
@@ -422,7 +423,7 @@ function RoomsPage() {
             <span className="italic font-light">Suites.</span>
           </h1>
 
-          <div className="w-14 h-px bg-gold/50 mx-auto mb-8" />
+          <div className="mb-[-10%] " ><img src={logo} alt="line" className="w-auto h-auto mt-[-16%] " /></div>
 
           <p
             className="text-muted-foreground leading-relaxed font-light max-w-2xl mx-auto"

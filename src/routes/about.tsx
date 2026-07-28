@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { WebsiteLayout } from "@/components/website/WebsiteLayout";
+import logo from "@/assets/line_logo.png";
 import { 
   Building2, Star, ShieldCheck, MapPin, 
   CheckCircle2, Clock, CalendarDays, BedDouble, 
@@ -68,13 +69,14 @@ function About() {
         >
           <span className="text-sm font-semibold uppercase tracking-[0.3em] text-gold mb-8 inline-block">About Emirates</span>
           <h1 className="font-serif font-bold text-4xl md:text-6xl text-foreground tracking-tight leading-tight mb-8">
-            Designed Around Your Comfort.<br />
-            <span className="italic font-light">Inspired by Genuine Hospitality.</span>
+            Designed Around Your<br />
+            {/* <span className="italic font-light">Inspired by Genuine Hospitality.</span> */}
+            <span className="italic font-light">Comfort.</span>
           </h1>
-          <div className="w-16 h-[1px] bg-gold/50 mx-auto mb-8" />
+          {/* <div className="w-16 h-[1px] bg-gold/50 mx-auto mb-8" /> */}
+          <div className="mb-[-10%] " ><img src={logo} alt="line" className="w-auto h-auto mt-[-16%] " /></div>
           <p className="text-lg text-muted-foreground leading-relaxed max-w-[650px] mx-auto font-light">
-            Discover the story behind Emirates Inn & Emirates Grand Inn, where thoughtful hospitality, elegant accommodations, and exceptional guest experiences come together to create memorable stays.
-          </p>
+            Discover the story behind Emirates Inn & Emirates Grand Inn, where exceptional hospitality, refined accommodations, and personalized service come together to deliver an unforgettable guest experience.</p>
         </motion.div>
       </section>
 
@@ -107,11 +109,9 @@ function About() {
             <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground">Hospitality Beyond Expectations</h2>
             <div className="space-y-6 text-muted-foreground text-lg leading-relaxed font-light mt-8">
               <p>
-                Emirates Inn began with a simple philosophy: to create stays that feel intimate, unhurried, and deeply personal. We believe that true luxury lies in the details—the warm greeting, the perfectly appointed room, and the intuitive service that anticipates your needs before you even voice them.
-              </p>
+                Emirates Inn was founded with a simple vision to provide guests with a stay that is warm, comfortable, and truly memorable. We believe exceptional hospitality is defined by thoughtful service, elegant accommodations, and attention to every detail that makes each visit special.</p>
               <p>
-                Today, our collection includes the original Emirates Inn and the flagship Emirates Grand Inn. While each property has its own unique character, both share our unwavering commitment to providing an exceptional guest experience. We invite you to be part of a story we've been crafting for years, designed entirely around your comfort.
-              </p>
+                Today, our family has grown to include Emirates Inn and Emirates Grand Inn. While each property offers its own unique experience, both are united by the same commitment to quality, comfort, and personalized hospitality. Whether you're traveling for business or leisure, we are dedicated to making every stay seamless, relaxing, and unforgettable.</p>
             </div>
           </motion.div>
         </div>
@@ -195,12 +195,11 @@ function About() {
           >
             <h3 className="text-3xl md:text-4xl font-serif font-bold text-foreground">Emirates Inn</h3>
             <p className="text-lg text-muted-foreground font-light leading-relaxed">
-              A modern sanctuary designed for both business and leisure travelers. Emirates Inn offers beautifully appointed rooms with essential amenities, creating a comfortable and productive environment. Experience our signature hospitality in a refined setting.
-            </p>
+              A refined hospitality destination where contemporary comfort meets exceptional service. Designed to exceed the expectations of both business and leisure travelers, Emirates Inn offers thoughtfully appointed accommodations, modern conveniences, and an atmosphere of understated elegance, ensuring every stay is both comfortable and memorable.</p>
             <ul className="space-y-4 pt-4">
-              <li className="flex items-center gap-4 text-foreground"><CheckCircle2 className="w-5 h-5 text-gold flex-shrink-0" /> Modern, comfortable accommodations</li>
-              <li className="flex items-center gap-4 text-foreground"><CheckCircle2 className="w-5 h-5 text-gold flex-shrink-0" /> Ideal for business & leisure travelers</li>
-              <li className="flex items-center gap-4 text-foreground"><CheckCircle2 className="w-5 h-5 text-gold flex-shrink-0" /> Thoughtful essential amenities</li>
+              <li className="flex items-center gap-4 text-foreground"><CheckCircle2 className="w-5 h-5 text-gold flex-shrink-0" /> Contemporary Elegant Accommodations</li>
+              <li className="flex items-center gap-4 text-foreground"><CheckCircle2 className="w-5 h-5 text-gold flex-shrink-0" /> Business & Leisure Excellence</li>
+              <li className="flex items-center gap-4 text-foreground"><CheckCircle2 className="w-5 h-5 text-gold flex-shrink-0" />Personalized Guest Experience</li>
             </ul>
           </motion.div>
         </div>
@@ -216,12 +215,11 @@ function About() {
           >
             <h3 className="text-3xl md:text-4xl font-serif font-bold text-foreground">Emirates Grand Inn</h3>
             <p className="text-lg text-muted-foreground font-light leading-relaxed">
-              Our flagship property, redefining luxury hospitality. Emirates Grand Inn features premium accommodations, elegant interiors, and spacious suites. Every detail is curated to provide a truly luxurious experience, setting a new standard for excellence.
-            </p>
+              The pinnacle of luxury hospitality, Emirates Grand Inn delivers an extraordinary experience defined by sophisticated design, impeccable craftsmanship, and exceptional service. From elegantly appointed suites to personalized guest experiences, every detail reflects our unwavering commitment to excellence and timeless luxury.</p>
             <ul className="space-y-4 pt-4">
-              <li className="flex items-center gap-4 text-foreground"><CheckCircle2 className="w-5 h-5 text-gold flex-shrink-0" /> Premium, spacious accommodations</li>
-              <li className="flex items-center gap-4 text-foreground"><CheckCircle2 className="w-5 h-5 text-gold flex-shrink-0" /> Exquisitely elegant interiors</li>
-              <li className="flex items-center gap-4 text-foreground"><CheckCircle2 className="w-5 h-5 text-gold flex-shrink-0" /> Refined, world-class hospitality</li>
+              <li className="flex items-center gap-4 text-foreground"><CheckCircle2 className="w-5 h-5 text-gold flex-shrink-0" /> Premium Luxury Accommodations</li>
+              <li className="flex items-center gap-4 text-foreground"><CheckCircle2 className="w-5 h-5 text-gold flex-shrink-0" />Timeless Elegant Interiors</li>
+              <li className="flex items-center gap-4 text-foreground"><CheckCircle2 className="w-5 h-5 text-gold flex-shrink-0" /> Exceptional Personalized Hospitality</li>
             </ul>
           </motion.div>
 
@@ -257,8 +255,8 @@ function About() {
           >
             {[
               { icon: Target, title: "Our Mission", desc: "To provide exceptional hospitality through comfortable accommodations, personalized service, and memorable guest experiences." },
-              { icon: Award, title: "Our Vision", desc: "To become one of the most trusted hospitality destinations known globally for excellence, comfort, and outstanding service." },
-              { icon: ShieldCheck, title: "Our Commitment", desc: "To uncompromising quality, ensuring every guest feels valued, respected, and impeccably cared for during their stay." }
+              { icon: Award, title: "Our Vision", desc: "To be a trusted hospitality brand recognized for excellence, comfort, and exceptional guest experiences." },
+              { icon: ShieldCheck, title: "Our Commitment", desc: "To uphold the highest standards of quality, ensuring every guest feels welcomed, valued, and genuinely cared for throughout their stay." }
             ].map((item, i) => (
               <motion.div 
                 variants={fadeUp}

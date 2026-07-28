@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import logo from "@/assets/line_logo.png";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -128,17 +129,16 @@ function Contact() {
             className="font-serif font-bold text-foreground tracking-tight leading-tight mb-7"
             style={{ fontSize: "clamp(2.4rem, 6vw, 4.2rem)" }}
           >
-            We're Here to <span className="italic font-light">Welcome You.</span>
+            Your Stay <span className="italic font-light">Begins Here.</span>
           </h1>
 
-          <div className="w-14 h-px bg-gold/50 mx-auto mb-8" />
+          <div className="mb-[-10%]"><img src={logo} alt="line" className="w-auto h-auto mt-[-16%] " /></div>
 
           <p
             className="text-muted-foreground leading-relaxed font-light max-w-2xl mx-auto"
             style={{ fontSize: "clamp(1rem, 2.5vw, 1.15rem)" }}
           >
-            Whether you're planning your next stay, have a question, or need assistance with your reservation, our team is always ready to help.
-          </p>
+Whether you're planning your next stay, have a question, or require reservation assistance, our dedicated team is always here to assist you with exceptional hospitality.          </p>
         </motion.div>
       </section>
 

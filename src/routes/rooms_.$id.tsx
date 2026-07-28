@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Check, ArrowLeft, Wifi, Tv, Car, Droplet, ChefHat, Camera, Wine,
   Users, BedDouble, ArrowRight, Home, CalendarDays, UserCheck, ShieldCheck,
-  AlertCircle, Moon, DoorOpen, Minus, Plus,
+  AlertCircle, Moon, DoorOpen, Minus, Plus, Star, Maximize
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 
@@ -303,6 +303,21 @@ function RoomDetail() {
             <h1 className="font-bold text-3xl sm:text-4xl text-foreground mb-6">
               {CATEGORY_LABELS[room.category] || room.category} {room.room_type ? `(${room.room_type})` : ""}
             </h1>
+
+            {/* Guest Rating & Reviews */}
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <div className="flex items-center gap-1.5 bg-foreground text-background px-2.5 py-1 rounded text-sm font-bold shadow-sm">
+                <Star className="h-4 w-4 fill-gold text-gold" /> 4.8 / 5
+              </div>
+              <span className="text-sm font-medium underline decoration-border underline-offset-4 cursor-pointer hover:text-primary transition-colors">
+                245 Verified Reviews
+              </span>
+              <span className="text-muted-foreground/40">•</span>
+              <span className="text-sm font-semibold tracking-wide flex items-center gap-1.5 text-emerald-600">
+                <Check className="h-4 w-4" /> Guest Favorite
+              </span>
+            </div>
+
             <p className="text-muted-foreground text-lg leading-relaxed mb-8">{room.description}</p>
 
             {/* Room inventory stats */}
@@ -328,6 +343,7 @@ function RoomDetail() {
                 { icon: BedDouble, label: "Bed Type", value: room.bed_type || "Standard" },
                 { icon: DoorOpen, label: "Room Type", value: "Door" },
                 { icon: Car, label: "Parking", value: "Available" },
+                { icon: Maximize, label: "Room Size", value: "240 sq.ft" },
 
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex flex-col gap-2 text-center items-center">
@@ -359,6 +375,42 @@ function RoomDetail() {
                     </li>
                   );
                 })}
+              </ul>
+            </div>
+
+            {/* Cancellation Policy */}
+            <div className="mt-8">
+              <h3 className="font-bold text-xl text-foreground mb-6">Cancellation Policy</h3>
+              <ul className="grid sm:grid-cols-2 gap-y-5 gap-x-8">
+                <li className="flex items-start gap-3 col-span-full">
+                  <div className="bg-primary/10 p-2 rounded-md shrink-0">
+                    <Check className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <span className="font-medium block mb-1">Free Cancellation</span>
+                    <span className="text-muted-foreground text-sm">Cancel up to 24 hours before check-in.</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            {/* Safety Features */}
+            <div className="mt-8">
+              <h3 className="font-bold text-xl text-foreground mb-6">Safety Features</h3>
+              <ul className="grid sm:grid-cols-2 gap-y-5 gap-x-8">
+                {[
+                  "CCTV Surveillance",
+                  "Fire Safety System",
+                  "24×7 Front Desk",
+                  "Secure Property"
+                ].map((feature) => (
+                  <li key={feature} className="flex items-center gap-3">
+                    <div className="bg-primary/10 p-2 rounded-md">
+                      <Check className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="font-medium">{feature}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>

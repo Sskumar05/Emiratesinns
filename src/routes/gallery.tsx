@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { WebsiteLayout } from "@/components/website/WebsiteLayout";
 import { motion } from "framer-motion";
+import logo from "@/assets/line_logo.png";
 
 export const Route = createFileRoute("/gallery")({
   head: () => ({
@@ -103,7 +104,7 @@ function Gallery() {
           </h1>
 
           {/* Gold rule */}
-          <div className="w-14 h-px bg-gold/50 mx-auto mb-8" />
+          <div className="mb-[-10%]"><img src={logo} alt="line" className="w-auto h-auto mt-[-16%] " /></div>
 
           {/* Subtitle */}
           <p

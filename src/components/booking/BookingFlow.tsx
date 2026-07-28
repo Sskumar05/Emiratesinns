@@ -480,8 +480,8 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
                         <span className="text-xs font-bold uppercase tracking-wider">12 Hours Stay Mode</span>
                       </div>
                     )}
-                    <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Check-in</span><span className="text-sm font-semibold">{fmtDateTime(form.check_in_date, form.check_in_time)}</span></div>
-                    <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Check-out</span><span className="text-sm font-semibold text-primary">{fmtDateTime(checkout, checkoutTime)}</span></div>
+                    {/* <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Check-in</span><span className="text-sm font-semibold">{fmtDateTime(form.check_in_date, form.check_in_time)}</span></div>
+                    <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Check-out</span><span className="text-sm font-semibold text-primary">{fmtDateTime(checkout, checkoutTime)}</span></div> */}
                     <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Stay</span><span className="text-sm font-semibold">{getDurationLabel(form.num_days, is12HoursMode ? "12_hours" : "standard")}</span></div>
                     <div className="flex justify-between items-center"><span className="text-sm text-muted-foreground">Guests</span><span className="text-sm font-semibold">{form.num_guests} {form.num_guests === 1 ? "Guest" : "Guests"}</span></div>
                     <div className="flex justify-between items-center pt-2 border-t border-border mt-1"><span className="font-bold">Total Amount</span><span className="font-bold text-primary">{formatINR(total)}</span></div>

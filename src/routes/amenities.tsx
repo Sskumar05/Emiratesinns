@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { WebsiteLayout } from "@/components/website/WebsiteLayout";
+import logo from "@/assets/line_logo.png";
 import {
   Wifi, Car, Droplet, Camera, Tv, ChefHat,
   ArrowRight, ShieldCheck, Sparkles, Heart
@@ -37,17 +38,17 @@ const AMENITIES = [
   {
     Icon: Wifi,
     title: "Complimentary High-Speed WiFi",
-    desc: "Stay effortlessly connected with enterprise-grade, high-speed wireless internet available throughout every room and public space.",
+    desc: "Stay effortlessly connected with enterprise grade, high-speed wireless internet available throughout every room and public space.",
   },
   {
     Icon: Car,
     title: "Secure Car Parking",
-    desc: "Enjoy peace of mind with our dedicated, CCTV-monitored secure parking facility, available to all guests at no additional cost.",
+    desc: "Enjoy peace of mind with our dedicated, CCTV monitored secure parking facility, available to all guests at no additional cost.",
   },
   {
     Icon: Tv,
     title: "Smart Television",
-    desc: "Unwind with our curated Smart TV selection featuring premium cable channels and streaming-ready displays in every room.",
+    desc: "Unwind with our curated Smart TV selection featuring premium cable channels and streaming ready displays in every room.",
   },
   {
     Icon: Droplet,
@@ -57,7 +58,7 @@ const AMENITIES = [
   {
     Icon: Camera,
     title: "CCTV Security",
-    desc: "Your safety is our priority. Comprehensive, discreet surveillance coverage ensures a secure and worry-free environment throughout your stay.",
+    desc: "Your safety is our priority. Comprehensive, discreet surveillance coverage ensures a secure and worry free environment throughout your stay.",
   },
   {
     Icon: ChefHat,
@@ -127,19 +128,17 @@ function Amenities() {
             className="font-serif font-bold text-foreground tracking-tight leading-tight mb-7"
             style={{ fontSize: "clamp(2.4rem, 6vw, 4.2rem)" }}
           >
-            Comfort Designed Around{" "}
-            <span className="italic font-light">Every Stay.</span>
+            Comfort Beyond {" "}
+            <span className="italic font-light">Expectations.</span>
           </h1>
 
           {/* Gold rule */}
-          <div className="w-14 h-px bg-gold/50 mx-auto mb-8" />
+          <div className="mb-[-10%]"><img src={logo} alt="line" className="w-auto h-auto mt-[-16%] " /></div>
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-light">
             Every stay at <strong className="font-medium text-foreground">Emirates Inn</strong> &{" "}
-            <strong className="font-medium text-foreground">Emirates Grand Inn</strong> is thoughtfully
-            enhanced with carefully selected amenities, modern conveniences, and personalized comforts
-            — ensuring every guest enjoys a seamless and memorable experience.
+            <strong className="font-medium text-foreground">Emirates Grand Inn</strong> is elevated through thoughtfully curated amenities, contemporary comforts, and personalized hospitality, ensuring an exceptional and memorable guest experience.
           </p>
         </motion.div>
       </section>
@@ -346,7 +345,7 @@ function Amenities() {
           className="relative z-10 text-center px-6 max-w-4xl mx-auto"
         >
           {/* Small gold rule */}
-          <div className="w-10 h-px bg-gold/60 mx-auto mb-8" />
+          {/* <div className="w-10 h-px bg-gold/60 mx-auto mb-8" /> */}
 
           <h2
             className="font-serif font-bold text-white tracking-tight leading-tight mb-6"
@@ -357,10 +356,10 @@ function Amenities() {
           </h2>
 
           <p className="text-white/65 max-w-xl mx-auto font-light leading-relaxed" style={{ fontSize: "1.1rem" }}>
-            Experience hospitality where modern comfort meets genuine care — crafted to exceed every expectation.
+            Experience hospitality where modern comfort meets genuine care crafted to exceed every expectation.
           </p>
 
-          <div className="w-10 h-px bg-gold/60 mx-auto mt-8" />
+          {/* <div className="w-10 h-px bg-gold/60 mx-auto mt-8" /> */}
         </motion.div>
       </section>
 
@@ -382,16 +381,15 @@ function Amenities() {
             className="font-serif font-bold text-foreground mb-5 tracking-tight"
             style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}
           >
-            Ready to Experience Exceptional Comfort?
+           Your Journey Starts Here
           </h2>
 
           {/* Gold rule */}
-          <div className="w-14 h-px bg-gold/50 mx-auto mb-7" />
+          {/* <div className="w-14 h-px bg-gold/50 mx-auto mb-7" /> */}
 
-          <p className="text-lg text-muted-foreground mb-12 leading-relaxed font-light max-w-xl mx-auto">
-            Book your stay at <strong className="font-medium text-foreground">Emirates Inn</strong> &{" "}
-            <strong className="font-medium text-foreground">Emirates Grand Inn</strong> and enjoy
-            thoughtfully designed amenities with outstanding hospitality.
+          <p className="text-lg text-muted-foreground mb-12 leading-relaxed font-light max-w-5xl mx-auto">
+            Reserve your stay at <strong className="font-medium text-foreground">Emirates Inn</strong> &{" "}
+            <strong className="font-medium text-foreground">Emirates Grand Inn</strong> and discover a world of refined comfort, premium amenities, personalized hospitality, and exceptional service crafted to exceed your expectations.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
