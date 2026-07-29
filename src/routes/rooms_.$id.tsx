@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Check, ArrowLeft, Wifi, Tv, Car, Droplet, ChefHat, Camera, Wine,
   Users, BedDouble, ArrowRight, Home, CalendarDays, UserCheck, ShieldCheck,
-  AlertCircle, Moon, DoorOpen, Minus, Plus, Star, Maximize
+  AlertCircle, Moon, DoorOpen, Minus, Plus, Star, Maximize, CircleCheck, Cctv, Flame, Clock3
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 
@@ -305,7 +305,7 @@ function RoomDetail() {
             </h1>
 
             {/* Guest Rating & Reviews */}
-            <div className="flex flex-wrap items-center gap-3 mb-6">
+            {/* <div className="flex flex-wrap items-center gap-3 mb-6">
               <div className="flex items-center gap-1.5 bg-foreground text-background px-2.5 py-1 rounded text-sm font-bold shadow-sm">
                 <Star className="h-4 w-4 fill-gold text-gold" /> 4.8 / 5
               </div>
@@ -316,7 +316,7 @@ function RoomDetail() {
               <span className="text-sm font-semibold tracking-wide flex items-center gap-1.5 text-emerald-600">
                 <Check className="h-4 w-4" /> Guest Favorite
               </span>
-            </div>
+            </div> */}
 
             <p className="text-muted-foreground text-lg leading-relaxed mb-8">{room.description}</p>
 
@@ -337,13 +337,13 @@ function RoomDetail() {
             </div>
 
             {/* Feature Specs */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 py-8 border-y border-border mb-8">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-6 py-8 border-y border-border mb-8">
               {[
-                { icon: Users, label: "Capacity", value: `Up to ${room.max_guests}` },
+                { icon: Maximize, label: "Room Size", value: "240 sq.ft" },
                 { icon: BedDouble, label: "Bed Type", value: room.bed_type || "Standard" },
                 { icon: DoorOpen, label: "Room Type", value: "Door" },
+                { icon: Users, label: "Capacity", value: `Up to ${room.max_guests}` },
                 { icon: Car, label: "Parking", value: "Available" },
-                { icon: Maximize, label: "Room Size", value: "240 sq.ft" },
 
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex flex-col gap-2 text-center items-center">
@@ -384,7 +384,7 @@ function RoomDetail() {
               <ul className="grid sm:grid-cols-2 gap-y-5 gap-x-8">
                 <li className="flex items-start gap-3 col-span-full">
                   <div className="bg-primary/10 p-2 rounded-md shrink-0">
-                    <Check className="h-4 w-4 text-primary" />
+                    <CircleCheck className="h-4 w-4 text-primary" />
                   </div>
                   <div>
                     <span className="font-medium block mb-1">Free Cancellation</span>
@@ -399,14 +399,14 @@ function RoomDetail() {
               <h3 className="font-bold text-xl text-foreground mb-6">Safety Features</h3>
               <ul className="grid sm:grid-cols-2 gap-y-5 gap-x-8">
                 {[
-                  "CCTV Surveillance",
-                  "Fire Safety System",
-                  "24×7 Front Desk",
-                  "Secure Property"
-                ].map((feature) => (
+                  { feature: "CCTV Surveillance", Icon: Cctv },
+                  { feature: "Fire Safety System", Icon: Flame },
+                  { feature: "24×7 Front Desk", Icon: Clock3 },
+                  { feature: "Secure Property", Icon: ShieldCheck }
+                ].map(({ feature, Icon }) => (
                   <li key={feature} className="flex items-center gap-3">
                     <div className="bg-primary/10 p-2 rounded-md">
-                      <Check className="h-4 w-4 text-primary" />
+                      <Icon className="h-4 w-4 text-primary" />
                     </div>
                     <span className="font-medium">{feature}</span>
                   </li>

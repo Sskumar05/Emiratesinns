@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR, isoDate, addDays, fmtDateTime, getDurationLabel, getRateLabel } from "@/lib/hotel";
@@ -63,6 +63,8 @@ const adminGuestSchema = websiteGuestSchema.extend({
 export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }: BookingFlowProps) {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [guestErrors, setGuestErrors] = useState<{ full_name?: string; mobile?: string; email?: string }>({});
+  const guestContinuingRef = useRef(false);
 
   const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -423,6 +425,35 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
     }
   };
 
+  // ── Guest Details validation & navigation ────────────────────────────────
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const handleGuestContinue = () => {
+    // Double-click guard
+    if (guestContinuingRef.current) return;
+
+    const errors: { full_name?: string; mobile?: string; email?: string } = {};
+    const name = form.full_name.trim();
+    if (!name || name.length < 2) errors.full_name = "Please enter a valid full name.";
+    const mobile = form.mobile.trim();
+    if (!mobile || mobile.length < 7) errors.mobile = "Please enter a valid mobile number (min 7 digits).";
+    const email = form.email.trim();
+    if (!email || !emailRegex.test(email)) errors.email = "Please enter a valid email address.";
+
+    if (Object.keys(errors).length > 0) {
+      setGuestErrors(errors);
+      // Show the first error as a toast (existing pattern)
+      toast.error(Object.values(errors)[0]!);
+      return;
+    }
+
+    guestContinuingRef.current = true;
+    setGuestErrors({});
+    setStep(isAdmin ? 4 : 3);
+    // Reset guard after navigation settles
+    setTimeout(() => { guestContinuingRef.current = false; }, 500);
+  };
+
   return (
     <div className={isAdmin ? "" : "container-luxe pt-28 pb-20 max-w-4xl"}>
       <div className="flex items-center justify-between mb-12">
@@ -628,11 +659,11 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-6">
-            <Field label="Full Name *" value={form.full_name} onChange={v => setForm({ ...form, full_name: v })} />
-            <Field label="Mobile Number *" value={form.mobile} onChange={v => setForm({ ...form, mobile: v })} />
+          <div className="grid sm:grid-cols-2 gap-6" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleGuestContinue(); } }}>
+            <Field label="Full Name *" value={form.full_name} error={guestErrors.full_name} onChange={v => { setForm({ ...form, full_name: v }); if (v.trim().length >= 2) setGuestErrors(prev => ({ ...prev, full_name: undefined })); }} />
+            <Field label="Mobile Number *" value={form.mobile} error={guestErrors.mobile} onChange={v => { const digits = v.replace(/[^0-9]/g, ''); setForm({ ...form, mobile: digits }); if (digits.trim().length >= 7) setGuestErrors(prev => ({ ...prev, mobile: undefined })); }} />
             <div className="sm:col-span-2">
-              <Field label="Email Address *" type="email" value={form.email} onChange={v => setForm({ ...form, email: v })} />
+              <Field label="Email Address *" type="email" value={form.email} error={guestErrors.email} onChange={v => { setForm({ ...form, email: v }); if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())) setGuestErrors(prev => ({ ...prev, email: undefined })); }} />
             </div>
 
             {isAdmin && (
@@ -686,7 +717,7 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
           
           <div className="flex justify-between items-center mt-10 pt-6 border-t border-border">
             <button onClick={() => setStep(isAdmin ? 2 : 1)} className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center"><ArrowLeft className="h-4 w-4 mr-2" />Back</button>
-            <button onClick={() => setStep(isAdmin ? 4 : 3)} className="flex items-center justify-center gap-2 bg-gold text-white px-8 py-3.5 text-sm font-semibold rounded-md shadow-md hover:bg-gold-hover transition">Continue <ArrowRight className="h-4 w-4" /></button>
+            <button onClick={handleGuestContinue} className="flex items-center justify-center gap-2 bg-gold text-white px-8 py-3.5 text-sm font-semibold rounded-md shadow-md hover:bg-gold-hover transition">Continue <ArrowRight className="h-4 w-4" /></button>
           </div>
         </div>
       )}
@@ -755,12 +786,13 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
   );
 }
 
-function Field({ label, value, onChange, type = "text", disabled }: { label: string; value: string; onChange: (v: string) => void; type?: string; disabled?: boolean }) {
+function Field({ label, value, onChange, type = "text", disabled, error }: { label: string; value: string; onChange: (v: string) => void; type?: string; disabled?: boolean; error?: string }) {
   return (
     <label className="block">
       <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}</span>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled}
-        className={`w-full bg-background border border-border rounded-md px-4 py-3 text-sm focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-muted" : ""}`} />
+        className={`w-full bg-background border rounded-md px-4 py-3 text-sm focus:ring-1 focus:outline-none transition-colors ${error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-border focus:border-gold focus:ring-gold"} ${disabled ? "opacity-60 cursor-not-allowed bg-muted" : ""}`} />
+      {error && <span className="text-xs text-red-500 font-medium mt-1 block">{error}</span>}
     </label>
   );
 }
