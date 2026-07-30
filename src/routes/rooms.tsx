@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { WebsiteLayout } from "@/components/website/WebsiteLayout";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Wifi, Tv, Car, Droplet, ChefHat, Camera, Wine, ArrowRight, Ban } from "lucide-react";
 import logo from "@/assets/line_logo.png";
@@ -279,6 +279,24 @@ function HotelSection({
 /* ─── Component ──────────────────────────────────────────── */
 function RoomsPage() {
   const { hotel } = Route.useSearch();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("public:rooms")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "rooms" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["rooms"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   /* ── Data fetching (single query) ── */
   const { data: rooms = [], isLoading } = useQuery({

@@ -240,8 +240,8 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
           <div className="container-luxe py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-primary-foreground/50">
             <span>© {new Date().getFullYear()} Emirates Inn & Emirates Grand Inn. All rights reserved.</span>
             <div className="flex gap-4">
-              <Link to="/" className="hover:text-white transition-colors">Privacy Policy</Link>
-              <Link to="/" className="hover:text-white transition-colors">Terms of Service</Link>
+              <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
             </div>
           </div>
         </div>

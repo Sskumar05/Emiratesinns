@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { WebsiteLayout } from "@/components/website/WebsiteLayout";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR, AMENITY_LABELS, isoDate } from "@/lib/hotel";
 import { motion, AnimatePresence } from "framer-motion";
@@ -53,6 +53,37 @@ function RoomDetail() {
   const [checkOutDate, setCheckOutDate] = useState(tomorrow());
   const [numGuests, setNumGuests] = useState(1);
   const [numRooms, setNumRooms] = useState(1);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const roomsChannel = supabase
+      .channel("public:rooms_detail")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "rooms" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["room"] });
+          queryClient.invalidateQueries({ queryKey: ["sibling-rooms"] });
+        }
+      )
+      .subscribe();
+
+    const bookingsChannel = supabase
+      .channel("public:bookings_detail")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bookings" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["room-active-bookings"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(roomsChannel);
+      supabase.removeChannel(bookingsChannel);
+    };
+  }, [queryClient]);
 
   // ── Load the representative room row (gives us hotel_id, category, details) ──
   const { data: room, isLoading } = useQuery({

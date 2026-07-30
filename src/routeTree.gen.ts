@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as RoomsRouteImport } from './routes/rooms'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -35,9 +37,19 @@ import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
 import { Route as AdminBookingSuccessRouteImport } from './routes/admin/booking-success'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin/audit-logs'
 
+const TermsOfServiceRoute = TermsOfServiceRouteImport.update({
+  id: '/terms-of-service',
+  path: '/terms-of-service',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RoomsRoute = RoomsRouteImport.update({
   id: '/rooms',
   path: '/rooms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PaymentRoute = PaymentRouteImport.update({
@@ -171,7 +183,9 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
   '/payment': typeof PaymentRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/rooms': typeof RoomsRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/booking-success': typeof AdminBookingSuccessRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -197,7 +211,9 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
   '/payment': typeof PaymentRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/rooms': typeof RoomsRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/booking-success': typeof AdminBookingSuccessRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -225,7 +241,9 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
   '/payment': typeof PaymentRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/rooms': typeof RoomsRoute
+  '/terms-of-service': typeof TermsOfServiceRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/booking-success': typeof AdminBookingSuccessRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -254,7 +272,9 @@ export interface FileRouteTypes {
     | '/contact'
     | '/gallery'
     | '/payment'
+    | '/privacy-policy'
     | '/rooms'
+    | '/terms-of-service'
     | '/admin/audit-logs'
     | '/admin/booking-success'
     | '/admin/bookings'
@@ -280,7 +300,9 @@ export interface FileRouteTypes {
     | '/contact'
     | '/gallery'
     | '/payment'
+    | '/privacy-policy'
     | '/rooms'
+    | '/terms-of-service'
     | '/admin/audit-logs'
     | '/admin/booking-success'
     | '/admin/bookings'
@@ -307,7 +329,9 @@ export interface FileRouteTypes {
     | '/contact'
     | '/gallery'
     | '/payment'
+    | '/privacy-policy'
     | '/rooms'
+    | '/terms-of-service'
     | '/admin/audit-logs'
     | '/admin/booking-success'
     | '/admin/bookings'
@@ -335,17 +359,33 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   GalleryRoute: typeof GalleryRoute
   PaymentRoute: typeof PaymentRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   RoomsRoute: typeof RoomsRoute
+  TermsOfServiceRoute: typeof TermsOfServiceRoute
   RoomsIdRoute: typeof RoomsIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms-of-service': {
+      id: '/terms-of-service'
+      path: '/terms-of-service'
+      fullPath: '/terms-of-service'
+      preLoaderRoute: typeof TermsOfServiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rooms': {
       id: '/rooms'
       path: '/rooms'
       fullPath: '/rooms'
       preLoaderRoute: typeof RoomsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payment': {
@@ -567,7 +607,9 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   GalleryRoute: GalleryRoute,
   PaymentRoute: PaymentRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
   RoomsRoute: RoomsRoute,
+  TermsOfServiceRoute: TermsOfServiceRoute,
   RoomsIdRoute: RoomsIdRoute,
 }
 export const routeTree = rootRouteImport
