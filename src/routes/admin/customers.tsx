@@ -385,7 +385,7 @@ function Customers() {
                 {viewCustomer.bookings.length === 0 ? (
                   <p className="text-muted-foreground text-sm">This customer has no bookings yet.</p>
                 ) : (
-                  <div className="border border-border rounded-lg overflow-hidden">
+                  <div className="border border-border rounded-lg overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="bg-surface text-xs uppercase tracking-wider text-muted-foreground">
                         <tr>

@@ -191,7 +191,7 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
         >
 
           {/* ── Brand Column ── */}
-          <div style={{ flex: "0 0 42%", maxWidth: "360px" }}>
+          <div className="w-full lg:w-[42%] max-w-[360px]">
             <div className="flex items-center gap-3 mb-5">
               <img src={emirates} className="h-15 w-15" />
               <span className="font-bold text-lg tracking-tight">Emirates Inn</span>
@@ -202,10 +202,7 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
           </div>
 
           {/* ── Right nav group: Explore + Contact pushed to the right ── */}
-          <div
-            className="flex flex-col sm:flex-row lg:justify-end gap-10 sm:gap-12"
-            style={{ flex: "1 1 0" }}
-          >
+          <div className="flex flex-col sm:flex-row lg:justify-end gap-10 sm:gap-12 flex-1">
             {/* Explore */}
             <div style={{ minWidth: "120px" }}>
               <h4 className="text-sm font-semibold mb-6">Explore</h4>

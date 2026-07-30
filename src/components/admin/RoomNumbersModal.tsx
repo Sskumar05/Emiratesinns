@@ -281,7 +281,7 @@ export function RoomNumbersModal({ isOpen, onClose, onSuccess, categoryGroup }: 
 
           {/* ── Room list ─────────────────────────────────────────────────── */}
           <div className="border border-border rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
-            <div className="overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+            <div className="overflow-auto flex-1 min-h-0 custom-scrollbar">
               <table className="w-full text-sm relative">
                 <thead className="bg-surface text-xs font-bold uppercase tracking-wider text-muted-foreground sticky top-0 z-20 shadow-[0_1px_0_0_var(--border)]">
                   <tr>
