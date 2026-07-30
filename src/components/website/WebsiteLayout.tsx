@@ -178,7 +178,7 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
 
       <main className="flex-1">{children ?? <Outlet />}</main>
 
-      <footer className="bg-primary text-primary-foreground mt-24">
+      <footer className="bg-primary text-primary-foreground mt-">
         {/*
           Layout:
             Mobile/tablet  → single column, stacked vertically

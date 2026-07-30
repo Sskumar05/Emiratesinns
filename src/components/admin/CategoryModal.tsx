@@ -30,7 +30,7 @@ interface Props {
 
 const BLANK_FORM = {
   hotel_id: "",
-  category: "ac_double",
+  category: "",
   room_type: "",
   // floor: "",
   bed_type: "",
@@ -131,7 +131,9 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
       } else {
         // ── ADD: validate, then insert first room row ──
         if (!form.initial_room_number.trim()) throw new Error("Please enter an initial room number.");
+        if (!form.category.trim()) throw new Error("Please enter a category name.");
 
+        const trimmedCategory = form.category.trim();
         const trimmedRoomType = form.room_type ? form.room_type.trim() : null;
 
         // Check category doesn't already exist for this hotel with the same room type
@@ -139,7 +141,7 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
           .from("rooms")
           .select("id")
           .eq("hotel_id", form.hotel_id)
-          .eq("category", form.category)
+          .eq("category", trimmedCategory)
           .limit(1);
           
         if (trimmedRoomType) {
@@ -153,7 +155,7 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
         if (existing && existing.length > 0) {
           const typeLabel = trimmedRoomType ? ` with room type "${trimmedRoomType}"` : "";
           throw new Error(
-            `A "${CATEGORY_LABELS[form.category as keyof typeof CATEGORY_LABELS]}" category${typeLabel} already exists for this hotel. ` +
+            `A "${trimmedCategory}" category${typeLabel} already exists for this hotel. ` +
             "Edit the existing category, or manage its room numbers instead."
           );
         }
@@ -175,7 +177,7 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
         const { error } = await supabase.from("rooms").insert([
           {
             hotel_id: form.hotel_id,
-            category: form.category,
+            category: trimmedCategory,
             room_number: form.initial_room_number.trim(),
             status: form.initial_status,
             room_type: trimmedRoomType,
@@ -261,9 +263,14 @@ export function CategoryModal({ isOpen, onClose, onSuccess, categoryGroup, hotel
                 <input type="text" disabled className={ro}
                   value={CATEGORY_LABELS[form.category as keyof typeof CATEGORY_LABELS] ?? form.category} />
               ) : (
-                <select required value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className={rw}>
-                  {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                </select>
+                <input
+                  type="text"
+                  required
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  className={rw}
+                  placeholder="e.g. Deluxe, Suite, Presidential Suite"
+                />
               )
             )}
 

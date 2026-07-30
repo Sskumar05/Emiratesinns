@@ -3,6 +3,7 @@ import { WebsiteLayout } from "@/components/website/WebsiteLayout";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_LABELS, formatINR, fmtDateTime, getDurationLabel } from "@/lib/hotel";
+import { useHotelTimes } from "@/hooks/useHotelTimes";
 import { sendBookingConfirmation } from "@/lib/email";
 import { getOrGenerateInvoicePDF } from "@/lib/invoiceBackend";
 import { Lock, CreditCard, ShieldCheck, Check, Loader2, Download } from "lucide-react";
@@ -23,6 +24,7 @@ function Payment() {
   const [processing, setProcessing] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const { data: defaultTimes } = useHotelTimes();
 
   const { data: booking } = useQuery({
     queryKey: ["booking", bookingId],
@@ -97,12 +99,12 @@ function Payment() {
           bookingCode: booking.booking_code,
           hotelName: hotel?.name ?? "Emirates Grand Inn",
           roomType: CATEGORY_LABELS[booking.category] ?? booking.category,
-          checkIn: fmtDateTime(booking.check_in_date, booking.check_in_time),
+          checkIn: fmtDateTime(booking.check_in_date, booking.check_in_time || defaultTimes?.checkIn),
           checkOut: fmtDateTime(booking.check_out_date, booking.stay_type === '12_hours' ? (() => {
-             const d = new Date(`${booking.check_in_date}T${booking.check_in_time || "14:00"}:00`);
+             const d = new Date(`${booking.check_in_date}T${booking.check_in_time || defaultTimes?.checkIn || "14:00"}:00`);
              d.setHours(d.getHours() + 12);
              return d.toTimeString().slice(0, 5);
-          })() : '12:00'),
+          })() : (defaultTimes?.checkOut || '22:00')),
           durationLabel: getDurationLabel(booking.num_days, booking.stay_type),
           numGuests: booking.num_guests,
           numRooms: booking.num_rooms,
@@ -243,15 +245,15 @@ function Payment() {
           <div className="bg-muted/30 border border-border rounded-lg p-5 mb-8 space-y-3">
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Check-in</span>
-              <span className="font-semibold">{fmtDateTime(booking.check_in_date, booking.check_in_time)}</span>
+              <span className="font-semibold">{fmtDateTime(booking.check_in_date, booking.check_in_time || defaultTimes?.checkIn)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Check-out</span>
               <span className="font-semibold">{fmtDateTime(booking.check_out_date, booking.stay_type === '12_hours' ? (() => {
-                 const d = new Date(`${booking.check_in_date}T${booking.check_in_time || "14:00"}:00`);
+                 const d = new Date(`${booking.check_in_date}T${booking.check_in_time || defaultTimes?.checkIn || "14:00"}:00`);
                  d.setHours(d.getHours() + 12);
                  return d.toTimeString().slice(0, 5);
-              })() : '12:00')}</span>
+              })() : (defaultTimes?.checkOut || '22:00'))}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Duration</span>

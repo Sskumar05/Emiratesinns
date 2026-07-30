@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useHotelTimes } from "@/hooks/useHotelTimes";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORY_LABELS, formatINR } from "@/lib/hotel";
+import { CATEGORY_LABELS, formatINR, format12Hour } from "@/lib/hotel";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { useSendEmail } from "@/hooks/useSendEmail";
@@ -54,6 +55,8 @@ function AdminBookings() {
   const [statusF, setStatusF] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [isNewBookingModalOpen, setIsNewBookingModalOpen] = useState(false);
+  const { data: defaultTimes } = useHotelTimes();
   const [viewBooking, setViewBooking] = useState<any | null>(null);
   const [reduceRoomsBooking, setReduceRoomsBooking] = useState<any | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -315,7 +318,7 @@ function AdminBookings() {
                   <td className="py-3 px-4 whitespace-nowrap">{b.customers?.full_name}</td>
                   <td className="py-3 px-4 text-muted-foreground whitespace-nowrap">{b.customers?.mobile}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{b.hotels?.name}</td>
-                  <td className="py-3 px-4 whitespace-nowrap">{CATEGORY_LABELS[b.category as keyof typeof CATEGORY_LABELS]}</td>
+                  <td className="py-3 px-4 whitespace-nowrap">{CATEGORY_LABELS[b.category as keyof typeof CATEGORY_LABELS] ?? b.category}</td>
                   <td className="py-3 px-4 whitespace-nowrap font-medium text-muted-foreground">{roomsDisplay}</td>
                   <td className="py-3 px-4 text-center whitespace-nowrap">{b.num_rooms}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{b.check_in_date}</td>
@@ -561,7 +564,7 @@ function AdminBookings() {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Check-In:</span>
-                      <span className="font-medium">{viewBooking.check_in_date} {viewBooking.check_in_time ? `· ${viewBooking.check_in_time}` : ''}</span>
+                      <span className="font-medium">{viewBooking.check_in_date} {viewBooking.check_in_time ? `· ${format12Hour(viewBooking.check_in_time)}` : (defaultTimes?.checkIn ? `· ${format12Hour(defaultTimes.checkIn)}` : '')}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Check-Out:</span>
@@ -570,8 +573,13 @@ function AdminBookings() {
                         {viewBooking.stay_type === '12_hours' && viewBooking.check_in_time ? (() => {
                            const d = new Date(`${viewBooking.check_in_date}T${viewBooking.check_in_time}:00`);
                            d.setHours(d.getHours() + 12);
-                           return ` · ${d.toTimeString().slice(0, 5)}`;
-                        })() : ''}
+                           const h = d.getHours();
+                           const m = d.getMinutes();
+                           const ampm = h >= 12 ? 'PM' : 'AM';
+                           const formattedHour = (h % 12 || 12).toString().padStart(2, '0');
+                           const formattedMinute = m.toString().padStart(2, '0');
+                           return ` · ${formattedHour}:${formattedMinute} ${ampm}`;
+                        })() : (defaultTimes?.checkOut ? ` · ${format12Hour(defaultTimes.checkOut)}` : '')}
                       </span>
                     </div>
                     <div className="flex justify-between">

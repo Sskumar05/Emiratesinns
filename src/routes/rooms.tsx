@@ -41,27 +41,7 @@ const cardVariant = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
 };
 
-/* ─── Hotel section config ───────────────────────────────── */
-const HOTEL_SECTIONS = [
-  {
-    slug: "emirates-inn",
-    title: "Emirates Inn",
-    // category + optional room_type combos that belong to this hotel
-    allowedTypes: [
-      { category: "ac_double", room_type: "NON AC" },  // Deluxe (NON AC)
-      { category: "ac_double", room_type: "AC" },      // Deluxe (AC)
-      { category: "ac_four",   room_type: null },       // Four Bed
-    ],
-  },
-  {
-    slug: "emirates-grand-inn",
-    title: "Emirates Grand Inn",
-    allowedTypes: [
-      { category: "ac_double", room_type: "AC" },      // Deluxe (AC)
-      { category: "ac_triple", room_type: "AC" },      // Triple (AC)
-    ],
-  },
-];
+// Hotel sections are built dynamically from DB data — no static config needed.
 
 /* ─── RoomCard ───────────────────────────────────────────── */
 function RoomCard({ r, is12HoursMode }: { r: any; is12HoursMode: boolean }) {
@@ -363,21 +343,11 @@ function RoomsPage() {
     return bySlug;
   }, [rooms]);
 
-  /* ── For each hotel section, filter to only the allowed room types ── */
+  /* ── Build hotel sections dynamically from DB data ── */
   const sectionCards = useMemo(() => {
-    return HOTEL_SECTIONS.map((section) => {
-      const hotelCards = groupedByHotel[section.slug] ?? [];
-      const filtered = hotelCards.filter((card: any) =>
-        section.allowedTypes.some((allowed) => {
-          const categoryMatch = card.category === allowed.category;
-          const typeMatch =
-            allowed.room_type === null
-              ? true
-              : card.room_type === allowed.room_type;
-          return categoryMatch && typeMatch;
-        })
-      );
-      return { ...section, cards: filtered };
+    return Object.entries(groupedByHotel).map(([slug, cards]) => {
+      const hotelName = (cards[0] as any)?.hotels?.name ?? slug;
+      return { slug, title: hotelName, cards };
     });
   }, [groupedByHotel]);
 

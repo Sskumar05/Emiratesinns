@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Check, ArrowLeft, Wifi, Tv, Car, Droplet, ChefHat, Camera, Wine,
   Users, BedDouble, ArrowRight, Home, CalendarDays, UserCheck, ShieldCheck,
-  AlertCircle, Moon, DoorOpen, Minus, Plus, Star, Maximize, CircleCheck, Cctv, Flame, Clock3
+  AlertCircle, Moon, DoorOpen, Minus, Plus, Star, Maximize, CircleCheck, Cctv, Flame, Clock3, Sparkles,Snowflake
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 
@@ -19,6 +19,7 @@ const FALLBACK = "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w
 const AMENITY_ICON: Record<string, any> = {
   WiFi: Wifi, TV: Tv, Parking: Car, "Hot Water": Droplet,
   Kitchen: ChefHat, CCTV: Camera, "Welcome Drink": Wine,
+  "Air Conditioning": Snowflake,
 };
 
 function fmtDate(iso: string): string {
@@ -362,7 +363,10 @@ function RoomDetail() {
 
             {/* Amenities */}
             <div>
-              <h3 className="font-bold text-xl text-foreground mb-6">Premium Amenities</h3>
+              <h3 className="font-bold text-xl text-foreground mb-6 flex items-center gap-2">
+                {/* <Sparkles className="h-5 w-5 text-primary" /> */}
+                Premium Amenities
+              </h3>
               <ul className="grid sm:grid-cols-2 gap-y-5 gap-x-8">
                 {(room.amenities ?? []).map((a: string) => {
                   const Icon = AMENITY_ICON[a] || Check;

@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORY_LABELS, formatINR, isoDate, addDays, fmtDateTime, getDurationLabel, getRateLabel } from "@/lib/hotel";
+import { CATEGORY_LABELS, formatINR, isoDate, addDays, fmtDateTime, getDurationLabel, getRateLabel, format12Hour } from "@/lib/hotel";
+import { useHotelTimes } from "@/hooks/useHotelTimes";
 import { motion } from "framer-motion";
 import { Check, ArrowRight, ArrowLeft, Loader2, Clock } from "lucide-react";
 import { toast } from "sonner";
@@ -9,16 +10,6 @@ import { z } from "zod";
 import { sendAdminNotification, sendBookingConfirmation } from "@/lib/email";
 import { getOccupiedRoomStatusMap } from "@/lib/occupancy";
 import { getOrGenerateInvoicePDF } from "@/lib/invoiceBackend";
-
-const format12Hour = (time24: string) => {
-  if (!time24) return "";
-  const [h, m] = time24.split(":");
-  if (!h || !m) return time24;
-  let hour = parseInt(h, 10);
-  const ampm = hour >= 12 ? "PM" : "AM";
-  hour = hour % 12 || 12;
-  return `${hour.toString().padStart(2, '0')}:${m} ${ampm}`;
-};
 
 export interface BookingCreatedPayload {
   bookingId: string;
@@ -75,7 +66,7 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
     num_guests: initialSearch?.numGuests || 1,
     num_rooms: initialSearch?.numRooms || 1,
     check_in_date: initialSearch?.checkInDate || isoDate(new Date()),
-    check_in_time: "14:00",
+    check_in_time: "",
     num_days: initialSearch?.numDays || 1,
     // Admin specific
     address: "",
@@ -112,26 +103,7 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
   const is12HoursMode = stayModeData === "12_hours";
 
   // ── Default Check-in / Check-out Times (from Admin Settings) ────────────────
-  const { data: defaultTimesData } = useQuery({
-    queryKey: ["system_settings", "default_check_times"],
-    queryFn: async () => {
-      try {
-        const [ciRes, coRes] = await Promise.all([
-          supabase.from("system_settings").select("value").eq("key", "default_check_in_time").maybeSingle(),
-          supabase.from("system_settings").select("value").eq("key", "default_check_out_time").maybeSingle(),
-        ]);
-        const ci = ciRes.data?.value ?? "11:00";
-        const co = coRes.data?.value ?? "22:00";
-        return {
-          checkIn:  typeof ci === "string" ? ci.replace(/^"|"$/g, "") : "11:00",
-          checkOut: typeof co === "string" ? co.replace(/^"|"$/g, "") : "22:00",
-        };
-      } catch {
-        return { checkIn: "11:00", checkOut: "22:00" };
-      }
-    },
-    retry: false,
-  });
+  const { data: defaultTimesData } = useHotelTimes();
 
   useEffect(() => {
     if (defaultTimesData?.checkIn) {
@@ -307,7 +279,7 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
         num_rooms: effectiveNumRooms,
         num_guests: form.num_guests,
         check_in_date: form.check_in_date,
-        check_in_time: form.check_in_time,
+        check_in_time: form.check_in_time || defaultTimesData?.checkIn || "14:00",
         num_days: form.num_days,
         check_out_date: checkout,
         price_per_night: price,
@@ -501,7 +473,7 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
                 <img src={(initialRoom as any)?.images?.[0] || "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80"} alt="" className="aspect-[4/3] w-full object-cover rounded-md shadow-sm" />
                 <div className="flex flex-col justify-center">
                   <div className="text-xs font-semibold uppercase tracking-wider text-gold mb-1">{activeHotelName}</div>
-                  <h3 className="font-bold text-2xl mb-4 text-foreground">{CATEGORY_LABELS[activeCategory as keyof typeof CATEGORY_LABELS]}</h3>
+                  <h3 className="font-bold text-2xl mb-4 text-foreground">{CATEGORY_LABELS[activeCategory as keyof typeof CATEGORY_LABELS] ?? activeCategory}</h3>
                   <div className="text-primary font-bold text-3xl mb-6">{formatINR(price)}<span className="text-sm text-muted-foreground font-semibold ml-2">/night</span></div>
                   
                   <div className="bg-muted/50 rounded-lg p-4 space-y-2.5 border border-border">
@@ -732,10 +704,10 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
               <dl className="divide-y divide-border border border-border rounded-md overflow-hidden bg-background">
                 {[
                   ["Hotel", activeHotelName],
-                  ["Room Category", CATEGORY_LABELS[activeCategory as keyof typeof CATEGORY_LABELS]],
+                  ["Room Category", CATEGORY_LABELS[activeCategory as keyof typeof CATEGORY_LABELS] ?? activeCategory],
                   ["Number of Rooms", `${effectiveNumRooms} Room${effectiveNumRooms !== 1 ? "s" : ""}`],
                   isAdmin ? ["Room Numbers", allRooms.filter(r => selectedRoomIds.includes(r.id)).map(r => r.room_number).join(", ")] : null,
-                  ["Check-in", fmtDateTime(form.check_in_date, form.check_in_time)],
+                  ["Check-in", fmtDateTime(form.check_in_date, form.check_in_time || defaultTimesData?.checkIn)],
                   ["Check-out", fmtDateTime(checkout, checkoutTime)],
                   ["Duration", getDurationLabel(form.num_days, is12HoursMode ? "12_hours" : "standard")],
                   ["Guests", `${form.num_guests} ${form.num_guests === 1 ? "Guest" : "Guests"}`],

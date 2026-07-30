@@ -308,13 +308,13 @@ function AdminRooms() {
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
-                      {/* <button
+                      <button
                         onClick={() => deleteCategory(g)}
                         className="text-muted-foreground hover:text-red-500 transition-colors"
                         title="Delete Category & All Rooms"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </button> */}
+                      </button>
                     </div>
                   </td>
                 </tr>

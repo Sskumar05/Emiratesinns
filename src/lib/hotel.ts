@@ -4,6 +4,16 @@ export const CATEGORY_LABELS: Record<string, string> = {
   ac_four: "Four Bed",
 };
 
+export function format12Hour(time24?: string | null): string {
+  if (!time24) return "";
+  const [h, m] = time24.split(":");
+  if (!h || !m) return time24;
+  let hour = parseInt(h, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  return `${hour.toString().padStart(2, '0')}:${m} ${ampm}`;
+}
+
 export const AMENITY_LABELS: Record<string, string> = {
   WiFi: "Complimentary WiFi",
   AC: "Air Conditioning",

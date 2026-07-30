@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { WebsiteLayout } from "@/components/website/WebsiteLayout";
-import { Phone, Mail, MapPin, Clock, Wifi, Car, ShieldCheck, ArrowRight, Sparkles, Loader2 } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Wifi, Car, ShieldCheck, ArrowRight, Sparkles, Loader2, BellRing, Headset } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -138,7 +138,7 @@ function Contact() {
             className="text-muted-foreground leading-relaxed font-light max-w-2xl mx-auto"
             style={{ fontSize: "clamp(1rem, 2.5vw, 1.15rem)" }}
           >
-Whether you're planning your next stay, have a question, or require reservation assistance, our dedicated team is always here to assist you with exceptional hospitality.          </p>
+            Whether you're planning your next stay, have a question, or require reservation assistance, our dedicated team is always here to assist you with exceptional hospitality.          </p>
         </motion.div>
       </section>
 
@@ -243,7 +243,7 @@ Whether you're planning your next stay, have a question, or require reservation 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">Phone Number</label>
-                    <input required type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+1 234 567 890" className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none transition-colors" />
+                    <input required type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+91 73392 26598" className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none transition-colors" />
                   </div>
                   <div>
                     <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">Subject</label>
@@ -332,7 +332,7 @@ Whether you're planning your next stay, have a question, or require reservation 
 
       {/* ── 4. HOTEL INFORMATION ──────────────────────────── */}
       <section className="py-24 bg-background">
-        <div className="container-luxe max-w-[1500px] mx-auto">
+        <div className="container-luxe max-w-[1700px] mx-auto">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -351,21 +351,7 @@ Whether you're planning your next stay, have a question, or require reservation 
               Essential Information
             </h2>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-y-10 gap-x-6 text-left">
-              <div className="flex items-center gap-4">
-                <Clock className="w-8 h-8 text-gold shrink-0" strokeWidth={1} />
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-widest text-gold mb-1">Check-in</div>
-                  <div className="font-medium text-white">3:00 PM</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <Clock className="w-8 h-8 text-gold shrink-0" strokeWidth={1} />
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-widest text-gold mb-1">Check-out</div>
-                  <div className="font-medium text-white">11:00 AM</div>
-                </div>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-y-12 gap-x-6 text-left">
               <div className="flex items-center gap-4">
                 <ShieldCheck className="w-8 h-8 text-gold shrink-0" strokeWidth={1} />
                 <div>
@@ -374,10 +360,17 @@ Whether you're planning your next stay, have a question, or require reservation 
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <Car className="w-8 h-8 text-gold shrink-0" strokeWidth={1} />
+                <Headset className="w-8 h-8 text-gold shrink-0" strokeWidth={1} />
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-widest text-gold mb-1">Parking</div>
-                  <div className="font-medium text-white">Complimentary</div>
+                  <div className="text-xs font-semibold uppercase tracking-widest text-gold mb-1">Support</div>
+                  <div className="font-medium text-white">Customer Assistance</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <BellRing className="w-8 h-8 text-gold shrink-0" strokeWidth={1} />
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-widest text-gold mb-1">Room Service</div>
+                  <div className="font-medium text-white">Available</div>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -385,6 +378,13 @@ Whether you're planning your next stay, have a question, or require reservation 
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-widest text-gold mb-1">Internet</div>
                   <div className="font-medium text-white">High-Speed WiFi</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <Car className="w-8 h-8 text-gold shrink-0" strokeWidth={1} />
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-widest text-gold mb-1">Parking</div>
+                  <div className="font-medium text-white">Complimentary</div>
                 </div>
               </div>
             </div>
@@ -409,7 +409,7 @@ Whether you're planning your next stay, have a question, or require reservation 
             Ready for Your Next Stay?
           </h2>
 
-          <div className="w-14 h-px bg-gold/50 mx-auto mb-7" />
+          {/* <div className="w-14 h-px bg-gold/50 mx-auto mb-7" /> */}
 
           <p className="text-lg text-muted-foreground mb-12 leading-relaxed font-light max-w-xl mx-auto">
             Experience comfort, elegance, and exceptional hospitality at{" "}
