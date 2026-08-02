@@ -3,6 +3,7 @@ import { WebsiteLayout } from "@/components/website/WebsiteLayout";
 import { motion } from "framer-motion";
 import logo from "@/assets/line_logo.png";
 
+
 export const Route = createFileRoute("/gallery")({
   head: () => ({
     meta: [
@@ -39,19 +40,19 @@ const imgVariant = {
 };
 
 /* ─── Gallery Images ─────────────────────────────────────── */
-const PHOTOS: string[] = [
-  "1566073771259-6a8506099945",
-  "1582719508461-905c673771fd",
-  "1631049307264-da0ec9d70304",
-  "1551882547-ff40c63fe5fa",
-  "1611892440504-42a792e24d32",
-  "1590490360182-c33d57733427",
-  "1564013799919-ab600027ffc6",
-  "1571003123894-1f0594d2b5d9",
-  "1578683010236-d716f9a3f461",
-  "1582719478250-c89cae4dc85b",
-  "1551776235-dde6d482980b",
-  "1584132967334-10e028bd69f7",
+export const PHOTOS: string[] = [
+  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692537/IMG_20260620_180811.jpg_igyitw.jpg",
+  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692566/IMG_20260620_180855.jpg_1_hsnghz.jpg",
+  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692578/IMG_20260620_181127.jpg_1_gz3ev0.jpg",
+  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692578/IMG_20260620_181225.jpg_1_o8unp0.jpg",
+  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692515/IMG_20260620_180932.jpg_1_xvrwyr.jpg",
+  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692560/IMG_20260620_181119.jpg_1_j2xonk.jpg",
+  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692625/IMG_20260620_182632.jpg_okqijl.jpg",
+  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692668/IMG_20260620_181442.jpg_nfwf48.jpg",
+  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692668/IMG_20260620_182537.jpg_wjkuha.jpg",
+  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692678/IMG_20260620_183156.jpg_kffxxn.jpg",
+  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692682/IMG_20260620_182907_1.jpg_q7q6tt.jpg",
+  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692662/IMG_20260620_181904.jpg_cckcdu.jpg",
 ];
 
 /* ─── Component ──────────────────────────────────────────── */
@@ -135,9 +136,9 @@ function Gallery() {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
             style={{ gap: "28px" }}
           >
-            {PHOTOS.map((id) => (
+            {PHOTOS.map((url) => (
               <motion.div
-                key={id}
+                key={url}
                 variants={imgVariant}
               >
                 <div
@@ -152,7 +153,7 @@ function Gallery() {
                 >
                   {/* Image */}
                   <img
-                    src={`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=900&q=80`}
+                    src={url}
                     alt="Emirates Inn — gallery"
                     loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05] cursor-pointer"

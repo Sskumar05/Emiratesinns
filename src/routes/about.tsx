@@ -60,7 +60,7 @@ function About() {
   return (
     <WebsiteLayout>
       {/* 1. Hero Section */}
-      <section className="relative h-[60vh] min-h-[700px] flex items-center justify-center bg-gradient-to-b from-[#FAF9F6] to-[#F4F1EC]">
+      <section className="relative h-[60vh] min-h-[680px] flex items-center justify-center bg-gradient-to-b from-[#FAF9F6] to-[#F4F1EC]">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -69,7 +69,7 @@ function About() {
         >
           <span className="text-sm font-semibold uppercase tracking-[0.3em] text-gold mb-8 inline-block">About Emirates</span>
           <h1 className="font-serif font-bold text-4xl md:text-6xl text-foreground tracking-tight leading-tight mb-8">
-            Designed Around Your<br />
+            Designed Around<br />
             {/* <span className="italic font-light">Inspired by Genuine Hospitality.</span> */}
             <span className="italic font-light">Comfort.</span>
           </h1>
@@ -91,7 +91,7 @@ function About() {
             className="relative h-[600px] rounded-2xl overflow-hidden shadow-2xl"
           >
             <img 
-              src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1000&q=80" 
+              src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785691302/59bfe296-d4f8-4ad1-91a6-31721076c66d_oq6i5n.png" 
               alt="Hotel Interior" 
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000"
             />
@@ -180,7 +180,7 @@ function About() {
             className="relative h-[500px] rounded-2xl overflow-hidden shadow-xl group"
           >
             <img 
-              src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80" 
+              src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785690673/e35bc825-463f-4aca-9daa-7b062c3d5121_znb74h.png" 
               alt="Emirates Inn" 
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
             />
@@ -231,13 +231,42 @@ function About() {
             className="relative h-[500px] rounded-2xl overflow-hidden shadow-xl group order-1 md:order-2"
           >
             <img 
-              src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1000&q=80" 
+              src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785690469/grandinn_o4eiy3.png" 
               alt="Emirates Grand Inn" 
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
             />
           </motion.div>
         </div>
       </section>
+
+
+            {/* 7. Statistics */}
+      <section className="py-20 bg-muted/30 border-y border-border">
+        <div className="max-w-6xl mx-auto px-6">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid grid-cols-2 md:grid-cols-4 gap-12"
+          >
+            {[
+              { n: 2, p: "0", s: "", l: "Luxury Properties" }, 
+              { n: 120, p: "", s: "+", l: "Elegant Rooms" }, 
+              { n: 5, p: "", l: "Guest Experience" },
+              { n: 24, p: "", s: "/7", l: "Guest Support" }
+            ].map((s, i) => (
+              <motion.div variants={fadeUp} key={i} className="text-center">
+                <div className="font-serif font-bold text-5xl md:text-6xl text-primary mb-4 flex items-center justify-center">
+                  <AnimatedCounter end={s.n} prefix={s.p} suffix={s.s} />
+                </div>
+                <div className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">{s.l}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
 
       {/* 5. Our Hospitality Promise */}
       <section className="py-24 bg-primary text-primary-foreground">
@@ -273,7 +302,7 @@ function About() {
       </section>
 
       {/* 6. Our Core Values */}
-      <section className="py-24 max-w-7xl mx-auto px-6">
+      {/* <section className="py-24 max-w-7xl mx-auto px-6">
         <motion.div 
           initial="hidden"
           whileInView="visible"
@@ -309,37 +338,12 @@ function About() {
             </motion.div>
           ))}
         </motion.div>
-      </section>
+      </section> */}
 
-      {/* 7. Statistics */}
-      <section className="py-20 bg-muted/30 border-y border-border">
-        <div className="max-w-6xl mx-auto px-6">
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-            className="grid grid-cols-2 md:grid-cols-4 gap-12"
-          >
-            {[
-              { n: 2, p: "0", s: "", l: "Luxury Properties" }, 
-              { n: 120, p: "", s: "+", l: "Elegant Rooms" }, 
-              { n: 5, p: "", l: "Guest Experience" },
-              { n: 24, p: "", s: "/7", l: "Guest Support" }
-            ].map((s, i) => (
-              <motion.div variants={fadeUp} key={i} className="text-center">
-                <div className="font-serif font-bold text-5xl md:text-6xl text-primary mb-4 flex items-center justify-center">
-                  <AnimatedCounter end={s.n} prefix={s.p} suffix={s.s} />
-                </div>
-                <div className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">{s.l}</div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+      
 
       {/* 8. Luxury Image Banner */}
-      <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center">
+      {/* <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center">
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=2000&q=80" 
@@ -360,7 +364,7 @@ function About() {
             <span className="italic font-light">Exceptional Hospitality.</span>
           </h2>
         </motion.div>
-      </section>
+      </section> */}
 
       {/* 9. Final Section (CTA) */}
       <section className="py-32 bg-background">

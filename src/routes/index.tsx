@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Wifi, Car, Droplet, Camera, Tv, ChefHat, Wine, Sparkles, MapPin, Star, ArrowRight, Building, Award, Navigation, BedDouble, ShieldCheck, Clock, ChevronDown } from "lucide-react";
 import heroImg from "@/assets/hero-hotel.jpg";
+import { PHOTOS } from "@/routes/gallery";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -100,18 +101,18 @@ function Home() {
     <WebsiteLayout>
       {/* Hero */}
       <section className="relative h-[100vh] min-h-[640px] -mt-20 flex items-center">
-        <img src={heroImg} alt="Emirates Inn lobby" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1280} />
-        <div className="absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
+        <img src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785691302/59bfe296-d4f8-4ad1-91a6-31721076c66d_oq6i5n.png" alt="Emirates Inn lobby" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1280} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(8,20,38,0.78) 0%, rgba(8,20,38,0.62) 35%, rgba(8,20,38,0.28) 65%, rgba(8,20,38,0.05) 100%)" }} />
         <div className="container-luxe relative z-10 pt-20">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="max-w-3xl">
             <div className="flex items-center gap-2 mb-6 font-semibold">
               {/* <Building className="h-5 w-5" /> */}
-              <span className="text-xs uppercase tracking-widest text-white rounded-md px-2 py-1 bg-blue-900/20">A Curated Collection</span>
+              <span className="text-xs uppercase tracking-widest text-white rounded-md px-2 py-1 bg-blue-900/20" style={{ border: "1px solid rgba(212,175,55,0.45)", textShadow: "0 3px 12px rgba(0,0,0,0.45)" }}>A Curated Collection</span>
             </div>
-            <h1 className="font-serif font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight mb-6 text-white tracking-tight">
-              Where Every Stay<br /><span className="text-gold">Becomes a Memory.</span>
+            <h1 className="font-serif font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight mb-6 tracking-tight" style={{ color: "#FFFFFF", textShadow: "0 3px 12px rgba(0,0,0,0.45)" }}>
+              Where Every Stay<br /><span style={{ color: "#D4AF37", textShadow: "0 3px 12px rgba(0,0,0,0.45)" }}>Becomes a Memory.</span>
             </h1>
-            <p className="text-xs md:text-xl text-white/80 max-w-2xl mb-10 leading-relaxed font-light">
+            <p className="text-xs md:text-xl max-w-2xl mb-10 leading-relaxed font-light" style={{ color: "rgba(255,255,255,0.92)", textShadow: "0 3px 12px rgba(0,0,0,0.45)" }}>
               Two Exceptional Destinations, One Promise of Luxury.
               <p>Experience the elegance of Emirates Inn & Emirates Grand Inn.</p>
             </p>
@@ -137,8 +138,8 @@ function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
-              { slug: "emirates-inn", name: "Emirates Inn", tag: "Boutique Refinement", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80" },
-              { slug: "emirates-grand-inn", name: "Emirates Grand Inn", tag: "Flagship Luxury", img: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1200&q=80" },
+              { slug: "emirates-inn", name: "Emirates Inn", tag: "Boutique Refinement", img: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785690673/e35bc825-463f-4aca-9daa-7b062c3d5121_znb74h.png" },
+              { slug: "emirates-grand-inn", name: "Emirates Grand Inn", tag: "Flagship Luxury", img: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785690469/grandinn_o4eiy3.png" },
             ].map((h, i) => (
               <motion.div key={h.slug} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.6 }}
                 onClick={() => navigate({ to: '/rooms', search: { hotel: h.slug } })}
@@ -204,12 +205,10 @@ function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 overflow-x-auto">
-            {[
-              "1582719478250-c89cae4dc85b","1611892440504-42a792e24d32", "1590490360182-c33d57733427","1551882547-ff40c63fe5fa", 
-            ].map((id, i) => (
-              <motion.div key={id} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
+            {PHOTOS.slice(0, 4).map((url, i) => (
+              <motion.div key={url} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
                 className={`overflow-hidden rounded-lg ${i === 0 || i === 5 ? " aspect-square" : "aspect-square"}`}>
-                <img src={`https://images.unsplash.com/photo-${id}?w=600&q=80`} alt="" loading="lazy"
+                <img src={url} alt="" loading="lazy"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
               </motion.div>
             ))}
@@ -252,7 +251,7 @@ function Home() {
               <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                 className="p-8 bg-card rounded-2xl shadow-card text-foreground">
                 <div className="flex gap-1 mb-6">
-                  {Array.from({ length: t.rating }).map((_, j) => <Star key={j} className="h-4 w-4 text-gold fill-gold" />)}
+                  {Array.from({ length: t.rating }).map((_, j) => <Star key={j} className="h-4 w-4 text-yellow-500 fill-yellow-500" />)}
                 </div>
                 <p className="text-muted-foreground mb-6 leading-relaxed font-light">"{t.text}"</p>
                 <div className="flex items-center gap-4">
