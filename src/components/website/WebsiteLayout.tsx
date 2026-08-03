@@ -238,7 +238,7 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
 
         </div>
         <div className="border-y border-primary-foreground/10">
-          <div className="container-luxe py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-[13px] md:text-sm text-primary-foreground/50">
+          <div className="container-luxe py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-[12px] md:text-sm text-primary-foreground/50">
             <span>© {new Date().getFullYear()} Emirates Inn & Emirates Grand Inn.All rights reserved.</span>
             <div className="flex gap-4">
               <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
@@ -249,7 +249,7 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
         
 
         <div className="border-t border-primary-foreground/10"> 
-          <div className="container-x pb-6 pt-3 text-center text-[13px] text-white/40 ">
+          <div className="container-x pb-6 pt-3 text-center text-[11px] text-white/40 ">
         Developed by{" "}
         <a
           href="https://infynuxsolutions.in/"
