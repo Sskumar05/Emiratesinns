@@ -100,8 +100,8 @@ function Home() {
   return (
     <WebsiteLayout>
       {/* Hero */}
-      <section className="relative h-[100vh] min-h-[640px] -mt-20 flex items-center">
-        <img src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785691302/59bfe296-d4f8-4ad1-91a6-31721076c66d_oq6i5n.png" alt="Emirates Inn lobby" className="absolute inset-0 w-full h-full object-cover" />
+      <section className="relative h-[90vh] md:h-[100vh] min-h-[640px] -mt-20 flex items-center">
+        <img src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785691302/59bfe296-d4f8-4ad1-91a6-31721076c66d_oq6i5n.png" alt="Emirates Inn lobby" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1280} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(8,20,38,0.78) 0%, rgba(8,20,38,0.62) 35%, rgba(8,20,38,0.28) 65%, rgba(8,20,38,0.05) 100%)" }} />
         <div className="container-luxe relative z-10 pt-20">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="max-w-3xl">
