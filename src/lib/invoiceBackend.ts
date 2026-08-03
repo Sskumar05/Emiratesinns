@@ -81,7 +81,7 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
   doc.setFont("Roboto", "bold");
   doc.setFontSize(20);
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
-  doc.text("EMIRATES GRAND INN", 15, 20);
+  doc.text("EMIRATES", 15, 20);
 
   doc.setFont("Roboto", "normal");
   doc.setFontSize(9);
