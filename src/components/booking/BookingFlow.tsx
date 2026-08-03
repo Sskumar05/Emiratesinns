@@ -746,9 +746,9 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
 
           <div className="flex justify-between items-center mt-10 pt-6 border-t border-border">
             <button onClick={() => setStep(isAdmin ? 3 : 2)} className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center"><ArrowLeft className="h-4 w-4 mr-2" />Back</button>
-            <button disabled={submitting || (isAdmin && payment.amountReceived < total)} onClick={submitBooking} className="flex items-center justify-center gap-2 bg-gold text-white px-8 py-3.5 text-sm font-semibold rounded-md shadow-md hover:bg-gold-hover transition disabled:opacity-60 disabled:cursor-not-allowed">
-              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isAdmin ? "Confirm Booking" : "Proceed to Payment"} <ArrowRight className="h-4 w-4" />
+            <button disabled={submitting || (isAdmin && payment.amountReceived < total)} onClick={submitBooking} className="flex items-center justify-center gap-2 bg-gold text-white px-4 py-3.5 text-sm font-semibold rounded-md shadow-md hover:bg-gold-hover transition disabled:opacity-60 disabled:cursor-not-allowed">
+              {submitting && <Loader2 className="h-3 w-3 animate-spin" />}
+              {isAdmin ? "Confirm Booking" : "Proceed to Payment"} <ArrowRight className="h-3 w-3" />
             </button>
           </div>
         </div>
