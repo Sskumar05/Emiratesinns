@@ -430,7 +430,7 @@ function About() {
           className="max-w-3xl mx-auto px-6 text-center"
         >
           {/* <Gem className="w-12 h-12 text-gold mx-auto mb-8" strokeWidth={1} /> */}
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-6">Ready for Your Next Stay?</h2>
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-6">Book Your Stay</h2>
           <p className="text-xl text-muted-foreground mb-12 leading-relaxed font-light">
             Experience comfort, elegance, and personalized hospitality at Emirates Inn & Emirates Grand Inn.
           </p>

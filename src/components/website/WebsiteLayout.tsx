@@ -72,46 +72,48 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
           <button
             ref={hamburgerRef}
             className="md:hidden text-primary-foreground hover:text-white transition-colors p-1"
-            onClick={() => (open ? closeMenu() : setOpen(true))}
-            aria-label={open ? "Close Menu" : "Open Menu"}
+            onClick={() => setOpen(true)}
+            aria-label="Open Menu"
             aria-expanded={open}
             aria-controls="mobile-nav-panel"
           >
-            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <Menu className="h-6 w-6" />
           </button>
         </div>
         {/* ── Mobile: full-width top overlay (outside header flow so it doesn't push content) ── */}
         <AnimatePresence>
           {open && (
             <>
-              {/* Blurred backdrop — sits behind the panel, closes menu on click */}
+              {/* Blurred backdrop — sits behind the panel */}
               <motion.div
                 key="mobile-backdrop"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.28, ease: "easeInOut" }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="md:hidden fixed inset-0 z-[55]"
                 style={{ backgroundColor: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
-                onClick={closeMenu}
                 aria-hidden="true"
               />
 
-              {/* Top-sliding menu panel */}
+              {/* Left-side slide drawer */}
               <motion.div
                 key="mobile-nav-panel"
                 id="mobile-nav-panel"
-                initial={{ opacity: 0, y: "-100%" }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: "-100%" }}
-                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                className="md:hidden fixed top-0 left-0 w-full z-[60]"
+                initial={{ x: "-90%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="md:hidden fixed top-0 left-0 h-full z-[80]"
                 style={{
-                  backgroundColor: "#0A1A2F",
-                  borderBottom: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "0 0 20px 20px",
-                  boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 4px 20px rgba(0,0,0,0.3)",
-                  willChange: "transform, opacity",
+                  width: "75%",
+                  maxWidth: "320px",
+                  backgroundColor: "#0c101fff",
+                  borderRight: "1px solid rgba(255,255,255,0.08)",
+                  boxShadow: "4px 0 40px rgba(0,0,0,0.5)",
+                  willChange: "transform",
+                  display: "flex",
+                  flexDirection: "column",
                 }}
                 role="dialog"
                 aria-modal="true"
@@ -120,7 +122,7 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
                 {/* Panel header — logo + close button */}
                 <div
                   className="flex items-center justify-between h-20 px-6"
-                  style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}
                 >
                   <Link to="/" className="flex items-center gap-3 group" onClick={closeMenu}>
                     <img src={emirates} className="h-15 w-15" alt="Emirates Logo" />
@@ -191,14 +193,13 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
         >
 
           {/* ── Brand Column ── */}
-          <div className="w-full lg:w-[42%] max-w-[360px]">
+          <div className="w-full lg:w-[42%] max-w-[416px]">
             <div className="flex items-center gap-3 mb-5">
               <img src={emirates} className="h-15 w-15" />
               <span className="font-bold text-lg tracking-tight">Emirates Inn</span>
             </div>
             <p className="text-sm text-primary-foreground/70 leading-relaxed">
-              A curated collection of boutique and grand hotels delivering reliable comfort and corporate hospitality.
-            </p>
+                Experience exceptional comfort, elegant accommodations, and warm hospitality tailored to every traveler. Whether you're visiting for business or leisure, we ensure a memorable stay from check-in to check-out.            </p>
           </div>
 
           {/* ── Right nav group: Explore + Contact pushed to the right ── */}
@@ -236,15 +237,28 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
           </div>
 
         </div>
-        <div className="border-t border-primary-foreground/10">
-          <div className="container-luxe py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-primary-foreground/50">
-            <span>© {new Date().getFullYear()} Emirates Inn & Emirates Grand Inn. All rights reserved.</span>
+        <div className="border-y border-primary-foreground/10">
+          <div className="container-luxe py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-[13px] md:text-sm text-primary-foreground/50">
+            <span>© {new Date().getFullYear()} Emirates Inn & Emirates Grand Inn.All rights reserved.</span>
             <div className="flex gap-4">
               <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
               <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
-            </div>
+            </div>    
           </div>
         </div>
+        
+
+        <div className="border-t border-primary-foreground/10"> 
+          <div className="container-x pb-6 pt-3 text-center text-[13px] text-white/40 ">
+        Developed by{" "}
+        <a
+          href="https://infynuxsolutions.in/"
+          className="font-semibold text-yellow-600 hover:text-yellow-400 transition-colors duration-300">
+          INFYNUX SOLUTIONS
+        </a>
+      </div>
+          </div>
+
       </footer>
     </div>
   );

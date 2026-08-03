@@ -327,7 +327,7 @@ function Home() {
           {/* <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-border">
             <MapPin className="h-8 w-8 text-primary" />
           </div> */}
-          <h2 className="font-serif font-bold text-3xl sm:text-4xl md:text-6xl mb-6 text-foreground tracking-tight">Book Your Stay</h2>
+          <h2 className="font-serif font-bold text-3xl sm:text-4xl md:text-6xl mb-6 text-foreground tracking-tight">Your Journey Starts Here!</h2>
           <p className="text-muted-foreground max-w-xl mx-auto mb-10 text-lg font-light">Reserve your perfect room and enjoy exceptional comfort, premium hospitality, and a memorable stay with us.</p>
           <Link to="/rooms" className="bg-gold text-white px-10 py-4 text-sm font-semibold rounded-2xl shadow-md inline-flex items-center gap-2 hover:bg-gold-hover transition">
             Begin Reservation <ArrowRight className="h-4 w-4" />
