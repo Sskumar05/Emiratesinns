@@ -61,7 +61,7 @@ export function generateInvoiceHTML(data: any): string {
   *{break-inside:avoid;page-break-inside:avoid}
   .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #B8860B;padding-bottom:12px;margin-bottom:14px;break-inside:avoid}
   .brand{display:flex;flex-direction:column;gap:2px}
-  .brand-name{font-size:19px;font-weight:800;color:#1a1a2e;letter-spacing:-0.5px}
+  .brand-name{font-size:20px;font-weight:800;color:#1a1a2e;letter-spacing:-0.5px}
   .brand-sub{font-size:11px;color:#6b7280;font-weight:500}
   .invoice-meta{text-align:right}
   .invoice-title{font-size:24px;font-weight:800;color:#B8860B;letter-spacing:-1px}
@@ -91,7 +91,7 @@ export function generateInvoiceHTML(data: any): string {
 <body>
   <div class="header">
     <div class="brand">
-      <div class="brand-name">Emirates Grand Inn</div>
+      <div class="brand-name">Emirates</div>
       <div class="brand-sub">Luxury Hotel &amp; Suites</div>
     </div>
     <div class="invoice-meta">
