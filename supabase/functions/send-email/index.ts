@@ -136,13 +136,13 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;color:trans
     <div class="header" style="background-color:#1a1510 !important;">
    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr>
-    <td align="center" style="padding-bottom:10px;">
+    <td align="center" style="padding-bottom:8px;">
       <img
         src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785752258/Emirates_logopng_qpavp4.png"
         alt="Emirates Group"
         width="90"
         height="90"
-        style="display:block;border:0;outline:none;text-decoration:none;width:80px;height:80px;"
+        style="display:block;border:0;outline:none;text-decoration:none;width:90px;height:90px;"
       />
     </td>
   </tr>
