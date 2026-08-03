@@ -91,7 +91,7 @@ export function generateInvoiceHTML(data: any): string {
 <body>
   <div class="header">
     <div style="display: flex; align-items: center; gap: 14px;">
-      <img src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785752258/Emirates_logopng_qpavp4.png" alt="Emirates Group Logo" style="height: 55px; width: auto; background: transparent; display: block;" />
+      <img src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785752258/Emirates_logopng_qpavp4.png" crossorigin="anonymous" alt="Emirates Group Logo" style="height: 55px; width: auto; background: transparent; display: block;" />
       <div class="brand">
         <div class="brand-name">Emirates</div>
         <div class="brand-sub">Luxury Hotel &amp; Suites</div>
@@ -215,9 +215,21 @@ export async function downloadInvoice(data: any, customFilename?: string) {
     // Wait for styles and remote fonts to fully load
     await new Promise((resolve) => setTimeout(resolve, 800));
 
+    // Wait for all images to finish loading to ensure logo appears in PDF
+    await Promise.all(
+      Array.from(doc.images).map((img) => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+        });
+      })
+    );
+
     const canvas = await html2canvas(doc.body, {
       scale: 2,
       useCORS: true,
+      allowTaint: false,
       logging: false,
       windowWidth: doc.body.scrollWidth,
       windowHeight: doc.body.scrollHeight,
