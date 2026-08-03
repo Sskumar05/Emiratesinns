@@ -135,11 +135,11 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;color:trans
   <div class="card" style="background-color:#12121c !important; color:#ffffff !important;">
     <div class="header" style="background-color:#1a1510 !important;">
     <img
-  src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785691302/59bfe296-d4f8-4ad1-91a6-31721076c66d_oq6i5n.png"
+  src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785752258/Emirates_logopng_qpavp4.png"
   alt="Emirates Logo"
   style={{
-    width: "70px",
-    height: "70px",
+    width: "20px",
+    height: "20px",
     objectFit: "contain",
     display: "block",
     margin: "0 auto 10px",
