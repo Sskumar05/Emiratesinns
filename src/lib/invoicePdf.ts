@@ -173,7 +173,7 @@ export function generateInvoiceHTML(data: any): string {
 
   <div class="footer">
     <div class="footer-text">"Thank you for choosing our hotel. We look forward to welcoming you."</div>
-    <div class="footer-brand">Emirates Grand Inn · Luxury Redefined</div>
+    <div class="footer-brand">Emirates Inn & Grand Inn · Luxury Redefined</div>
   </div>
 </body>
 </html>`;

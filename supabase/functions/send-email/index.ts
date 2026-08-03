@@ -101,7 +101,6 @@ function baseTemplate(content: string, preheader = ""): string {
   .wrapper{max-width:640px;margin:0 auto;padding:24px 16px;background-color:#0a0a0f !important;}
   .card{background:linear-gradient(135deg,#12121c 0%,#1a1a28 100%);background-color:#12121c !important;border:1px solid rgba(200,160,80,0.4) !important;border-radius:4px;overflow:hidden;color:#ffffff !important;}
   .header{background:linear-gradient(135deg,#1a1510 0%,#0f0f18 100%);background-color:#1a1510 !important;padding:40px 40px 32px;text-align:center;border-bottom:1px solid rgba(200,160,80,0.5) !important;}
-  .crown{font-size:28px;margin-bottom:12px;display:block;color:#c8a050 !important;}
   .brand{font-family:'Playfair Display',Georgia,serif;font-size:26px;color:#d4af37 !important;letter-spacing:0.06em;font-weight:700}
   .brand-sub{font-size:10px;color:#d4af37 !important;letter-spacing:0.3em;text-transform:uppercase;margin-top:4px}
   .divider{height:1px;background-color:#c8a050;opacity:0.3;margin:24px 0}
@@ -134,18 +133,6 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;color:trans
 <div class="wrapper" style="background-color:#0a0a0f !important;">
   <div class="card" style="background-color:#12121c !important; color:#ffffff !important;">
     <div class="header" style="background-color:#1a1510 !important;">
-      // <span class="crown" style="color:#c8a050 !important;">♛</span>
-      <img
-    src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785691302/59bfe296-d4f8-4ad1-91a6-31721076c66d_oq6i5n.png"
-    alt="Emirates Logo"
-    style={{
-      width: "70px",
-      height: "70px",
-      objectFit: "contain",
-      display: "block",
-      margin: "0 auto 10px",
-    }}
-  /> 
       <div class="brand" style="color:#d4af37 !important;">Emirates Inn & Grand Inn</div>
       <div class="brand-sub" style="color:#d4af37 !important;">Luxury Hospitality</div>
     </div>
