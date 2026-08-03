@@ -134,17 +134,19 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;color:trans
 <div class="wrapper" style="background-color:#0a0a0f !important;">
   <div class="card" style="background-color:#12121c !important; color:#ffffff !important;">
     <div class="header" style="background-color:#1a1510 !important;">
-    <img
-  src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785752258/Emirates_logopng_qpavp4.png"
-  alt="Emirates Logo"
-  style={{
-    width: "20px",
-    height: "20px",
-    objectFit: "contain",
-    display: "block",
-    margin: "0 auto 10px",
-  }}
-/>
+   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <td align="center" style="padding-bottom:20px;">
+      <img
+        src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785752258/Emirates_logopng_qpavp4.png"
+        alt="Emirates Group"
+        width="80"
+        height="80"
+        style="display:block;border:0;outline:none;text-decoration:none;width:80px;height:80px;"
+      />
+    </td>
+  </tr>
+</table>
       <div class="brand" style="color:#d4af37 !important;">Emirates Inn & Grand Inn</div>
       <div class="brand-sub" style="color:#d4af37 !important;">Luxury Hospitality</div>
     </div>
