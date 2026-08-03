@@ -90,9 +90,12 @@ export function generateInvoiceHTML(data: any): string {
 </head>
 <body>
   <div class="header">
-    <div class="brand">
-      <div class="brand-name">Emirates</div>
-      <div class="brand-sub">Luxury Hotel &amp; Suites</div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <img src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785752258/Emirates_logopng_qpavp4.png" alt="Emirates Group Logo" style="height: 55px; width: auto; background: transparent; display: block;" />
+      <div class="brand">
+        <div class="brand-name">Emirates</div>
+        <div class="brand-sub">Luxury Hotel &amp; Suites</div>
+      </div>
     </div>
     <div class="invoice-meta">
       <div class="invoice-title">INVOICE</div>
