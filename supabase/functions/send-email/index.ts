@@ -481,18 +481,26 @@ Deno.serve(async (req) => {
     const { type, payload: p, to: originalTo } = validate(rawBody);
     let to = originalTo;
 
-    // --- FIX for booking_confirmation missing customer email due to RLS ---
-    if (type === "booking_confirmation" && p.bookingId && to === "pending_resolution@emirates.internal") {
+    // --- FIX for booking_confirmation missing customer email due to RLS & append AC status ---
+    if (type === "booking_confirmation" && p.bookingId) {
       const supabaseAdmin = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
       );
       const { data: bData } = await supabaseAdmin.from("bookings").select("*, customers(*)").eq("id", p.bookingId).single();
-      if (bData?.customers?.email) {
-        to = bData.customers.email;
-        p.customerName = bData.customers.full_name || p.customerName;
-      } else {
-        throw new Error("Could not resolve customer email for booking confirmation");
+      
+      if (to === "pending_resolution@emirates.internal") {
+        if (bData?.customers?.email) {
+          to = bData.customers.email;
+          p.customerName = bData.customers.full_name || p.customerName;
+        } else {
+          throw new Error("Could not resolve customer email for booking confirmation");
+        }
+      }
+
+      if (bData?.category && p.roomType) {
+        const isAc = bData.category.includes("non_ac") ? "Non AC" : "AC";
+        p.roomType = `${p.roomType} (${isAc})`;
       }
     }
 
