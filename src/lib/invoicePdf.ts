@@ -50,13 +50,13 @@ export function generateInvoiceHTML(data: any): string {
   const stayType = booking.stay_type ?? "standard";
   const durationLabel = getDurationLabel(nights, stayType);
   const rateLabel = getRateLabel(stayType);
-  const checkInFormatted = fmtDateTime(booking.check_in_date, booking.check_in_time);
+  const checkInFormatted = fmtDateTime(booking.check_in_date, booking.default_check_in_time || booking.check_in_time || "14:00");
   
   const checkOutFormatted = fmtDateTime(booking.check_out_date, stayType === '12_hours' ? (() => {
-    const d = new Date(`${booking.check_in_date}T${booking.check_in_time || "14:00"}:00`);
+    const d = new Date(`${booking.check_in_date}T${booking.default_check_in_time || booking.check_in_time || "14:00"}:00`);
     d.setHours(d.getHours() + 12);
     return d.toTimeString().slice(0, 5);
-  })() : '12:00');
+  })() : (booking.default_check_out_time || '12:00'));
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -208,6 +208,11 @@ export async function downloadInvoice(data: any, customFilename?: string) {
       booking.fetched_room_type = roomData.room_type;
     }
   }
+
+  const { data: ciRes } = await supabase.from("system_settings").select("value").eq("key", "default_check_in_time").maybeSingle();
+  const { data: coRes } = await supabase.from("system_settings").select("value").eq("key", "default_check_out_time").maybeSingle();
+  booking.default_check_in_time = ciRes?.value ? String(ciRes.value).replace(/^"|"$/g, "") : null;
+  booking.default_check_out_time = coRes?.value ? String(coRes.value).replace(/^"|"$/g, "") : null;
 
   const html = generateInvoiceHTML(data);
   const bookingCode = data.booking_code || data.bookings?.booking_code || "REF";

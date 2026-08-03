@@ -65,16 +65,16 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
   const taxAmount = isInvoiceRow ? (data.tax_amount ?? 0) : 0;
   const paymentStatus = (booking.payment_status ?? "paid").toUpperCase();
 
-  const checkIn = fmtDateTime(booking.check_in_date, booking.check_in_time);
+  const checkIn = fmtDateTime(booking.check_in_date, booking.default_check_in_time || booking.check_in_time || "14:00");
   const checkOut = fmtDateTime(
     booking.check_out_date,
     stayType === "12_hours"
       ? (() => {
-          const d = new Date(`${booking.check_in_date}T${booking.check_in_time || "14:00"}:00`);
+          const d = new Date(`${booking.check_in_date}T${booking.default_check_in_time || booking.check_in_time || "14:00"}:00`);
           d.setHours(d.getHours() + 12);
           return d.toTimeString().slice(0, 5);
         })()
-      : "12:00"
+      : (booking.default_check_out_time || "12:00")
   );
 
   // ── Palette ──
@@ -359,6 +359,11 @@ export async function getOrGenerateInvoicePDF(bookingId: string): Promise<PDFInv
       bookingObj.fetched_room_type = roomData.room_type;
     }
   }
+
+  const { data: ciRes } = await supabase.from("system_settings").select("value").eq("key", "default_check_in_time").maybeSingle();
+  const { data: coRes } = await supabase.from("system_settings").select("value").eq("key", "default_check_out_time").maybeSingle();
+  bookingObj.default_check_in_time = ciRes?.value ? String(ciRes.value).replace(/^"|"$/g, "") : null;
+  bookingObj.default_check_out_time = coRes?.value ? String(coRes.value).replace(/^"|"$/g, "") : null;
 
   // 1. If an invoice record already exists, regenerate the PDF from the live RPC data
   if (isInvoiceRow) {

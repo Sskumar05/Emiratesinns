@@ -10,6 +10,7 @@ import { downloadInvoice, generateInvoiceHTML } from "@/lib/invoicePdf";
 import { useState, useMemo, useEffect } from "react";
 import { Printer } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useHotelTimes } from "@/hooks/useHotelTimes";
 
 export const Route = createFileRoute("/admin/invoices")({ component: Invoices });
 
@@ -36,6 +37,7 @@ function Invoices() {
   const { sendInvoice, loading } = useSendEmail();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [previewInv, setPreviewInv] = useState<any>(null);
+  const hotelTimes = useHotelTimes();
 
   const [q, setQ] = useState("");
   const [statusF, setStatusF] = useState("all");
@@ -249,7 +251,13 @@ function Invoices() {
                   <div className="flex gap-2 items-center">
                     <button
                       title="View Invoice"
-                      onClick={() => setPreviewInv(inv)}
+                      onClick={() => {
+                        const augmentedInv = { ...inv };
+                        const b = augmentedInv.invoice_number ? (augmentedInv.bookings || {}) : augmentedInv;
+                        b.default_check_in_time = hotelTimes.data?.checkIn;
+                        b.default_check_out_time = hotelTimes.data?.checkOut;
+                        setPreviewInv(augmentedInv);
+                      }}
                       className="flex items-center justify-center p-1.5 rounded bg-surface/50 border border-border text-foreground hover:border-gold hover:text-gold transition-colors"
                     >
                       <Eye className="h-4 w-4" />
