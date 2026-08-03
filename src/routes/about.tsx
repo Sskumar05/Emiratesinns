@@ -60,7 +60,7 @@ function About() {
   return (
     <WebsiteLayout>
       {/* 1. Hero Section */}
-      <section className="relative h-[60vh] min-h-[680px] flex items-center justify-center bg-gradient-to-b from-[#FAF9F6] to-[#F4F1EC]">
+      {/* <section className="relative h-[60vh] min-h-[680px] flex items-center justify-center bg-gradient-to-b from-[#FAF9F6] to-[#F4F1EC]">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -70,15 +70,69 @@ function About() {
           <span className="text-sm font-semibold uppercase tracking-[0.3em] text-gold mb-8 inline-block">About Emirates</span>
           <h1 className="font-serif font-bold text-4xl md:text-6xl text-foreground tracking-tight leading-tight mb-8">
             Designed Around<br />
-            {/* <span className="italic font-light">Inspired by Genuine Hospitality.</span> */}
+            <span className="italic font-light">Inspired by Genuine Hospitality.</span>
             <span className="italic font-light">Comfort.</span>
           </h1>
-          {/* <div className="w-16 h-[1px] bg-gold/50 mx-auto mb-8" /> */}
+          <div className="w-16 h-[1px] bg-gold/50 mx-auto mb-8" />
           <div className="mb-[-10%] " ><img src={logo} alt="line" className="w-auto h-auto mt-[-16%] " /></div>
           <p className="text-lg text-muted-foreground leading-relaxed max-w-[650px] mx-auto font-light">
             Discover the story behind Emirates Inn & Emirates Grand Inn, where exceptional hospitality, refined accommodations, and personalized service come together to deliver an unforgettable guest experience.</p>
         </motion.div>
+      </section> */}
+
+
+        <section
+        className="relative flex items-center justify-center text-center"
+        style={{
+          background: "linear-gradient(160deg, #FAF9F6 0%, #F4F1EC 100%)",
+          paddingTop: "clamp(7rem, 14vw, 10rem)",
+          paddingBottom: "clamp(4rem, 8vw, 6rem)",
+        }}
+      >
+        {/* Subtle decorative line */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-px"
+          style={{ background: "linear-gradient(to right, transparent, rgba(0,0,0,0.06), transparent)" }}
+        />
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="px-6 max-w-4xl mx-auto"
+        >
+          {/* Small label */}
+          <motion.span
+            initial={{ opacity: 0, letterSpacing: "0.15em" }}
+            animate={{ opacity: 1, letterSpacing: "0.35em" }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+            className="text-xs font-semibold uppercase text-gold mb-7 inline-block"
+            style={{ letterSpacing: "0.35em" }}
+          >
+            About Emirates
+          </motion.span>
+
+          {/* Main heading */}
+          <h1
+            className="font-serif font-bold text-foreground tracking-tight leading-tight mb-7"
+            style={{ fontSize: "clamp(2.4rem, 6vw, 4.2rem)" }}
+          >
+            Designed Around {" "}
+            <span className="italic font-light">Comfort.</span>
+          </h1>
+
+          {/* Gold rule */}
+          <div className="mb-[-10%]"><img src={logo} alt="line" className="w-auto h-auto mt-[-16%] " /></div>
+
+          {/* Subtitle */}
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto font-light">
+            Discover the story behind  <strong className="font-medium text-foreground">Emirates Inn</strong> & <strong className="font-medium text-foreground">Emirates Grand Inn</strong>, where exceptional hospitality, refined accommodations, and personalized service come together to deliver an unforgettable guest experience.
+          </p>
+        </motion.div>
       </section>
+
+
+
 
       {/* 2. Who We Are */}
       <section className="py-24 max-w-7xl mx-auto px-6">
