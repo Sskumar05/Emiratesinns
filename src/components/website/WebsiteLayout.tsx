@@ -125,8 +125,8 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
                   style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}
                 >
                   <Link to="/" className="flex items-center gap-3 group" onClick={closeMenu}>
-                    <img src={emirates} className="h-15 w-15" alt="Emirates Logo" />
-                    <div className="font-bold text-xl tracking-tight text-white leading-tight">Emirates</div>
+                    <img src={emirates} className="h-12 w-12" alt="Emirates Logo" />
+                    <div className="font-bold text-xl ml-[-10] tracking-tight text-white leading-tight">Emirates</div>
                   </Link>
                   <button
                     className="text-primary-foreground hover:text-white transition-colors p-2 -mr-1"
