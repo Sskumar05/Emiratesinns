@@ -498,8 +498,30 @@ Deno.serve(async (req) => {
         }
       }
 
-      if (bData?.category && p.roomType) {
-        const isAc = bData.category.includes("non_ac") ? "Non AC" : "AC";
+      if (bData && p.roomType) {
+        let isAc = "AC"; // default
+        
+        // 1. Check assigned rooms first for the actual room type
+        if (bData.assigned_room_ids && bData.assigned_room_ids.length > 0) {
+          const { data: roomData } = await supabaseAdmin
+            .from("rooms")
+            .select("room_type")
+            .eq("id", bData.assigned_room_ids[0])
+            .single();
+            
+          if (roomData?.room_type && roomData.room_type.toUpperCase() === "NON AC") {
+            isAc = "Non AC";
+          }
+        } 
+        // 2. Fallback to category string if assigned_room_ids is empty
+        else if (bData.category && typeof bData.category === "string") {
+          if (bData.category.toLowerCase().includes("non_ac") || bData.category.toLowerCase().includes("non ac")) {
+            isAc = "Non AC";
+          }
+        }
+
+        // Clean up p.roomType if it already has (AC) or (Non AC) appended
+        p.roomType = String(p.roomType).replace(/\s*\(\s*(AC|Non AC)\s*\)\s*$/i, '');
         p.roomType = `${p.roomType} (${isAc})`;
       }
     }
