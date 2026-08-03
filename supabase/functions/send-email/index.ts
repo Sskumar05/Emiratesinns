@@ -140,9 +140,9 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;color:trans
       <img
         src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785752258/Emirates_logopng_qpavp4.png"
         alt="Emirates Group"
-        width="90"
-        height="90"
-        style="display:block;border:0;outline:none;text-decoration:none;width:90px;height:90px;"
+        width="110"
+        height="110"
+        style="display:block;border:0;outline:none;text-decoration:none;width:110px;height:110px;"
       />
     </td>
   </tr>
@@ -184,7 +184,7 @@ function bookingConfirmationTemplate(d: {
       <div class="divider"></div>
       <div class="section-title">Booking Confirmed ✓</div>
       <p class="greeting">Dear ${d.customerName},<br/><br/>
-      Thank you for choosing Emirates Grand Inn. Your reservation has been confirmed. We look forward to welcoming you and providing you with an exceptional luxury experience.</p>
+      Thank you for choosing Emirates. Your reservation has been confirmed. We look forward to welcoming you and providing you with an exceptional luxury experience.</p>
       
       <div style="text-align:center;margin-bottom:28px">
         <div style="font-size:10px;color:#8a7a6a;letter-spacing:0.3em;text-transform:uppercase;margin-bottom:8px">Booking Reference</div>
@@ -213,7 +213,6 @@ function bookingConfirmationTemplate(d: {
 
       <p style="font-size:12px;color:#7a6a5a;text-align:center;line-height:1.7;margin-top:20px">
         Please carry a valid government-issued photo ID at check-in.<br/>
-        Check-in time: 2:00 PM · Check-out time: 12:00 PM
       </p>
     </div>`,
     `Your booking ${d.bookingCode} at ${d.hotelName} is confirmed!`,
