@@ -1,4 +1,5 @@
 import { CATEGORY_LABELS, formatINR, fmtDateTime, getDurationLabel, getRateLabel } from "@/lib/hotel";
+import { supabase } from "@/integrations/supabase/client";
 
 // ─── Build invoice HTML from a booking-like object ────────────────────────
 // Accepts both:
@@ -19,7 +20,18 @@ export function generateInvoiceHTML(data: any): string {
   const hotel    = booking.hotels ?? data.hotels ?? {};
 
   const now          = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
-  const cat          = CATEGORY_LABELS[booking.category] ?? booking.category ?? "—";
+  
+  let isAc = "AC";
+  if (booking.fetched_room_type) {
+    isAc = booking.fetched_room_type.toUpperCase() === "NON AC" ? "Non AC" : "AC";
+  } else if (booking.category && typeof booking.category === "string") {
+    if (booking.category.toLowerCase().includes("non_ac") || booking.category.toLowerCase().includes("non ac")) {
+      isAc = "Non AC";
+    }
+  }
+  let cat = CATEGORY_LABELS[booking.category] ?? booking.category ?? "—";
+  cat = `${cat} (${isAc})`;
+  
   const pricePerNight = formatINR(isInvoiceRow ? (data.amount ?? 0) / Math.max(booking.num_days ?? 1, 1) : booking.price_per_night);
   const nights       = booking.num_days ?? 1;
   const guests       = booking.num_guests ?? "—";
@@ -184,6 +196,19 @@ import { jsPDF } from "jspdf";
 
 // ─── Trigger direct browser PDF file download ────────────────────────────────
 export async function downloadInvoice(data: any, customFilename?: string) {
+  const isInvoiceRow = !!data.invoice_number;
+  const booking = isInvoiceRow ? (data.bookings ?? {}) : data;
+  if (booking.assigned_room_ids && booking.assigned_room_ids.length > 0) {
+    const { data: roomData } = await supabase
+      .from("rooms")
+      .select("room_type")
+      .eq("id", booking.assigned_room_ids[0])
+      .single();
+    if (roomData?.room_type) {
+      booking.fetched_room_type = roomData.room_type;
+    }
+  }
+
   const html = generateInvoiceHTML(data);
   const bookingCode = data.booking_code || data.bookings?.booking_code || "REF";
   const filename = customFilename || `EmiratesInn-Invoice-${bookingCode}.pdf`;

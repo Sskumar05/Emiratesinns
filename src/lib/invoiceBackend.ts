@@ -42,7 +42,18 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
     : `INV-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}-${bookingCode.slice(-6)}`;
 
   const now = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
-  const cat = CATEGORY_LABELS[booking.category] ?? booking.category ?? "Standard Room";
+  
+  let isAc = "AC";
+  if (booking.fetched_room_type) {
+    isAc = booking.fetched_room_type.toUpperCase() === "NON AC" ? "Non AC" : "AC";
+  } else if (booking.category && typeof booking.category === "string") {
+    if (booking.category.toLowerCase().includes("non_ac") || booking.category.toLowerCase().includes("non ac")) {
+      isAc = "Non AC";
+    }
+  }
+  let cat = CATEGORY_LABELS[booking.category] ?? booking.category ?? "Standard Room";
+  cat = `${cat} (${isAc})`;
+  
   const numDays = Math.max(booking.num_days ?? 1, 1);
   const numRooms = Math.max(booking.num_rooms ?? 1, 1);
   const stayType = booking.stay_type ?? "standard";
@@ -337,6 +348,17 @@ export async function getOrGenerateInvoicePDF(bookingId: string): Promise<PDFInv
   }
 
   const isInvoiceRow = !!invoiceData.invoice_number;
+  const bookingObj = isInvoiceRow ? (invoiceData.bookings ?? {}) : invoiceData;
+  if (bookingObj.assigned_room_ids && bookingObj.assigned_room_ids.length > 0) {
+    const { data: roomData } = await supabase
+      .from("rooms")
+      .select("room_type")
+      .eq("id", bookingObj.assigned_room_ids[0])
+      .single();
+    if (roomData?.room_type) {
+      bookingObj.fetched_room_type = roomData.room_type;
+    }
+  }
 
   // 1. If an invoice record already exists, regenerate the PDF from the live RPC data
   if (isInvoiceRow) {
