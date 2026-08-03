@@ -301,12 +301,12 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
   doc.setFont("Roboto", "normal"); // Fallback for italic since we only loaded normal and bold
   doc.setFontSize(8.5);
   doc.setTextColor(mutedGray[0], mutedGray[1], mutedGray[2]);
-  doc.text('"Thank you for choosing Emirates Grand Inn. We look forward to welcoming you."', 105, footerY + 6, { align: "center" });
+  doc.text('"Thank you for choosing Emirates Inn & Grand Inn. We look forward to welcoming you."', 105, footerY + 6, { align: "center" });
 
   doc.setFont("Roboto", "bold");
   doc.setFontSize(9);
   doc.setTextColor(primaryGold[0], primaryGold[1], primaryGold[2]);
-  doc.text("Emirates Grand Inn · Luxury Redefined", 105, footerY + 11, { align: "center" });
+  doc.text("Emirates Inn & Grand Inn · Luxury Redefined", 105, footerY + 11, { align: "center" });
 
   const filename = `EmiratesInn-Invoice-${bookingCode}.pdf`;
   const pdfDataUrl = doc.output("datauristring");
