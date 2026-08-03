@@ -11,21 +11,28 @@ export const Route = createFileRoute("/admin/customers")({ component: Customers 
 
 const formatBadgeText = (text: string) => (text || '').replace('_', ' ');
 
-function exportCustomersToExcel(filtered: any[]) {
+function exportCustomersToExcel(filtered: any[], getBookingRoomType: (b: any) => string) {
   if (filtered.length === 0) { toast.error("No data available to export."); return; }
   const headers = [
-    "Customer ID", "Customer Name", "Mobile", "Email",
-    "Total Bookings", "Total Spend", "Current Stay", "Last Stay", "Status",
+    "Customer ID", "Customer Name", "Mobile", "Email", "Room Category", "Room Type", 
+    "Total Bookings", "Total Spend", "Current Stay", "Last Stay","Status",
   ];
   const rows = filtered.map((c: any) => [
     c.customerId,
     c.full_name ?? "-",
     c.mobile ?? "-",
     c.email ?? "-",
+     c.bookings?.length > 0 
+      ? Array.from(new Set(c.bookings.map((b: any) => CATEGORY_LABELS[b.category as keyof typeof CATEGORY_LABELS] || b.category))).join(', ')
+      : "-",
+    c.bookings?.length > 0 
+      ? Array.from(new Set(c.bookings.map((b: any) => getBookingRoomType(b)))).join(', ')
+      : "-",
     c.totalBookings,
     formatINR(c.totalSpend),
     c.currentStay,
     c.lastStay,
+   
     c.status,
   ]);
   downloadXlsx([headers, ...rows], "Customers", `Customers_${new Date().toISOString().slice(0, 10)}.xlsx`);
@@ -58,6 +65,28 @@ function Customers() {
     queryKey: ["hotels"],
     queryFn: async () => (await supabase.from("hotels").select("*")).data ?? [],
   });
+
+  const { data: allRooms = [] } = useQuery({
+    queryKey: ["all-rooms"],
+    queryFn: async () => (await supabase.from("rooms").select("id, room_type")).data ?? [],
+  });
+
+  const roomTypeMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    allRooms.forEach((r: any) => {
+      map[r.id] = r.room_type;
+    });
+    return map;
+  }, [allRooms]);
+
+  const getBookingRoomType = (b: any) => {
+    if (b.assigned_room_ids && b.assigned_room_ids.length > 0) {
+      const rt = roomTypeMap[b.assigned_room_ids[0]];
+      if (rt) return rt.toUpperCase() === "NON AC" ? "Non AC" : "AC";
+    }
+    if (b.category && (b.category.toLowerCase().includes("non_ac") || b.category.toLowerCase().includes("non ac"))) return "Non AC";
+    return "AC";
+  };
 
   // Realtime
   useEffect(() => {
@@ -199,7 +228,7 @@ function Customers() {
             />
           </div>
           <button
-            onClick={() => exportCustomersToExcel(filtered)}
+            onClick={() => exportCustomersToExcel(filtered, getBookingRoomType)}
             className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm font-semibold rounded-md shadow-sm transition-colors whitespace-nowrap shrink-0"
           >
             <FileSpreadsheet className="h-4 w-4" />
@@ -217,6 +246,8 @@ function Customers() {
                 "Customer Name",
                 "Mobile",
                 "Email",
+                "Room Category",
+                "Room Type",
                 "Total Bookings",
                 "Total Spend",
                 "Current Stay",
@@ -233,7 +264,7 @@ function Customers() {
           <tbody className="divide-y divide-border">
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={10} className="py-12 text-center text-muted-foreground">
+                <td colSpan={12} className="py-12 text-center text-muted-foreground">
                   No customers found matching your criteria.
                 </td>
               </tr>
@@ -244,6 +275,16 @@ function Customers() {
                 <td className="py-3 px-4 font-medium whitespace-nowrap">{c.full_name}</td>
                 <td className="py-3 px-4 text-muted-foreground whitespace-nowrap">{c.mobile}</td>
                 <td className="py-3 px-4 text-muted-foreground whitespace-nowrap">{c.email}</td>
+                <td className="py-3 px-4 whitespace-nowrap text-muted-foreground">
+                  {c.bookings?.length > 0 
+                    ? Array.from(new Set(c.bookings.map((b: any) => CATEGORY_LABELS[b.category as keyof typeof CATEGORY_LABELS] || b.category))).join(', ')
+                    : "—"}
+                </td>
+                <td className="py-3 px-4 whitespace-nowrap text-muted-foreground">
+                  {c.bookings?.length > 0 
+                    ? Array.from(new Set(c.bookings.map((b: any) => getBookingRoomType(b)))).join(', ')
+                    : "—"}
+                </td>
                 <td className="py-3 px-4 text-center whitespace-nowrap">{c.totalBookings}</td>
                 <td className="py-3 px-4 font-medium whitespace-nowrap">{formatINR(c.totalSpend)}</td>
                 <td className="py-3 px-4 whitespace-nowrap">
@@ -259,6 +300,7 @@ function Customers() {
                   )}
                 </td>
                 <td className="py-3 px-4 whitespace-nowrap text-muted-foreground">{c.lastStay}</td>
+                
                 <td className="py-3 px-4 whitespace-nowrap">
                   {c.status === "Active" ? (
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
@@ -392,6 +434,7 @@ function Customers() {
                           <th className="text-left py-3 px-4 font-semibold">Booking ID</th>
                           <th className="text-left py-3 px-4 font-semibold">Hotel</th>
                           <th className="text-left py-3 px-4 font-semibold">Category</th>
+                          <th className="text-left py-3 px-4 font-semibold">Room Type</th>
                           <th className="text-left py-3 px-4 font-semibold">Check-In</th>
                           <th className="text-left py-3 px-4 font-semibold">Total</th>
                           <th className="text-left py-3 px-4 font-semibold">Status</th>
@@ -403,6 +446,7 @@ function Customers() {
                             <td className="py-3 px-4 font-medium text-gold">{b.booking_code}</td>
                             <td className="py-3 px-4">{b.hotels?.name}</td>
                             <td className="py-3 px-4">{CATEGORY_LABELS[b.category as keyof typeof CATEGORY_LABELS] || b.category}</td>
+                            <td className="py-3 px-4 text-muted-foreground">{getBookingRoomType(b)}</td>
                             <td className="py-3 px-4 text-muted-foreground">{b.check_in_date}</td>
                             <td className="py-3 px-4 font-medium">{formatINR(b.total_amount)}</td>
                             <td className="py-3 px-4">

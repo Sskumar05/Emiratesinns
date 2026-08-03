@@ -110,8 +110,16 @@ function AdminBookings() {
 
   const { data: allRooms = [] } = useQuery({
     queryKey: ["all-rooms"],
-    queryFn: async () => (await supabase.from("rooms").select("id, room_number")).data ?? [],
+    queryFn: async () => (await supabase.from("rooms").select("id, room_number, room_type")).data ?? [],
   });
+
+  const roomTypeMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    allRooms.forEach((r: any) => {
+      map[r.id] = r.room_type;
+    });
+    return map;
+  }, [allRooms]);
 
   const roomNumberMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -284,6 +292,7 @@ function AdminBookings() {
                 "Mobile",
                 "Hotel",
                 "Category",
+                "Room Type",
                 "Room(s)",
                 "Qty",
                 "Check-In",
@@ -319,6 +328,14 @@ function AdminBookings() {
                   <td className="py-3 px-4 text-muted-foreground whitespace-nowrap">{b.customers?.mobile}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{b.hotels?.name}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{CATEGORY_LABELS[b.category as keyof typeof CATEGORY_LABELS] ?? b.category}</td>
+                  <td className="py-3 px-4 whitespace-nowrap text-muted-foreground">{(() => {
+                    if (b.assigned_room_ids && b.assigned_room_ids.length > 0) {
+                      const rt = roomTypeMap[b.assigned_room_ids[0]];
+                      if (rt) return rt.toUpperCase() === "NON AC" ? "Non AC" : "AC";
+                    }
+                    if (b.category && (b.category.toLowerCase().includes("non_ac") || b.category.toLowerCase().includes("non ac"))) return "Non AC";
+                    return "AC";
+                  })()}</td>
                   <td className="py-3 px-4 whitespace-nowrap font-medium text-muted-foreground">{roomsDisplay}</td>
                   <td className="py-3 px-4 text-center whitespace-nowrap">{b.num_rooms}</td>
                   <td className="py-3 px-4 whitespace-nowrap">{b.check_in_date}</td>
