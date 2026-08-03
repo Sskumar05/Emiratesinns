@@ -142,7 +142,7 @@ function About() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative h-[600px] rounded-2xl overflow-hidden shadow-2xl"
+            className="relative h-[450px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl"
           >
             <img 
               src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785691302/59bfe296-d4f8-4ad1-91a6-31721076c66d_oq6i5n.png" 
@@ -189,7 +189,7 @@ function About() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={staggerContainer}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6"
+            className="grid grid-cols-1 md:grid-cols-4 gap-6"
           >
             {[
               { icon: BedDouble, title: "Elegant Rooms", desc: "Designed for ultimate relaxation." },
@@ -231,7 +231,7 @@ function About() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative h-[500px] rounded-2xl overflow-hidden shadow-xl group"
+            className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl group"
           >
             <img 
               src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785690673/e35bc825-463f-4aca-9daa-7b062c3d5121_znb74h.png" 
@@ -282,12 +282,12 @@ function About() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative h-[500px] rounded-2xl overflow-hidden shadow-xl group order-1 md:order-2"
+            className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl group order-1 md:order-2"
           >
             <img 
               src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785690469/grandinn_o4eiy3.png" 
               alt="Emirates Grand Inn" 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+              className="w-full h-full object-full group-hover:scale-105 transition-transform duration-1000"
             />
           </motion.div>
         </div>
@@ -307,7 +307,7 @@ function About() {
             {[
               { n: 2, p: "0", s: "", l: "Luxury Properties" }, 
               { n: 120, p: "", s: "+", l: "Elegant Rooms" }, 
-              { n: 5, p: "", l: "Guest Experience" },
+              { n: 1350, p: "",s: "+", l: "Guest Experience" },
               { n: 24, p: "", s: "/7", l: "Guest Support" }
             ].map((s, i) => (
               <motion.div variants={fadeUp} key={i} className="text-center">
