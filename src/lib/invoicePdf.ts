@@ -50,13 +50,23 @@ export function generateInvoiceHTML(data: any): string {
   const stayType = booking.stay_type ?? "standard";
   const durationLabel = getDurationLabel(nights, stayType);
   const rateLabel = getRateLabel(stayType);
-  const checkInFormatted = fmtDateTime(booking.check_in_date, booking.default_check_in_time || booking.check_in_time || "14:00");
+  const checkInFormatted = fmtDateTime(
+    booking.check_in_date,
+    stayType === '12_hours'
+      ? (booking.check_in_time || "14:00")
+      : (booking.default_check_in_time || booking.check_in_time || "14:00")
+  );
   
-  const checkOutFormatted = fmtDateTime(booking.check_out_date, stayType === '12_hours' ? (() => {
-    const d = new Date(`${booking.check_in_date}T${booking.default_check_in_time || booking.check_in_time || "14:00"}:00`);
-    d.setHours(d.getHours() + 12);
-    return d.toTimeString().slice(0, 5);
-  })() : (booking.default_check_out_time || '12:00'));
+  const checkOutFormatted = fmtDateTime(
+    booking.check_out_date,
+    stayType === '12_hours'
+      ? (() => {
+          const d = new Date(`${booking.check_in_date}T${booking.check_in_time || "14:00"}:00`);
+          d.setHours(d.getHours() + 12);
+          return d.toTimeString().slice(0, 5);
+        })()
+      : (booking.default_check_out_time || '12:00')
+  );
 
   return `<!DOCTYPE html>
 <html lang="en">

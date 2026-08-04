@@ -65,12 +65,17 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
   const taxAmount = isInvoiceRow ? (data.tax_amount ?? 0) : 0;
   const paymentStatus = (booking.payment_status ?? "paid").toUpperCase();
 
-  const checkIn = fmtDateTime(booking.check_in_date, booking.default_check_in_time || booking.check_in_time || "14:00");
+  const checkIn = fmtDateTime(
+    booking.check_in_date,
+    stayType === "12_hours"
+      ? (booking.check_in_time || "14:00")
+      : (booking.default_check_in_time || booking.check_in_time || "14:00")
+  );
   const checkOut = fmtDateTime(
     booking.check_out_date,
     stayType === "12_hours"
       ? (() => {
-          const d = new Date(`${booking.check_in_date}T${booking.default_check_in_time || booking.check_in_time || "14:00"}:00`);
+          const d = new Date(`${booking.check_in_date}T${booking.check_in_time || "14:00"}:00`);
           d.setHours(d.getHours() + 12);
           return d.toTimeString().slice(0, 5);
         })()

@@ -408,7 +408,7 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
     const name = form.full_name.trim();
     if (!name || name.length < 2) errors.full_name = "Please enter a valid full name.";
     const mobile = form.mobile.trim();
-    if (!mobile || mobile.length < 7) errors.mobile = "Please enter a valid mobile number (min 7 digits).";
+    if (!mobile || mobile.length < 7) errors.mobile = "Please enter a valid mobile number (min 10 digits).";
     const email = form.email.trim();
     if (!email || !emailRegex.test(email)) errors.email = "Please enter a valid email address.";
 
@@ -457,9 +457,30 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
                   </select>
                 </label>
                 <Field label="Check-In Date *" type="date" value={form.check_in_date} onChange={v => setForm({ ...form, check_in_date: v })} />
-                <Field label="Check-Out Date (Auto)" type="date" value={checkout} onChange={() => {}} disabled />
-                {!is12HoursMode && <Field label="Duration (Days) *" type="number" value={form.num_days.toString()} onChange={v => setForm({ ...form, num_days: parseInt(v) || 1 })} />}
-                <Field label="Check-In Time *" type="time" value={form.check_in_time} onChange={v => setForm({ ...form, check_in_time: v })} />
+                <Field 
+                  label={is12HoursMode ? "Check-Out Date (Auto)" : "Check-Out Date *"} 
+                  type="date" 
+                  value={checkout} 
+                  onChange={v => {
+                    const d1 = new Date(form.check_in_date);
+                    const d2 = new Date(v);
+                    const diffTime = d2.getTime() - d1.getTime();
+                    const diffDays = Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)));
+                    setForm({ ...form, num_days: diffDays });
+                  }} 
+                  disabled={is12HoursMode} 
+                />
+                <label className="block">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Check-In Time *</span>
+                  <select value={form.check_in_time || "14:00"} onChange={e => setForm({ ...form, check_in_time: e.target.value })} className="w-full bg-background border border-border rounded-md px-4 py-3 text-sm focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none transition-colors">
+                    {Array.from({ length: 48 }).map((_, i) => {
+                      const h = Math.floor(i / 2);
+                      const m = i % 2 === 0 ? "00" : "30";
+                      const v24 = `${h.toString().padStart(2, '0')}:${m}`;
+                      return <option key={v24} value={v24}>{format12Hour(v24)}</option>;
+                    })}
+                  </select>
+                </label>
               </div>
               <button onClick={() => {
                 if (!selectedHotelId) { toast.error("Please select a hotel"); return; }
@@ -726,7 +747,7 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
             </div>
 
             {isAdmin && (
-              <div className="space-y-6 bg-surface p-6 rounded-lg border border-border">
+              <div className="space-y-6 bg-surface p-6 rounded-lg mb-90 border">
                 <h3 className="font-bold text-lg">Payment Details (Cash Only)</h3>
                 <div className="space-y-4">
                   <Field label="Amount Received (₹)" type="number" value={payment.amountReceived.toString()} onChange={v => setPayment({ ...payment, amountReceived: parseFloat(v) || 0 })} />
@@ -739,14 +760,15 @@ export function BookingFlow({ isAdmin, onSuccess, initialRoomId, initialSearch }
                       Received amount must be equal to or greater than the total amount.
                     </div>
                   )}
+                 
                 </div>
               </div>
             )}
           </div>
 
           <div className="flex justify-between items-center mt-10 pt-6 border-t border-border">
-            <button onClick={() => setStep(isAdmin ? 3 : 2)} className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center"><ArrowLeft className="h-4 w-4 mr-2" />Back</button>
-            <button disabled={submitting || (isAdmin && payment.amountReceived < total)} onClick={submitBooking} className="flex items-center justify-center gap-2 bg-gold text-white px-4 py-3.5 text-sm font-semibold rounded-md shadow-md hover:bg-gold-hover transition disabled:opacity-60 disabled:cursor-not-allowed">
+            <button onClick={() => setStep(isAdmin ? 3 : 2)} className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center"><ArrowLeft className="h-4 w-4 mr-2" />Back</button> 
+             <button disabled={submitting || (isAdmin && payment.amountReceived < total)} onClick={submitBooking} className="flex items-center justify-center gap-2 bg-gold text-white px-4 py-3.5 text-sm font-semibold rounded-md shadow-md hover:bg-gold-hover transition disabled:opacity-60 disabled:cursor-not-allowed">
               {submitting && <Loader2 className="h-3 w-3 animate-spin" />}
               {isAdmin ? "Confirm Booking" : "Proceed to Payment"} <ArrowRight className="h-3 w-3" />
             </button>
