@@ -89,15 +89,28 @@ export function generatePDFInvoice(data: any): PDFInvoiceResult {
   doc.rect(0, 0, 210, 4, "F");
 
   // ── Header Branding ──
+  let textStartX = 10;
+  if (data.logoBase64) {
+    try {
+      const imgProps = doc.getImageProperties(data.logoBase64);
+      const logoHeight = 28; // ~100px (increased ~2x)
+      const logoWidth = (imgProps.width * logoHeight) / imgProps.height;
+      doc.addImage(data.logoBase64, "PNG", 8, 6, logoWidth, logoHeight);
+      textStartX = 3 + logoWidth; // Add 4mm spacing (~15px)
+    } catch (err) {
+      console.error("[invoiceBackend] Failed to render logo:", err);
+    }
+  }
+
   doc.setFont("Roboto", "bold");
   doc.setFontSize(20);
   doc.setTextColor(darkNavy[0], darkNavy[1], darkNavy[2]);
-  doc.text("EMIRATES", 15, 20);
+  doc.text("EMIRATES", textStartX, 20);
 
   doc.setFont("Roboto", "normal");
   doc.setFontSize(9);
   doc.setTextColor(primaryGold[0], primaryGold[1], primaryGold[2]);
-  doc.text("LUXURY HOTEL & SUITES", 15, 25);
+  doc.text("LUXURY HOTEL & SUITES", textStartX, 25);
 
   doc.setFont("Roboto", "bold");
   doc.setFontSize(22);
@@ -365,8 +378,22 @@ export async function getOrGenerateInvoicePDF(bookingId: string): Promise<PDFInv
   bookingObj.default_check_in_time = ciRes?.value ? String(ciRes.value).replace(/^"|"$/g, "") : null;
   bookingObj.default_check_out_time = coRes?.value ? String(coRes.value).replace(/^"|"$/g, "") : null;
 
+  let logoBase64 = null;
+  try {
+    const res = await fetch("https://res.cloudinary.com/dhjupdyus/image/upload/v1785752258/Emirates_logopng_qpavp4.png");
+    const blob = await res.blob();
+    logoBase64 = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.error("[invoiceBackend] Failed to fetch logo:", err);
+  }
+
   // 1. If an invoice record already exists, regenerate the PDF from the live RPC data
   if (isInvoiceRow) {
+    invoiceData.logoBase64 = logoBase64;
     const pdfResult = generatePDFInvoice(invoiceData);
 
     // Overwrite the stored pdf_url in DB to ensure it has latest customer details.
@@ -378,7 +405,8 @@ export async function getOrGenerateInvoicePDF(bookingId: string): Promise<PDFInv
     return pdfResult;
   }
 
-  // 2. No invoice record exists yet — generate PDF and insert new invoice record
+  // 2. Otherwise, generate for the first time using the booking record
+  invoiceData.logoBase64 = logoBase64;
   const pdfResult = generatePDFInvoice(invoiceData);
 
   await supabase.from("invoices").insert({

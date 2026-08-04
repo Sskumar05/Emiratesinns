@@ -102,16 +102,31 @@ export function generateInvoiceHTML(data: any): string {
 </head>
 <body>
   <div class="header">
+  <div style="display:flex;align-items:center;gap:8px;">
+    <img
+      src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785752258/Emirates_logopng_qpavp4.png"
+      alt="Emirates Group Logo"
+      style="
+        width:120px;
+        height:120px;
+        left:10px;
+        object-fit:contain;
+        display:block;
+      "
+    />
+
     <div class="brand">
       <div class="brand-name">Emirates</div>
       <div class="brand-sub">Luxury Hotel &amp; Suites</div>
     </div>
-    <div class="invoice-meta">
-      <div class="invoice-title">INVOICE</div>
-      <div class="invoice-ref">${invoiceRef}</div>
-      <div class="invoice-date">Issued: ${now}</div>
-    </div>
   </div>
+
+  <div class="invoice-meta">
+    <div class="invoice-title">INVOICE</div>
+    <div class="invoice-ref">${invoiceRef}</div>
+    <div class="invoice-date">Issued: ${now}</div>
+  </div>
+</div>
 
   <div class="section">
     <div class="section-title">Guest Information</div>
