@@ -40,7 +40,7 @@ export const Route = createFileRoute("/")({
 
     return {
       meta: [
-        { title: "Emirates Inn — Hotel in Velankanni, Tamil Nadu" },
+        { title: "Emirates Inn & Grand Inn — Luxury Hotels in Velankanni, Tamil Nadu" },
         { name: "description", content: "Experience boutique luxury at Emirates Inn and flagship grandeur at Emirates Grand Inn in Velankanni, Tamil Nadu. Book your comfortable stay today." },
         { property: "og:title", content: "Emirates Inn — Hotel in Velankanni" },
         { property: "og:description", content: "Experience boutique luxury at Emirates Inn and flagship grandeur at Emirates Grand Inn in Velankanni." },
