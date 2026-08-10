@@ -15,6 +15,11 @@ type Search = { bookingId?: string };
 
 export const Route = createFileRoute("/payment")({
   validateSearch: (s: Record<string, unknown>): Search => ({ bookingId: typeof s.bookingId === "string" ? s.bookingId : undefined }),
+  head: () => ({
+    meta: [
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: Payment,
 });
 

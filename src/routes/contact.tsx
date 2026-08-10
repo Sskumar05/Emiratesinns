@@ -10,9 +10,15 @@ import logo from "@/assets/line_logo.png";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact Us — Emirates Inn" },
-      { name: "description", content: "Get in touch with Emirates Inn & Emirates Grand Inn. We're here to assist you with your reservations and inquiries." },
+      { title: "Contact Emirates Inn Velankanni" },
+      { name: "description", content: "Contact Emirates Inn & Emirates Grand Inn in Velankanni. We're here to assist you with your reservations and inquiries." },
+      { property: "og:title", content: "Contact Emirates Inn Velankanni" },
+      { property: "og:description", content: "Contact Emirates Inn & Emirates Grand Inn in Velankanni. We're here to assist you with your reservations and inquiries." },
+      { property: "og:url", content: "https://emiratesinns.com/contact" },
     ],
+    links: [
+      { rel: "canonical", href: "https://emiratesinns.com/contact" }
+    ]
   }),
   component: Contact,
 });
@@ -155,7 +161,7 @@ function Contact() {
             {[
               { Icon: Phone, title: "Phone", desc: "+91 98765 43210" },
               { Icon: Mail, title: "Email", desc: "reservations@emiratesinn.com" },
-              { Icon: MapPin, title: "Location", desc: "12 Marina Avenue, Dubai" },
+              { Icon: MapPin, title: "Location", desc: "East Coast Rd, Velankanni" },
               { Icon: Clock, title: "Reception Hours", desc: "24/7 Guest Assistance" },
             ].map(({ Icon, title, desc }, i) => (
               <motion.div

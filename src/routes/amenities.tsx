@@ -10,9 +10,15 @@ import { motion } from "framer-motion";
 export const Route = createFileRoute("/amenities")({
   head: () => ({
     meta: [
-      { title: "Amenities — Emirates Inn" },
-      { name: "description", content: "Discover the thoughtfully curated amenities at Emirates Inn & Emirates Grand Inn — designed for exceptional comfort, convenience, and a premium guest experience." },
+      { title: "Hotel Amenities at Emirates Inn Velankanni" },
+      { name: "description", content: "Discover the thoughtfully curated amenities at Emirates Inn & Emirates Grand Inn in Velankanni, Tamil Nadu — designed for exceptional comfort." },
+      { property: "og:title", content: "Hotel Amenities at Emirates Inn Velankanni" },
+      { property: "og:description", content: "Discover the thoughtfully curated amenities at Emirates Inn & Emirates Grand Inn in Velankanni, Tamil Nadu." },
+      { property: "og:url", content: "https://emiratesinns.com/amenities" },
     ],
+    links: [
+      { rel: "canonical", href: "https://emiratesinns.com/amenities" }
+    ]
   }),
   component: Amenities,
 });

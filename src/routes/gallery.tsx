@@ -7,13 +7,19 @@ import logo from "@/assets/line_logo.png";
 export const Route = createFileRoute("/gallery")({
   head: () => ({
     meta: [
-      { title: "Gallery — Emirates Inn" },
+      { title: "Emirates Inn Velankanni Hotel Gallery" },
       {
         name: "description",
         content:
-          "Explore the elegant spaces, comfortable rooms, and welcoming atmosphere of Emirates Inn & Emirates Grand Inn through our curated gallery.",
+          "Explore the elegant spaces, comfortable rooms, and welcoming atmosphere of Emirates Inn & Emirates Grand Inn Velankanni through our curated gallery.",
       },
+      { property: "og:title", content: "Emirates Inn Velankanni Hotel Gallery" },
+      { property: "og:description", content: "Explore the elegant spaces, comfortable rooms, and welcoming atmosphere of Emirates Inn & Emirates Grand Inn Velankanni." },
+      { property: "og:url", content: "https://emiratesinns.com/gallery" },
     ],
+    links: [
+      { rel: "canonical", href: "https://emiratesinns.com/gallery" }
+    ]
   }),
   component: Gallery,
 });
@@ -40,19 +46,55 @@ const imgVariant = {
 };
 
 /* ─── Gallery Images ─────────────────────────────────────── */
-export const PHOTOS: string[] = [
-  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692537/IMG_20260620_180811.jpg_igyitw.jpg",
-  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692566/IMG_20260620_180855.jpg_1_hsnghz.jpg",
-  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692578/IMG_20260620_181127.jpg_1_gz3ev0.jpg",
-  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692578/IMG_20260620_181225.jpg_1_o8unp0.jpg",
-  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692515/IMG_20260620_180932.jpg_1_xvrwyr.jpg",
-  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692560/IMG_20260620_181119.jpg_1_j2xonk.jpg",
-  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692625/IMG_20260620_182632.jpg_okqijl.jpg",
-  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692668/IMG_20260620_181442.jpg_nfwf48.jpg",
-  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692668/IMG_20260620_182537.jpg_wjkuha.jpg",
-  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692678/IMG_20260620_183156.jpg_kffxxn.jpg",
-  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692682/IMG_20260620_182907_1.jpg_q7q6tt.jpg",
-  "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692662/IMG_20260620_181904.jpg_cckcdu.jpg",
+export const PHOTOS: { url: string; alt: string }[] = [
+  {
+    url: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692537/IMG_20260620_180811.jpg_igyitw.jpg",
+    alt: "Exterior view of Emirates Grand Inn building in Velankanni"
+  },
+  {
+    url: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692566/IMG_20260620_180855.jpg_1_hsnghz.jpg",
+    alt: "Entrance and signage of Emirates Grand Inn"
+  },
+  {
+    url: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692578/IMG_20260620_181127.jpg_1_gz3ev0.jpg",
+    alt: "Spacious marble hallway and lounge area at Emirates Grand Inn"
+  },
+  {
+    url: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692578/IMG_20260620_181225.jpg_1_o8unp0.jpg",
+    alt: "Comfortable twin bedroom with modern furnishings at Emirates Grand Inn"
+  },
+  {
+    url: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692515/IMG_20260620_180932.jpg_1_xvrwyr.jpg",
+    alt: "Elegant front desk and reception area of Emirates Grand Inn"
+  },
+  {
+    url: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692560/IMG_20260620_181119.jpg_1_j2xonk.jpg",
+    alt: "Well-lit interior corridor with marble flooring at Emirates Grand Inn"
+  },
+  {
+    url: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692625/IMG_20260620_182632.jpg_okqijl.jpg",
+    alt: "Exterior facade of Emirates Inn building in Velankanni"
+  },
+  {
+    url: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692668/IMG_20260620_181442.jpg_nfwf48.jpg",
+    alt: "Luxurious double bedroom with seating area at Emirates Grand Inn"
+  },
+  {
+    url: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692668/IMG_20260620_182537.jpg_wjkuha.jpg",
+    alt: "Stylishly patterned hallway corridor at Emirates Inn"
+  },
+  {
+    url: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692678/IMG_20260620_183156.jpg_kffxxn.jpg",
+    alt: "Welcoming reception and check-in desk at Emirates Inn"
+  },
+  {
+    url: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692682/IMG_20260620_182907_1.jpg_q7q6tt.jpg",
+    alt: "Bright interior walkway with large windows at Emirates Inn"
+  },
+  {
+    url: "https://res.cloudinary.com/dhjupdyus/image/upload/v1785692662/IMG_20260620_181904.jpg_cckcdu.jpg",
+    alt: "Spacious outdoor car parking facility for Hotel Emirates guests"
+  },
 ];
 
 /* ─── Component ──────────────────────────────────────────── */
@@ -136,9 +178,9 @@ function Gallery() {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
             style={{ gap: "28px" }}
           >
-            {PHOTOS.map((url) => (
+            {PHOTOS.map((photo) => (
               <motion.div
-                key={url}
+                key={photo.url}
                 variants={imgVariant}
               >
                 <div
@@ -153,8 +195,8 @@ function Gallery() {
                 >
                   {/* Image */}
                   <img
-                    src={url}
-                    alt="Emirates Inn — gallery"
+                    src={photo.url}
+                    alt={photo.alt}
                     loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05] cursor-pointer"
                     style={{ display: "block" }}

@@ -7,12 +7,60 @@ import heroImg from "@/assets/hero-hotel.jpg";
 import { PHOTOS } from "@/routes/gallery";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Emirates Inn & Grand Inn — Luxury Hotels in Dubai" },
-      { name: "description", content: "Boutique luxury at Emirates Inn and flagship grandeur at Emirates Grand Inn. Book your stay." },
-    ],
-  }),
+  head: () => {
+    const hotelSchema = {
+      "@context": "https://schema.org",
+      "@type": "Hotel",
+      "name": "Hotel Emirates Inn",
+      "description": "Boutique luxury at Emirates Inn and flagship grandeur at Emirates Grand Inn in Velankanni.",
+      "url": "https://emiratesinns.com/",
+      "telephone": "+91 73392 26598",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "East Coast Rd",
+        "addressLocality": "Velankanni",
+        "addressRegion": "Tamil Nadu",
+        "postalCode": "611111",
+        "addressCountry": "IN"
+      }
+    };
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": FAQS.map(faq => ({
+        "@type": "Question",
+        "name": faq.q,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.a
+        }
+      }))
+    };
+
+    return {
+      meta: [
+        { title: "Emirates Inn — Hotel in Velankanni, Tamil Nadu" },
+        { name: "description", content: "Experience boutique luxury at Emirates Inn and flagship grandeur at Emirates Grand Inn in Velankanni, Tamil Nadu. Book your comfortable stay today." },
+        { property: "og:title", content: "Emirates Inn — Hotel in Velankanni" },
+        { property: "og:description", content: "Experience boutique luxury at Emirates Inn and flagship grandeur at Emirates Grand Inn in Velankanni." },
+        { property: "og:url", content: "https://emiratesinns.com/" },
+      ],
+      links: [
+        { rel: "canonical", href: "https://emiratesinns.com/" }
+      ],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(hotelSchema)
+        },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(faqSchema)
+        }
+      ]
+    };
+  },
   component: Home,
 });
 
@@ -101,7 +149,7 @@ function Home() {
     <WebsiteLayout>
       {/* Hero */}
       <section className="relative h-[95vh] md:h-[100vh] min-h-[640px] -mt-20 flex items-center">
-        <img src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785691302/59bfe296-d4f8-4ad1-91a6-31721076c66d_oq6i5n.png" alt="Emirates Inn lobby" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1280} />
+        <img src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785691302/59bfe296-d4f8-4ad1-91a6-31721076c66d_oq6i5n.png" alt="Emirates Inn Velankanni hotel lobby" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1280} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(8,20,38,0.78) 0%, rgba(8,20,38,0.62) 35%, rgba(8,20,38,0.28) 65%, rgba(8,20,38,0.05) 100%)" }} />
         <div className="container-luxe relative z-10 pt-20">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="max-w-3xl">
@@ -145,7 +193,7 @@ function Home() {
                 onClick={() => navigate({ to: '/rooms', search: { hotel: h.slug } })}
                 className="group relative overflow-hidden bg-card rounded-3xl shadow-card border border-border flex flex-col cursor-pointer">
                 <div className="aspect-[4/3] overflow-hidden">
-                  <img src={h.img} alt={h.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                  <img src={h.img} alt={`${h.name} property in Velankanni`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                 </div>
                 <div className="p-8 flex-1 flex flex-col justify-between">
                   <div>
@@ -205,10 +253,10 @@ function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 overflow-x-auto">
-            {PHOTOS.slice(0, 4).map((url, i) => (
-              <motion.div key={url} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
+            {PHOTOS.slice(0, 4).map((photo, i) => (
+              <motion.div key={photo.url} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
                 className={`overflow-hidden rounded-lg ${i === 0 || i === 5 ? " aspect-square" : "aspect-square"}`}>
-                <img src={url} alt="" loading="lazy"
+                <img src={photo.url} alt={photo.alt} loading="lazy"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
               </motion.div>
             ))}

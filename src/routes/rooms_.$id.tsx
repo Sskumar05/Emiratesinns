@@ -12,6 +12,18 @@ import {
 import { useState, useEffect, useMemo } from "react";
 
 export const Route = createFileRoute("/rooms_/$id")({
+  head: (ctx) => ({
+    meta: [
+      { title: "Room Details | Emirates Inn Velankanni" },
+      { name: "description", content: "View detailed information and book your comfortable stay at Emirates Inn or Emirates Grand Inn in Velankanni, Tamil Nadu." },
+      { property: "og:title", content: "Room Details | Emirates Inn Velankanni" },
+      { property: "og:description", content: "View detailed information and book your comfortable stay at Emirates Inn or Emirates Grand Inn in Velankanni, Tamil Nadu." },
+      { property: "og:url", content: `https://emiratesinns.com/rooms/${ctx.params.id}` },
+    ],
+    links: [
+      { rel: "canonical", href: `https://emiratesinns.com/rooms/${ctx.params.id}` }
+    ]
+  }),
   component: RoomDetail,
 });
 
