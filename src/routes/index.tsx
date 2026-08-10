@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
       "telephone": "+91 73392 26598",
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "East Coast Rd",
+        "streetAddress": "No. 63-23 Main Road",
         "addressLocality": "Velankanni",
         "addressRegion": "Tamil Nadu",
         "postalCode": "611111",

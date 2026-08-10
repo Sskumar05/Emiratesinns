@@ -160,8 +160,8 @@ function Contact() {
           >
             {[
               { Icon: Phone, title: "Phone", desc: "+91 98765 43210" },
-              { Icon: Mail, title: "Email", desc: "reservations@emiratesinn.com" },
-              { Icon: MapPin, title: "Location", desc: "East Coast Rd, Velankanni" },
+              { Icon: Mail, title: "Email", desc: "hotelemiratesinn@gmail.com" },
+              { Icon: MapPin, title: "Location", desc: "No. 63-23 Main Road, Velankanni - 611111" },
               { Icon: Clock, title: "Reception Hours", desc: "24/7 Guest Assistance" },
             ].map(({ Icon, title, desc }, i) => (
               <motion.div
@@ -318,7 +318,7 @@ function Contact() {
                 <div className="space-y-4 text-muted-foreground font-light text-sm">
                   <p className="flex items-start gap-3">
                     <MapPin className="text-gold w-5 h-5 shrink-0" />
-                    <span>East Coast Rd, Velankanni, Tamil Nadu 611111, India</span>
+                    <span>No. 63-23 Main Road, Velankanni - 611111</span>
                   </p>
                   <p className="flex items-center gap-3">
                     <Phone className="text-gold w-5 h-5 shrink-0" />
@@ -326,7 +326,7 @@ function Contact() {
                   </p>
                   <p className="flex items-center gap-3">
                     <Mail className="text-gold w-5 h-5 shrink-0" />
-                    <span>reservations@emiratesinn.com</span>
+                    <span>hotelemiratesinn@gmail.com</span>
                   </p>
                 </div>
               </div>
