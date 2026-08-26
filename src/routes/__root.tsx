@@ -44,14 +44,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Emirates Inn & Emirates Grand Inn — Luxury Stays" },
-      { name: "description", content: "Refined comfort and grand luxury — discover Emirates Inn and Emirates Grand Inn. Book your stay today." },
-      { property: "og:title", content: "Emirates Inn & Emirates Grand Inn" },
-      { property: "og:description", content: "Refined comfort and grand luxury hospitality." },
+      { property: "og:site_name", content: "Emirates Inn" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "icon", href: "/favicon.png" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },

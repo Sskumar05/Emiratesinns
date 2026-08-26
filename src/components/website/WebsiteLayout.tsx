@@ -226,11 +226,11 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
                 </li>
                 <li className="flex gap-3 items-center">
                   <Mail className="h-4 w-4 shrink-0" />
-                  <span>reservations@emiratesinn.com</span>
+                  <span>hotelemiratesinn@gmail.com</span>
                 </li>
                 <li className="flex gap-3 items-start">
                   <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
-                  <span>East Coast Rd, Velankanni,<br />Tamil Nadu 611111 - India</span>
+                  <span>No. 63-23 Main Road, Velankanni - 611111</span>
                 </li>
               </ul>
             </div>

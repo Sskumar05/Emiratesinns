@@ -16,9 +16,15 @@ export const Route = createFileRoute("/rooms")({
   },
   head: () => ({
     meta: [
-      { title: "Rooms & Suites — Emirates Inn" },
-      { name: "description", content: "Browse our curated collection of thoughtfully designed rooms and suites at Emirates Inn & Emirates Grand Inn." },
+      { title: "Rooms at Emirates Inn Velankanni" },
+      { name: "description", content: "Browse our curated collection of thoughtfully designed rooms and suites at Emirates Inn & Emirates Grand Inn in Velankanni, Tamil Nadu." },
+      { property: "og:title", content: "Rooms at Emirates Inn Velankanni" },
+      { property: "og:description", content: "Browse our curated collection of thoughtfully designed rooms and suites in Velankanni, Tamil Nadu." },
+      { property: "og:url", content: "https://emiratesinns.com/rooms" },
     ],
+    links: [
+      { rel: "canonical", href: "https://emiratesinns.com/rooms" }
+    ]
   }),
   component: RoomsPage,
 });

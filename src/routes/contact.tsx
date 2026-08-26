@@ -10,9 +10,15 @@ import logo from "@/assets/line_logo.png";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact Us — Emirates Inn" },
-      { name: "description", content: "Get in touch with Emirates Inn & Emirates Grand Inn. We're here to assist you with your reservations and inquiries." },
+      { title: "Contact Emirates Inn Velankanni" },
+      { name: "description", content: "Contact Emirates Inn & Emirates Grand Inn in Velankanni. We're here to assist you with your reservations and inquiries." },
+      { property: "og:title", content: "Contact Emirates Inn Velankanni" },
+      { property: "og:description", content: "Contact Emirates Inn & Emirates Grand Inn in Velankanni. We're here to assist you with your reservations and inquiries." },
+      { property: "og:url", content: "https://emiratesinns.com/contact" },
     ],
+    links: [
+      { rel: "canonical", href: "https://emiratesinns.com/contact" }
+    ]
   }),
   component: Contact,
 });
@@ -154,8 +160,8 @@ function Contact() {
           >
             {[
               { Icon: Phone, title: "Phone", desc: "+91 98765 43210" },
-              { Icon: Mail, title: "Email", desc: "reservations@emiratesinn.com" },
-              { Icon: MapPin, title: "Location", desc: "12 Marina Avenue, Dubai" },
+              { Icon: Mail, title: "Email", desc: "hotelemiratesinn@gmail.com" },
+              { Icon: MapPin, title: "Location", desc: "No. 63-23 Main Road, Velankanni - 611111" },
               { Icon: Clock, title: "Reception Hours", desc: "24/7 Guest Assistance" },
             ].map(({ Icon, title, desc }, i) => (
               <motion.div
@@ -312,7 +318,7 @@ function Contact() {
                 <div className="space-y-4 text-muted-foreground font-light text-sm">
                   <p className="flex items-start gap-3">
                     <MapPin className="text-gold w-5 h-5 shrink-0" />
-                    <span>East Coast Rd, Velankanni, Tamil Nadu 611111, India</span>
+                    <span>No. 63-23 Main Road, Velankanni - 611111</span>
                   </p>
                   <p className="flex items-center gap-3">
                     <Phone className="text-gold w-5 h-5 shrink-0" />
@@ -320,7 +326,7 @@ function Contact() {
                   </p>
                   <p className="flex items-center gap-3">
                     <Mail className="text-gold w-5 h-5 shrink-0" />
-                    <span>reservations@emiratesinn.com</span>
+                    <span>hotelemiratesinn@gmail.com</span>
                   </p>
                 </div>
               </div>

@@ -10,7 +10,18 @@ import { motion, useInView } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 
 export const Route = createFileRoute("/about")({
-  head: () => ({ meta: [{ title: "About — Emirates Inn" }, { name: "description", content: "Our story, our standards." }] }),
+  head: () => ({
+    meta: [
+      { title: "About Emirates Inn Velankanni" },
+      { name: "description", content: "Discover the story behind Emirates Inn & Emirates Grand Inn in Velankanni, Tamil Nadu. Learn about our standards, accommodations, and hospitality." },
+      { property: "og:title", content: "About Emirates Inn Velankanni" },
+      { property: "og:description", content: "Discover the story behind Emirates Inn & Emirates Grand Inn in Velankanni, Tamil Nadu." },
+      { property: "og:url", content: "https://emiratesinns.com/about" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://emiratesinns.com/about" }
+    ]
+  }),
   component: About,
 });
 
@@ -146,7 +157,7 @@ function About() {
           >
             <img 
               src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785691302/59bfe296-d4f8-4ad1-91a6-31721076c66d_oq6i5n.png" 
-              alt="Hotel Interior" 
+              alt="Emirates Inn Velankanni hotel interior" 
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
@@ -235,7 +246,7 @@ function About() {
           >
             <img 
               src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785690673/e35bc825-463f-4aca-9daa-7b062c3d5121_znb74h.png" 
-              alt="Emirates Inn" 
+              alt="Emirates Inn Velankanni exterior" 
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
             />
           </motion.div>
@@ -286,7 +297,7 @@ function About() {
           >
             <img 
               src="https://res.cloudinary.com/dhjupdyus/image/upload/v1785690469/grandinn_o4eiy3.png" 
-              alt="Emirates Grand Inn" 
+              alt="Emirates Grand Inn Velankanni exterior" 
               className="w-full h-full object-full group-hover:scale-105 transition-transform duration-1000"
             />
           </motion.div>

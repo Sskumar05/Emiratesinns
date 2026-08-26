@@ -277,8 +277,8 @@ function PrivacyPolicyPage() {
                     <div className="bg-white p-2.5 rounded-full shadow-sm">
                       <Mail className="h-5 w-5 text-primary" />
                     </div>
-                    <a href="mailto:support@emiratesinns.com" className="text-foreground font-medium hover:text-gold transition-colors">
-                      support@emiratesinns.com
+                    <a href="mailto:hotelemiratesinn@gmail.com" className="text-foreground font-medium hover:text-gold transition-colors">
+                      hotelemiratesinn@gmail.com
                     </a>
                   </div>
                   <div className="flex items-center gap-3">

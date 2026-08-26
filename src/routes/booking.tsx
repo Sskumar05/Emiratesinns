@@ -20,6 +20,11 @@ export const Route = createFileRoute("/booking")({
     numGuests: typeof s.numGuests === "number" ? s.numGuests : undefined,
     numRooms: typeof s.numRooms === "number" ? s.numRooms : undefined,
   }),
+  head: () => ({
+    meta: [
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: Booking,
 });
 
