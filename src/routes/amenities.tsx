@@ -125,11 +125,11 @@ function Amenities() {
 
           {/* Main heading */}
           <h1
-            className="font-serif font-bold text-foreground tracking-tight leading-tight mb-7"
+            className="font-serif font-bold text-[#0B1F33] tracking-tight leading-tight mb-7"
             style={{ fontSize: "clamp(2.4rem, 6vw, 4.2rem)" }}
           >
             Comfort Beyond {" "}
-            <span className="italic font-light">Expectations.</span>
+            <span className="italic font-light text-[#C6A15B]">Expectations.</span>
           </h1>
 
           {/* Gold rule */}
@@ -156,7 +156,7 @@ function Amenities() {
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-gold mb-5 inline-block">
               Curated Comforts
             </span>
-            <h2 className="font-serif font-bold text-foreground mb-7" style={{ fontSize: "clamp(1.9rem, 4vw, 2.8rem)" }}>
+            <h2 className="font-serif font-bold text-[#0B1F33] mb-7" style={{ fontSize: "clamp(1.9rem, 4vw, 2.8rem)" }}>
               Everything You Need for a Comfortable Stay
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed font-light">
@@ -255,7 +255,7 @@ function Amenities() {
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-gold mb-4 inline-block">
               Guest Experience
             </span>
-            <h2 className="font-serif font-bold text-foreground" style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)" }}>
+            <h2 className="font-serif font-bold text-[#0B1F33]" style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)" }}>
               Why Guests Love Our Amenities
             </h2>
           </motion.div>
@@ -378,7 +378,7 @@ function Amenities() {
          
 
           <h2
-            className="font-serif font-bold text-foreground mb-5 tracking-tight"
+            className="font-serif font-bold text-[#0B1F33] mb-5 tracking-tight"
             style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}
           >
            Your Journey Starts Here

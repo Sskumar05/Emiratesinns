@@ -16,6 +16,8 @@ import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ConfirmationRouteImport } from './routes/confirmation'
+import { Route as CancellationPolicyRouteImport } from './routes/cancellation-policy'
+import { Route as BookingInformationRouteImport } from './routes/booking-information'
 import { Route as BookingRouteImport } from './routes/booking'
 import { Route as AmenitiesRouteImport } from './routes/amenities'
 import { Route as AboutRouteImport } from './routes/about'
@@ -70,6 +72,16 @@ const ContactRoute = ContactRouteImport.update({
 const ConfirmationRoute = ConfirmationRouteImport.update({
   id: '/confirmation',
   path: '/confirmation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CancellationPolicyRoute = CancellationPolicyRouteImport.update({
+  id: '/cancellation-policy',
+  path: '/cancellation-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookingInformationRoute = BookingInformationRouteImport.update({
+  id: '/booking-information',
+  path: '/booking-information',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookingRoute = BookingRouteImport.update({
@@ -179,6 +191,8 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/amenities': typeof AmenitiesRoute
   '/booking': typeof BookingRoute
+  '/booking-information': typeof BookingInformationRoute
+  '/cancellation-policy': typeof CancellationPolicyRoute
   '/confirmation': typeof ConfirmationRoute
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
@@ -207,6 +221,8 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/amenities': typeof AmenitiesRoute
   '/booking': typeof BookingRoute
+  '/booking-information': typeof BookingInformationRoute
+  '/cancellation-policy': typeof CancellationPolicyRoute
   '/confirmation': typeof ConfirmationRoute
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
@@ -237,6 +253,8 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/amenities': typeof AmenitiesRoute
   '/booking': typeof BookingRoute
+  '/booking-information': typeof BookingInformationRoute
+  '/cancellation-policy': typeof CancellationPolicyRoute
   '/confirmation': typeof ConfirmationRoute
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
@@ -268,6 +286,8 @@ export interface FileRouteTypes {
     | '/about'
     | '/amenities'
     | '/booking'
+    | '/booking-information'
+    | '/cancellation-policy'
     | '/confirmation'
     | '/contact'
     | '/gallery'
@@ -296,6 +316,8 @@ export interface FileRouteTypes {
     | '/about'
     | '/amenities'
     | '/booking'
+    | '/booking-information'
+    | '/cancellation-policy'
     | '/confirmation'
     | '/contact'
     | '/gallery'
@@ -325,6 +347,8 @@ export interface FileRouteTypes {
     | '/about'
     | '/amenities'
     | '/booking'
+    | '/booking-information'
+    | '/cancellation-policy'
     | '/confirmation'
     | '/contact'
     | '/gallery'
@@ -355,6 +379,8 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AmenitiesRoute: typeof AmenitiesRoute
   BookingRoute: typeof BookingRoute
+  BookingInformationRoute: typeof BookingInformationRoute
+  CancellationPolicyRoute: typeof CancellationPolicyRoute
   ConfirmationRoute: typeof ConfirmationRoute
   ContactRoute: typeof ContactRoute
   GalleryRoute: typeof GalleryRoute
@@ -414,6 +440,20 @@ declare module '@tanstack/react-router' {
       path: '/confirmation'
       fullPath: '/confirmation'
       preLoaderRoute: typeof ConfirmationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cancellation-policy': {
+      id: '/cancellation-policy'
+      path: '/cancellation-policy'
+      fullPath: '/cancellation-policy'
+      preLoaderRoute: typeof CancellationPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/booking-information': {
+      id: '/booking-information'
+      path: '/booking-information'
+      fullPath: '/booking-information'
+      preLoaderRoute: typeof BookingInformationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/booking': {
@@ -603,6 +643,8 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AmenitiesRoute: AmenitiesRoute,
   BookingRoute: BookingRoute,
+  BookingInformationRoute: BookingInformationRoute,
+  CancellationPolicyRoute: CancellationPolicyRoute,
   ConfirmationRoute: ConfirmationRoute,
   ContactRoute: ContactRoute,
   GalleryRoute: GalleryRoute,

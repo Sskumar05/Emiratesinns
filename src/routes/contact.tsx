@@ -126,10 +126,10 @@ function Contact() {
           </motion.span>
 
           <h1
-            className="font-serif font-bold text-foreground tracking-tight leading-tight mb-7"
+            className="font-serif font-bold text-[#0B1F33] tracking-tight leading-tight mb-7"
             style={{ fontSize: "clamp(2.4rem, 6vw, 4.2rem)" }}
           >
-            Your Stay <span className="italic font-light">Begins Here.</span>
+            Your Stay <span className="italic font-light text-[#C6A15B]">Begins Here.</span>
           </h1>
 
           <div className="mb-[-10%]"><img src={logo} alt="line" className="w-auto h-auto mt-[-16%] " /></div>
@@ -212,7 +212,7 @@ function Contact() {
               variants={fadeUp}
             >
               <div className="mb-10">
-                <h2 className="font-serif font-bold text-foreground text-3xl mb-4">Send a Message</h2>
+                <h2 className="font-serif font-bold text-[#0B1F33] text-3xl mb-4">Send a Message</h2>
                 <p className="text-muted-foreground font-light text-lg">
                   Fill out the form below and our team will get back to you promptly.
                 </p>
@@ -403,7 +403,7 @@ function Contact() {
         >
 
           <h2
-            className="font-serif font-bold text-foreground mb-5 tracking-tight"
+            className="font-serif font-bold text-[#0B1F33] mb-5 tracking-tight"
             style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}
           >
             Ready for Your Next Stay?

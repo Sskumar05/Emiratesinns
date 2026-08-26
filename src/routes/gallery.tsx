@@ -97,11 +97,11 @@ function Gallery() {
 
           {/* Main heading */}
           <h1
-            className="font-serif font-bold text-foreground tracking-tight leading-tight mb-7"
+            className="font-serif font-bold text-[#0B1F33] tracking-tight leading-tight mb-7"
             style={{ fontSize: "clamp(2.4rem, 6vw, 4.2rem)" }}
           >
             Discover the Beauty of{" "}
-            <span className="italic font-light">Every Stay.</span>
+            <span className="italic font-light text-[#C6A15B]">Every Stay.</span>
           </h1>
 
           {/* Gold rule */}

@@ -20,7 +20,7 @@ function PrivacyPolicyPage() {
         {/* ── Hero Section ── */}
         <section className="text-center px-6 mb-16 max-w-4xl mx-auto">
           <motion.div initial="initial" animate="animate" variants={fadeUp}>
-            <h1 className="font-serif font-bold text-foreground tracking-tight leading-tight mb-4 text-4xl sm:text-5xl md:text-6xl">
+            <h1 className="font-serif font-bold text-[#C6A15B] tracking-tight leading-tight mb-4 text-4xl sm:text-5xl md:text-6xl">
               Privacy Policy
             </h1>
             <p className="text-muted-foreground text-lg sm:text-xl font-light mb-6">
@@ -50,7 +50,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 1 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">1. Information We Collect</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">1. Information We Collect</h2>
               <p className="text-muted-foreground">We may collect the following information from you:</p>
               
               <div className="space-y-6">
@@ -114,7 +114,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 2 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">2. How We Use Your Information</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">2. How We Use Your Information</h2>
               <p className="text-muted-foreground">Your information is used to:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Process and confirm hotel reservations.</li>
@@ -131,7 +131,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 3 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">3. Cookies</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">3. Cookies</h2>
               <p className="text-muted-foreground">Our website uses cookies to improve your browsing experience. Cookies help us:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Remember your preferences.</li>
@@ -146,7 +146,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 4 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">4. Sharing of Information</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">4. Sharing of Information</h2>
               <p className="text-muted-foreground">We do not sell, rent, or trade your personal information. Your information may only be shared with:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Authorized hotel staff.</li>
@@ -161,7 +161,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 5 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">5. Data Security</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">5. Data Security</h2>
               <p className="text-muted-foreground">We implement appropriate technical and organizational measures to safeguard your personal information. These include:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Secure servers</li>
@@ -177,7 +177,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 6 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">6. Data Retention</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">6. Data Retention</h2>
               <p className="text-muted-foreground">We retain your personal information only for as long as necessary to:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Complete your reservation.</li>
@@ -193,7 +193,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 7 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">7. Your Rights</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">7. Your Rights</h2>
               <p className="text-muted-foreground">Depending on applicable laws, you may have the right to:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Access your personal information.</li>
@@ -210,7 +210,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 8 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">8. Children's Privacy</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">8. Children's Privacy</h2>
               <p className="text-muted-foreground">
                 Our website and services are not intended for individuals under the age of 18 without the supervision of a parent or legal guardian. We do not knowingly collect personal information from children.
               </p>
@@ -218,7 +218,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 9 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">9. Third-Party Services</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">9. Third-Party Services</h2>
               <p className="text-muted-foreground">Our website may include links or integrations with third-party services such as:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Payment gateways</li>
@@ -233,7 +233,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 10 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">10. Marketing Communications</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">10. Marketing Communications</h2>
               <p className="text-muted-foreground">With your consent, we may send you:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Promotional offers</li>
@@ -249,7 +249,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 11 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">11. International Data Transfers</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">11. International Data Transfers</h2>
               <p className="text-muted-foreground">
                 If required for operational purposes, your information may be processed or stored in locations outside your country, subject to appropriate safeguards and applicable data protection laws.
               </p>
@@ -257,7 +257,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 12 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">12. Changes to This Privacy Policy</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">12. Changes to This Privacy Policy</h2>
               <p className="text-muted-foreground">
                 We may update this Privacy Policy periodically to reflect changes in our services or legal requirements. The latest version will always be available on our website with the updated effective date.
               </p>
@@ -265,7 +265,7 @@ function PrivacyPolicyPage() {
 
             {/* Section 13 */}
             <section className="space-y-6 pt-6 border-t border-border">
-              <h2 className="text-2xl font-serif font-bold text-foreground mb-6">13. Contact Us</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33] mb-6">13. Contact Us</h2>
               <p className="text-muted-foreground mb-6">
                 If you have any questions or concerns regarding this Privacy Policy or the handling of your personal information, please contact us.
               </p>
@@ -308,7 +308,7 @@ function PrivacyPolicyPage() {
                   <ShieldCheck className="h-8 w-8 text-gold" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">Consent</h3>
+                  <h3 className="text-xl font-bold text-[#0B1F33] mb-2">Consent</h3>
                   <p className="text-muted-foreground leading-relaxed">
                     By using our website, making a reservation, or using our services, you acknowledge that you have read, understood, and agreed to this Privacy Policy.
                   </p>

@@ -134,7 +134,7 @@ function Home() {
         <div className="container-luxe">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold uppercase tracking-wider text-gold">The Collection</span>
-            <h2 className="font-serif font-bold text-4xl md:text-5xl mt-4 text-foreground tracking-tight">Two Properties. One Standard.</h2>
+            <h2 className="font-serif font-bold text-4xl md:text-5xl mt-4 text-[#0B1F33] tracking-tight">Two Properties. One Standard.</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
@@ -167,7 +167,7 @@ function Home() {
         <div className="container-luxe">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold uppercase tracking-wider text-gold">Our Promise</span>
-            <h2 className="font-serif font-bold text-4xl md:text-5xl mt-4 text-foreground tracking-tight">Why Choose Us</h2>
+            <h2 className="font-serif font-bold text-4xl md:text-5xl mt-4 text-[#0B1F33] tracking-tight">Why Choose Us</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {WHY_CHOOSE_US.map((item, i) => (
@@ -198,7 +198,7 @@ function Home() {
           <div className="flex items-end justify-between mb-12">
             <div>
               <span className="text-sm font-semibold uppercase tracking-wider text-gold">Moments</span>
-              <h2 className="font-serif font-bold text-4xl md:text-5xl mt-3 text-foreground tracking-tight">Elegant Spaces</h2>
+              <h2 className="font-serif font-bold text-4xl md:text-5xl mt-3 text-[#0B1F33] tracking-tight">Elegant Spaces</h2>
             </div>
             <Link to="/gallery" className="hidden md:inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-gold transition">
               View Gallery <ArrowRight className="h-4 w-4" />
@@ -222,7 +222,7 @@ function Home() {
         <div className="container-luxe">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold uppercase tracking-wider text-gold">Curated Comforts</span>
-            <h2 className="font-serif font-bold text-4xl md:text-5xl mt-4 text-foreground tracking-tight">Amenities, perfected</h2>
+            <h2 className="font-serif font-bold text-4xl md:text-5xl mt-4 text-[#0B1F33] tracking-tight">Amenities, perfected</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
             {AMENITIES.map((a, i) => (
@@ -274,7 +274,7 @@ function Home() {
         <div className="container-luxe">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold uppercase tracking-wider text-gold">Got Questions?</span>
-            <h2 className="font-serif font-bold text-4xl md:text-5xl mt-4 text-foreground tracking-tight">Frequently Asked Questions</h2>
+            <h2 className="font-serif font-bold text-4xl md:text-5xl mt-4 text-[#0B1F33] tracking-tight">Frequently Asked Questions</h2>
           </div>
           <div className="max-w-3xl mx-auto divide-y divide-border">
             {FAQS.map((faq, i) => (
@@ -327,7 +327,7 @@ function Home() {
           {/* <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-border">
             <MapPin className="h-8 w-8 text-primary" />
           </div> */}
-          <h2 className="font-serif font-bold text-3xl sm:text-4xl md:text-6xl mb-6 text-foreground tracking-tight">Your Journey Starts Here!</h2>
+          <h2 className="font-serif font-bold text-3xl sm:text-4xl md:text-6xl mb-6 text-[#0B1F33] tracking-tight">Your Journey Starts Here!</h2>
           <p className="text-muted-foreground max-w-xl mx-auto mb-10 text-lg font-light">Reserve your perfect room and enjoy exceptional comfort, premium hospitality, and a memorable stay with us.</p>
           <Link to="/rooms" className="bg-gold text-white px-10 py-4 text-sm font-semibold rounded-2xl shadow-md inline-flex items-center gap-2 hover:bg-gold-hover transition">
             Begin Reservation <ArrowRight className="h-4 w-4" />

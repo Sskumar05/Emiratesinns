@@ -210,7 +210,7 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
               <ul className="text-sm text-primary-foreground/70" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {NAV.slice(1).map((n) => (
                   <li key={n.to}>
-                    <Link to={n.to as "."} className="hover:text-white transition-colors">{n.label}</Link>
+                    <Link to={n.to as "."} className="hover:text-blue-400 transition-colors">{n.label}</Link>
                   </li>
                 ))}
               </ul>
@@ -240,7 +240,9 @@ export function WebsiteLayout({ children }: { children?: ReactNode } = {}) {
         <div className="border-y border-primary-foreground/10">
           <div className="container-luxe py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-[12px] md:text-sm text-primary-foreground/50">
             <span>© {new Date().getFullYear()} Emirates Inn & Emirates Grand Inn.All rights reserved.</span>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap justify-center md:justify-end gap-x-4 gap-y-2">
+              <Link to="/booking-information" className="hover:text-white transition-colors">Cancellation Policy</Link>
+              <Link to="/cancellation-policy" className="hover:text-white transition-colors">Refund Policy</Link>
               <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
               <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
             </div>    

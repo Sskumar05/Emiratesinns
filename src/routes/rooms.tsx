@@ -404,11 +404,11 @@ function RoomsPage() {
           </motion.span>
 
           <h1
-            className="font-serif font-bold text-foreground tracking-tight leading-tight mb-7"
+            className="font-serif font-bold text-[#0B1F33] tracking-tight leading-tight mb-7"
             style={{ fontSize: "clamp(2.4rem, 6vw, 4.2rem)" }}
           >
             Rooms &amp;{" "}
-            <span className="italic font-light">Suites.</span>
+            <span className="italic font-light text-[#C6A15B]">Suites.</span>
           </h1>
 
           <div className="mb-[-10%] " ><img src={logo} alt="line" className="w-auto h-auto mt-[-16%] " /></div>

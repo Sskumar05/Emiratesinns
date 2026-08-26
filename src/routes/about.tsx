@@ -114,11 +114,11 @@ function About() {
 
           {/* Main heading */}
           <h1
-            className="font-serif font-bold text-foreground tracking-tight leading-tight mb-7"
+            className="font-serif font-bold text-[#0B1F33] tracking-tight leading-tight mb-7"
             style={{ fontSize: "clamp(2.4rem, 6vw, 4.2rem)" }}
           >
             Designed Around {" "}
-            <span className="italic font-light">Comfort.</span>
+            <span className="italic font-light text-[#C6A15B]">Comfort.</span>
           </h1>
 
           {/* Gold rule */}
@@ -160,7 +160,7 @@ function About() {
             className="space-y-6"
           >
             <span className="text-sm font-semibold uppercase tracking-widest text-gold">Who We Are</span>
-            <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground">Hospitality Beyond Expectations</h2>
+            <h2 className="text-4xl md:text-5xl font-serif font-bold text-[#0B1F33]">Hospitality Beyond Expectations</h2>
             <div className="space-y-6 text-muted-foreground text-lg leading-relaxed font-light mt-8">
               <p>
                 Emirates Inn was founded with a simple vision to provide guests with a stay that is warm, comfortable, and truly memorable. We believe exceptional hospitality is defined by thoughtful service, elegant accommodations, and attention to every detail that makes each visit special.</p>
@@ -181,7 +181,7 @@ function About() {
             variants={fadeUp}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground">Why Choose Emirates</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#0B1F33]">Why Choose Emirates</h2>
           </motion.div>
 
           <motion.div 
@@ -221,7 +221,7 @@ function About() {
       <section className="py-32 max-w-7xl mx-auto px-6 space-y-32">
         <div className="text-center mb-16">
           <span className="text-sm font-semibold uppercase tracking-widest text-gold mb-3 inline-block">Our Portfolio</span>
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground">Discover Our Properties</h2>
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-[#0B1F33]">Discover Our Properties</h2>
         </div>
 
         {/* Section One */}
@@ -430,7 +430,7 @@ function About() {
           className="max-w-3xl mx-auto px-6 text-center"
         >
           {/* <Gem className="w-12 h-12 text-gold mx-auto mb-8" strokeWidth={1} /> */}
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-6">Book Your Stay</h2>
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-[#0B1F33] mb-6">Book Your Stay</h2>
           <p className="text-xl text-muted-foreground mb-12 leading-relaxed font-light">
             Experience comfort, elegance, and personalized hospitality at Emirates Inn & Emirates Grand Inn.
           </p>
