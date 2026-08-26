@@ -20,7 +20,7 @@ function TermsOfServicePage() {
         {/* ── Hero Section ── */}
         <section className="text-center px-6 mb-16 max-w-4xl mx-auto">
           <motion.div initial="initial" animate="animate" variants={fadeUp}>
-            <h1 className="font-serif font-bold text-foreground tracking-tight leading-tight mb-4 text-4xl sm:text-5xl md:text-6xl">
+            <h1 className="font-serif font-bold text-[#C6A15B] tracking-tight leading-tight mb-4 text-4xl sm:text-5xl md:text-6xl">
               Terms of Service
             </h1>
             <p className="text-muted-foreground text-lg sm:text-xl font-light mb-6">
@@ -50,7 +50,7 @@ function TermsOfServicePage() {
 
             {/* Section 1 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">1. Acceptance of Terms</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">1. Acceptance of Terms</h2>
               <p className="text-muted-foreground">
                 By using this website or booking a room through our platform, you confirm that you have read, understood, and agreed to these Terms of Service. If you do not agree with these Terms, please do not use our website or services.
               </p>
@@ -58,7 +58,7 @@ function TermsOfServicePage() {
 
             {/* Section 2 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">2. Eligibility</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">2. Eligibility</h2>
               <p className="text-muted-foreground">To make a reservation, you must:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Be at least 18 years of age or the legal age required in your jurisdiction.</li>
@@ -69,7 +69,7 @@ function TermsOfServicePage() {
 
             {/* Section 3 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">3. Reservations</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">3. Reservations</h2>
               <p className="text-muted-foreground">All bookings are subject to:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Room availability.</li>
@@ -84,7 +84,7 @@ function TermsOfServicePage() {
 
             {/* Section 4 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">4. Pricing</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">4. Pricing</h2>
               <p className="text-muted-foreground">Room prices displayed on the website:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Are subject to availability.</li>
@@ -96,7 +96,7 @@ function TermsOfServicePage() {
 
             {/* Section 5 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">5. Payments</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">5. Payments</h2>
               <p className="text-muted-foreground">Guests agree that:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Payment may be required at the time of booking or during check-in depending on the selected rate.</li>
@@ -108,7 +108,7 @@ function TermsOfServicePage() {
 
             {/* Section 6 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">6. Check-In and Check-Out</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">6. Check-In and Check-Out</h2>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Guests must comply with the hotel's standard check-in and check-out procedures.</li>
                 <li>Valid government-issued identification may be required during check-in.</li>
@@ -119,7 +119,7 @@ function TermsOfServicePage() {
 
             {/* Section 7 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">7. Cancellations and Refunds</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">7. Cancellations and Refunds</h2>
               <p className="text-muted-foreground">Cancellation and refund eligibility depend on:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>The selected room type.</li>
@@ -133,7 +133,7 @@ function TermsOfServicePage() {
 
             {/* Section 8 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">8. Guest Responsibilities</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">8. Guest Responsibilities</h2>
               <p className="text-muted-foreground">Guests agree to:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Provide accurate booking information.</li>
@@ -149,7 +149,7 @@ function TermsOfServicePage() {
 
             {/* Section 9 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">9. Prohibited Activities</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">9. Prohibited Activities</h2>
               <p className="text-muted-foreground">Guests must not:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Engage in illegal activities.</li>
@@ -166,7 +166,7 @@ function TermsOfServicePage() {
 
             {/* Section 10 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">10. Hotel Rights</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">10. Hotel Rights</h2>
               <p className="text-muted-foreground">The hotel reserves the right to:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Refuse service where permitted by law.</li>
@@ -178,7 +178,7 @@ function TermsOfServicePage() {
 
             {/* Section 11 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">11. Website Usage</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">11. Website Usage</h2>
               <p className="text-muted-foreground">Users agree to:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Use the website only for lawful purposes.</li>
@@ -190,7 +190,7 @@ function TermsOfServicePage() {
 
             {/* Section 12 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">12. Intellectual Property</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">12. Intellectual Property</h2>
               <p className="text-muted-foreground">All content on this website, including but not limited to:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Logos</li>
@@ -209,7 +209,7 @@ function TermsOfServicePage() {
 
             {/* Section 13 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">13. Limitation of Liability</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">13. Limitation of Liability</h2>
               <p className="text-muted-foreground">To the fullest extent permitted by law, Emirates Inn & Emirates Grand Inn shall not be liable for:</p>
               <ul className="list-disc list-outside ml-5 space-y-2 text-muted-foreground">
                 <li>Indirect or consequential damages.</li>
@@ -225,7 +225,7 @@ function TermsOfServicePage() {
 
             {/* Section 14 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">14. Force Majeure</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">14. Force Majeure</h2>
               <p className="text-muted-foreground">
                 The hotel shall not be held responsible for failure or delay in providing services due to circumstances beyond its reasonable control, including but not limited to:
               </p>
@@ -242,7 +242,7 @@ function TermsOfServicePage() {
 
             {/* Section 15 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">15. Privacy</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">15. Privacy</h2>
               <p className="text-muted-foreground">
                 Your use of our website is also governed by our Privacy Policy, which explains how we collect, use, and protect your personal information.
               </p>
@@ -250,7 +250,7 @@ function TermsOfServicePage() {
 
             {/* Section 16 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">16. Third-Party Services</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">16. Third-Party Services</h2>
               <p className="text-muted-foreground">
                 Our website may contain links or integrations with third-party services such as payment gateways, maps, analytics, or email providers. We are not responsible for the content, availability, or privacy practices of third-party services.
               </p>
@@ -258,7 +258,7 @@ function TermsOfServicePage() {
 
             {/* Section 17 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">17. Modifications to the Terms</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">17. Modifications to the Terms</h2>
               <p className="text-muted-foreground">
                 We reserve the right to modify these Terms of Service at any time. Any changes become effective upon publication on this website. Continued use of the website after changes constitutes acceptance of the revised Terms.
               </p>
@@ -266,7 +266,7 @@ function TermsOfServicePage() {
 
             {/* Section 18 */}
             <section className="space-y-6">
-              <h2 className="text-2xl font-serif font-bold text-foreground">18. Governing Law</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33]">18. Governing Law</h2>
               <p className="text-muted-foreground">
                 These Terms shall be governed by and interpreted in accordance with the applicable laws of the jurisdiction in which the hotel operates. Any disputes arising from these Terms shall be subject to the exclusive jurisdiction of the competent courts of that jurisdiction.
               </p>
@@ -274,7 +274,7 @@ function TermsOfServicePage() {
 
             {/* Section 19 */}
             <section className="space-y-6 pt-6 border-t border-border">
-              <h2 className="text-2xl font-serif font-bold text-foreground mb-6">19. Contact Information</h2>
+              <h2 className="text-2xl font-serif font-bold text-[#0B1F33] mb-6">19. Contact Information</h2>
               <p className="text-muted-foreground mb-6">
                 For questions regarding these Terms of Service, please contact:
               </p>
@@ -317,7 +317,7 @@ function TermsOfServicePage() {
                   <ShieldCheck className="h-8 w-8 text-gold" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">20. Entire Agreement</h3>
+                  <h3 className="text-xl font-bold text-[#0B1F33] mb-2">20. Entire Agreement</h3>
                   <p className="text-muted-foreground leading-relaxed">
                     These Terms of Service, together with our Privacy Policy and any booking-specific policies, constitute the complete agreement between you and Emirates Inn & Emirates Grand Inn regarding your use of our website and services, superseding any prior agreements or communications.
                   </p>
