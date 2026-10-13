@@ -58,31 +58,39 @@ function Invoices() {
     return () => { supabase.removeChannel(ch); };
   }, [qc]);
 
-  const { data: invoices = [] } = useQuery({
+  const { data: invoices = [], isLoading } = useQuery({
     queryKey: ["invoices"],
-    queryFn: async () =>
-      (
-        await supabase
-          .from("invoices")
-          .select(
-            `*, 
-            bookings(
-              booking_code, check_in_date, check_out_date, num_days, num_guests,
-              category, price_per_night, total_amount, payment_status, created_at,
-              hotels(name, slug)
-            ), 
-            customers(full_name, email, mobile)`
-          )
-          .order("issued_at", { ascending: false })
-      ).data ?? [],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("invoices")
+        .select(
+          `id, invoice_number, booking_id, customer_id, amount, tax_amount, status, issued_at, created_at,
+          bookings(
+            id, booking_code, check_in_date, check_in_time, check_out_date,
+            num_days, num_rooms, num_guests, category, stay_type, price_per_night, total_amount, payment_status, created_at, assigned_room_ids,
+            hotels(name, slug, address, phone, email),
+            customers(full_name, email, mobile)
+          ), 
+          customers(full_name, email, mobile)`
+        )
+        .order("issued_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching invoices:", error);
+        toast.error("Failed to load invoices");
+        return [];
+      }
+      return data ?? [];
+    },
   });
 
   const filtered = useMemo(() => {
     return invoices.filter((inv: any) => {
+      const customerName = inv.customers?.full_name || inv.bookings?.customers?.full_name || "";
       const queryMatch = !q || 
         (inv.invoice_number || "").toLowerCase().includes(q.toLowerCase()) ||
         (inv.bookings?.booking_code || "").toLowerCase().includes(q.toLowerCase()) ||
-        (inv.customers?.full_name || "").toLowerCase().includes(q.toLowerCase());
+        customerName.toLowerCase().includes(q.toLowerCase());
         
       const statusMatch = statusF === "all" || (inv.status || "").toLowerCase() === statusF.toLowerCase();
       
@@ -104,13 +112,14 @@ function Invoices() {
   }, [invoices, q, statusF, hotelF, dateFrom, dateTo]);
 
   async function handleSendInvoiceEmail(inv: any) {
-    if (!inv.customers?.email) {
+    const customer = inv.customers || inv.bookings?.customers;
+    if (!customer?.email) {
       toast.error("Customer email not found");
       return;
     }
     const booking = inv.bookings;
-    await sendInvoice(inv.customers.email, {
-      customerName: inv.customers.full_name,
+    await sendInvoice(customer.email, {
+      customerName: customer.full_name || "Guest",
       invoiceNumber: inv.invoice_number,
       bookingCode: booking?.booking_code ?? "",
       hotelName: booking?.hotels?.name ?? "Emirates Grand Inn",
@@ -134,12 +143,13 @@ function Invoices() {
     if (downloadingId === inv.id) return;
     setDownloadingId(inv.id);
     try {
-      downloadInvoice(inv);
-      toast.success(`Invoice-${inv.invoice_number}.pdf is being generated`);
+      await downloadInvoice(inv);
+      toast.success(`Invoice-${inv.invoice_number}.pdf downloaded`);
     } catch (e) {
+      console.error(e);
       toast.error("Failed to generate invoice PDF. Please try again.");
     } finally {
-      setTimeout(() => setDownloadingId(null), 1500);
+      setTimeout(() => setDownloadingId(null), 1000);
     }
   }
 
@@ -172,21 +182,6 @@ function Invoices() {
               </option>
             ))}
           </select>
-          {/* <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="bg-card border border-border px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-gold"
-            />
-            <span className="text-muted-foreground text-sm">to</span>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="bg-card border border-border px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-gold"
-            />
-          </div> */}
         </div>
         
         <div className="relative w-full xl:w-80">
@@ -223,65 +218,80 @@ function Invoices() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {filtered.length === 0 && (
+            {isLoading ? (
+              <tr>
+                <td colSpan={8} className="py-12 text-center text-muted-foreground">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+                    <span>Loading invoices...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-12 text-center text-muted-foreground">
                   No invoices found matching your criteria.
                 </td>
               </tr>
+            ) : (
+              filtered.map((inv: any) => (
+                <tr key={inv.id} className="hover:bg-surface/30 transition-colors">
+                  <td className="py-3 px-4 text-gold font-medium whitespace-nowrap">{inv.invoice_number}</td>
+                  <td className="py-3 px-4 whitespace-nowrap">{inv.bookings?.booking_code}</td>
+                  <td className="py-3 px-4 whitespace-nowrap font-medium">
+                    {inv.customers?.full_name || inv.bookings?.customers?.full_name || "—"}
+                  </td>
+                  <td className="py-3 px-4 whitespace-nowrap text-muted-foreground">{inv.bookings?.hotels?.name}</td>
+                  <td className="py-3 px-4 whitespace-nowrap font-medium">{formatINR(inv.amount)}</td>
+                  <td className="py-3 px-4 whitespace-nowrap">
+                    <span
+                      className={`px-2.5 py-1 text-[10px] uppercase tracking-wider font-semibold rounded-full ${getPaymentBadgeClass(inv.status)}`}
+                    >
+                      {formatBadgeText(inv.status)}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 whitespace-nowrap text-muted-foreground">
+                    {formatDate(inv.issued_at)}
+                  </td>
+                  <td className="py-3 px-4 whitespace-nowrap">
+                    <div className="flex gap-2 items-center">
+                      <button
+                        title="View Invoice"
+                        onClick={() => {
+                          const augmentedInv = { ...inv };
+                          const b = augmentedInv.invoice_number ? (augmentedInv.bookings || {}) : augmentedInv;
+                          b.default_check_in_time = hotelTimes.data?.checkIn;
+                          b.default_check_out_time = hotelTimes.data?.checkOut;
+                          if (!b.customers && augmentedInv.customers) {
+                            b.customers = augmentedInv.customers;
+                          }
+                          setPreviewInv(augmentedInv);
+                        }}
+                        className="flex items-center justify-center p-1.5 rounded bg-surface/50 border border-border text-foreground hover:border-gold hover:text-gold transition-colors"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button
+                        title="Download PDF"
+                        disabled={downloadingId === inv.id}
+                        onClick={() => handleDownloadPDF(inv)}
+                        className="flex items-center justify-center p-1.5 rounded bg-surface/50 border border-border text-foreground hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-wait"
+                      >
+                        <Download className={`h-4 w-4 ${downloadingId === inv.id ? "animate-bounce" : ""}`} />
+                      </button>
+                      <button
+                        title="Email Invoice"
+                        disabled={loading}
+                        onClick={() => handleSendInvoiceEmail(inv)}
+                        className="flex items-center justify-center p-1.5 rounded bg-surface/50 border border-border text-foreground hover:border-gold hover:text-gold transition-colors disabled:opacity-40"
+                      >
+                        <Mail className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
             )}
-            {filtered.map((inv: any) => (
-              <tr key={inv.id} className="hover:bg-surface/30 transition-colors">
-                <td className="py-3 px-4 text-gold font-medium whitespace-nowrap">{inv.invoice_number}</td>
-                <td className="py-3 px-4 whitespace-nowrap">{inv.bookings?.booking_code}</td>
-                <td className="py-3 px-4 whitespace-nowrap font-medium">{inv.customers?.full_name}</td>
-                <td className="py-3 px-4 whitespace-nowrap text-muted-foreground">{inv.bookings?.hotels?.name}</td>
-                <td className="py-3 px-4 whitespace-nowrap font-medium">{formatINR(inv.amount)}</td>
-                <td className="py-3 px-4 whitespace-nowrap">
-                  <span
-                    className={`px-2.5 py-1 text-[10px] uppercase tracking-wider font-semibold rounded-full ${getPaymentBadgeClass(inv.status)}`}
-                  >
-                    {formatBadgeText(inv.status)}
-                  </span>
-                </td>
-                <td className="py-3 px-4 whitespace-nowrap text-muted-foreground">
-                  {formatDate(inv.issued_at)}
-                </td>
-                <td className="py-3 px-4 whitespace-nowrap">
-                  <div className="flex gap-2 items-center">
-                    <button
-                      title="View Invoice"
-                      onClick={() => {
-                        const augmentedInv = { ...inv };
-                        const b = augmentedInv.invoice_number ? (augmentedInv.bookings || {}) : augmentedInv;
-                        b.default_check_in_time = hotelTimes.data?.checkIn;
-                        b.default_check_out_time = hotelTimes.data?.checkOut;
-                        setPreviewInv(augmentedInv);
-                      }}
-                      className="flex items-center justify-center p-1.5 rounded bg-surface/50 border border-border text-foreground hover:border-gold hover:text-gold transition-colors"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                    {/* <button
-                      title="Download PDF"
-                      disabled={downloadingId === inv.id}
-                      onClick={() => handleDownloadPDF(inv)}
-                      className="flex items-center justify-center p-1.5 rounded bg-surface/50 border border-border text-foreground hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-wait"
-                    >
-                      <Download className={`h-4 w-4 ${downloadingId === inv.id ? "animate-bounce" : ""}`} />
-                    </button> */}
-                    <button
-                      title="Email Invoice"
-                      disabled={loading}
-                      onClick={() => handleSendInvoiceEmail(inv)}
-                      className="flex items-center justify-center p-1.5 rounded bg-surface/50 border border-border text-foreground hover:border-gold hover:text-gold transition-colors disabled:opacity-40"
-                    >
-                      <Mail className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
           </tbody>
         </table>
       </div>
